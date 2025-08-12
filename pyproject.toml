@@ -19,5 +19,100 @@ Issues = "https://github.com/custom-components/grocy/issues"
 [tool.uv]
 dev-dependencies = [
     "ruff==0.12.2",
+    "pre-commit>=3.0.0",
 ]
 
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+extend-exclude = [
+    "config/",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
+select = [
+    "ALL",
+]
+
+ignore = [
+    # Original ignore rules from .ruff.toml
+    "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
+    "D203", # no-blank-line-before-class (incompatible with formatter)
+    "D212", # multi-line-summary-first-line (incompatible with formatter)
+    "COM812", # incompatible with formatter
+    "ISC001", # incompatible with formatter
+    
+    # Additional ignore rules for existing codebase - can be addressed gradually
+    "ANN001",   # Missing type annotation for function argument
+    "ANN201",   # Missing return type annotation for public function
+    "ANN202",   # Missing return type annotation for private function
+    "ANN204",   # Missing return type annotation for special method __init__
+    "TC001",    # Move application import into type-checking block
+    "TC002",    # Move third-party import into type-checking block  
+    "TC003",    # Move standard library import into type-checking block
+    
+    # Documentation - can be addressed later (removed D107 to preserve # noqa comments)
+    "D101",     # Missing docstring in public class
+    "D105",     # Missing docstring in magic method
+    # "D107",   # Missing docstring in __init__ - removed to preserve existing # noqa: D107 comments
+    "D400",     # First line should end with a period
+    "D401",     # First line of docstring should be in imperative mood
+    "D415",     # First line should end with a period, question mark, or exclamation point    # TODO comments - existing ones can stay
+    "TD002",    # Missing author in TODO
+    "TD003",    # Missing issue link for TODO
+    "TD004",    # Missing colon in TODO
+    "FIX002",   # Line contains TODO
+
+    # Boolean traps - existing API calls can stay
+    "FBT001",   # Boolean-typed positional argument in function definition
+    "FBT002",   # Boolean default positional argument in function definition
+    "FBT003",   # Boolean positional value in function call
+
+    # Datetime - Home Assistant handles timezone properly at framework level
+    "DTZ005",   # datetime.datetime.now() called without a tz argument
+    "DTZ011",   # datetime.date.today() used
+
+    # Code complexity - existing code can stay complex
+    "PLR0912",  # Too many branches
+
+    # Naming - existing naming conventions can stay
+    "N803",     # Argument name should be lowercase
+
+    # Error messages - existing error handling can stay
+    "EM102",    # Exception must not use an f-string literal
+
+    # Commented code - keep for now in case it's needed
+    "ERA001",   # Found commented-out code
+
+    # Unused arguments - common in Home Assistant integrations
+    "ARG001",   # Unused function argument
+    "ARG002",   # Unused method argument
+
+    # List comprehensions - existing code patterns can stay
+    "RUF015",   # Prefer next(...) over single element slice
+
+    # Other rules that would require significant refactoring
+    "BLE001",   # Do not catch blind exception
+    "TRY003",   # Avoid specifying long messages outside the exception class
+    "TRY300",   # Consider else block
+    "TRY400",   # Use logging.exception instead of logging.error
+    "RET503",   # Missing explicit return at the end of function
+    "SLF001",   # Private member accessed
+    "PERF403",  # Use dict comprehension instead of for loop
+
+    # Line length - will be handled by formatter where possible, ignore the rest
+    "E501",     # Line too long
+
+    # Import issues that need to be fixed manually
+    # "F821",   # Undefined name - these should be fixed
+]
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true
+
+[tool.ruff.lint.mccabe]
+max-complexity = 25

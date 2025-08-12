@@ -1,0 +1,35 @@
+repos:
+  # Basic file hygiene
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+
+  # Python formatting and linting with Ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.2
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # Validate HACS and manifest files
+  - repo: local
+    hooks:
+      - id: validate-hacs
+        name: Validate HACS configuration
+        entry: python -c "import json; json.load(open('hacs.json'))"
+        language: system
+        files: ^hacs\.json$
+        pass_filenames: false
+
+      - id: validate-manifest
+        name: Validate Home Assistant manifest
+        entry: python -c "import json; json.load(open('custom_components/grocy/manifest.json'))"
+        language: system
+        files: ^custom_components/.*/manifest\.json$
+        pass_filenames: false
