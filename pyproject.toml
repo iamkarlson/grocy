@@ -13,8 +13,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/custom-components/grocy"
-Issues = "https://github.com/custom-components/grocy/issues"
+Homepage = "https://github.com/iamkarlson/grocy"
+Issues = "https://github.com/iamkarlson/grocy/issues"
 
 [tool.uv]
 dev-dependencies = [

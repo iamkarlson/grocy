@@ -7,7 +7,7 @@ NAME: Final = "Grocy"
 DOMAIN: Final = "grocy"
 VERSION = "0.0.0"
 
-ISSUE_URL: Final = "https://github.com/custom-components/grocy/issues"
+ISSUE_URL: Final = "https://github.com/iamkarlson/grocy/issues"
 
 PLATFORMS: Final = ["binary_sensor", "sensor", "todo"]
 
