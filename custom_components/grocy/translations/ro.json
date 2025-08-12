@@ -1,0 +1,23 @@
+{
+    "config": {
+        "abort": {
+            "single_instance_allowed": "Este permisă doar o singură configurație a lui Grocy."
+        },
+        "error": {
+            "auth": "Ceva n-a mers bine."
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "api_key": "Cheie API Grocy",
+                    "port": "Număr port (9192)",
+                    "url": "Adresa URL a API-ului Grocy (de exemplu, „http:\/\/yourgrocyurl.com”)",
+                    "verify_ssl": "Verificați certificatul SSL"
+                },
+                "description": "Dacă aveți nevoie de ajutor cu configurarea, aruncați o privire aici: https:\/\/github.com\/custom-components\/grocy",
+                "title": "Grocy"
+            }
+        },
+        "title": "Grocy"
+    }
+}

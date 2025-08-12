@@ -128,7 +128,7 @@ Removes a product in the given shopping list.
 
 # Translations
 
-Translations are done via [Lokalise](https://app.lokalise.com/public/260939135f7593a05f2b79.75475372/). If you want to translate into your native language, please [join the team](https://app.lokalise.com/public/260939135f7593a05f2b79.75475372/).
+Before this was forked, translation was done using paid service lokalise.com. However, it's now just bunch of `json` files in `custom_components/grocy/translations/` directory. Feel free to open a PR if there's an error in translation.
 
 
 # Troubleshooting
