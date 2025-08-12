@@ -165,12 +165,6 @@ Want to contribute to this project? Check out our [CONTRIBUTING.md](CONTRIBUTING
 
 We welcome contributions of all kinds! 🎉
 
-## Translations
-
-Translations are managed via [Lokalise](https://app.lokalise.com/public/260939135f7593a05f2b79.75475372/).
-
-Want to help translate into your native language? [Join the translation team](https://app.lokalise.com/public/260939135f7593a05f2b79.75475372/)!
-
 ## Screenshots
 
 ### <a name="screenshot-addon-config"></a>Add-on Port Configuration
