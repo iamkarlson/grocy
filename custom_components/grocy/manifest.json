@@ -2,8 +2,7 @@
   "domain": "grocy",
   "name": "Grocy",
   "codeowners": [
-    "@SebRut",
-    "@isabellaalstrom"
+    "@iamkarlson"
   ],
   "config_flow": true,
   "dependencies": [

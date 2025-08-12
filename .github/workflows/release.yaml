@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release_zip_file:
+    name: Prepare and upload release asset
+    runs-on: ubuntu-latest
+    env:
+      GROCY_ROOT_DIR: "${{ github.workspace }}/custom_components/grocy"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v1
+      - name: Set release version number in files
+        run: |
+          sed -i '/VERSION = /c\VERSION = "${{ github.ref_name }}"' "${{ env.GROCY_ROOT_DIR }}/const.py"
+          (jq '.version = "${{ github.ref_name }}"' "${{ env.GROCY_ROOT_DIR }}/manifest.json") > "${{ env.GROCY_ROOT_DIR }}/manifest.json.tmp"
+          mv "${{ env.GROCY_ROOT_DIR }}/manifest.json.tmp" "${{ env.GROCY_ROOT_DIR }}/manifest.json"
+
+      - name: Add Grocy folder to zip archive
+        run: |
+          cd "${{ env.GROCY_ROOT_DIR }}"
+          zip grocy.zip -r ./
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: "${{ env.GROCY_ROOT_DIR }}/grocy.zip"
+          asset_name: grocy.zip
+          asset_content_type: application/zip
