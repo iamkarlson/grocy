@@ -1,46 +1,78 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
 
+# Grocy Custom Component for Home Assistant
+
+A Home Assistant custom integration for [Grocy](https://grocy.info/) - the self-hosted groceries & household management solution.
+
 ---
-**INFO**
+**IMPORTANT INFORMATION**
 
 **The integration supports Grocy version 3.2 and above.**
 
 **At least Home Assistant version 2021.12 is required for the integration from v4.3.3 and above.**
 
-You have to have the Grocy software already installed and running, this integration only communicates with an existing installation of Grocy. You can install the software with the [Grocy add-on](https://github.com/hassio-addons/addon-grocy) or another installation method, found at [Grocy website](https://grocy.info/).
+You must have Grocy software already installed and running. This integration only communicates with an existing installation of Grocy. You can install Grocy using the [Grocy add-on](https://github.com/hassio-addons/addon-grocy) or another installation method found at the [Grocy website](https://grocy.info/).
 
 ---
 
-# Adding the integration
+## Installation
 
-## First steps <a name="addon"></a>for Grocy add-on
-The configuration is slightly different for those who use the [official Grocy add-on](https://github.com/hassio-addons/addon-grocy) from the add-on store.
+### HACS (Recommended)
 
-1. If you haven't already done so, install Grocy from the add-on store.
-2. In the 'Configuration' section of the add-on config, input `9192` in the Network port field - see [screenshot](#screenshot-addon-config). Save your changes and restart the add-on.
-3. Now continue with the instructions below.
+The easiest way to install this integration is with [HACS][hacs].
 
-## HACS
-The easiest way to install this integration is with [HACS][hacs]. First, install [HACS][hacs-download] if you don't have it yet. In Home Assistant, go to `HACS`, click on 3 dot menu at the right top, choose "Custom repositories", and in fields below put a link to this repo "https://github.com/custom-components/grocy", and type select "Integration".
-
-New repository should appear in the list "Grocy custom component". Click on it, then press button at the bottom right "Download", then press "Download" in a new window, and finally restart Home Assistant (you should also get a "repair" notification in your Home Assistant Settings menu).
-
-Install the [Grocy integration](https://my.home-assistant.io/redirect/config_flow_start/?domain=grocy).
-Fill out the information according to [this instruction](#integration-configuration).
+1. Install [HACS][hacs-download] if you don't have it yet
+2. In Home Assistant, go to `HACS` → 3 dot menu → "Custom repositories"
+3. Add this repository URL: `https://github.com/custom-components/grocy`
+4. Select "Integration" as the type
+5. Find "Grocy custom component" in the list and click on it
+6. Click "Download" → "Download" → Restart Home Assistant
+7. Install the [Grocy integration](https://my.home-assistant.io/redirect/config_flow_start/?domain=grocy)
 
 Future integration updates will appear automatically within Home Assistant via HACS.
 
-You will now have a new integration for Grocy. All entities are disabled from start, manually enable the entities you want to use.
-
 [hacs]: https://hacs.xyz
 [hacs-download]: https://hacs.xyz/docs/setup/download
-[hacsbadge]: https://img.shields.io/badge/HACS-Default-blue.svg?style=flat
 
-### Manual installation
-1. Update Home Assistant to version 2025.02 or newer.
-2. Clone this repository.
-3. Copy the `custom_components/grocy` folder into your Home Assistant's `custom_components` folder.
+### Manual Installation
+
+1. Update Home Assistant to version 2025.02 or newer
+2. Download this repository
+3. Copy the `custom_components/grocy` folder into your Home Assistant's `custom_components` folder
 4. Restart Home Assistant
+
+## Configuration
+
+### Adding the Integration
+
+1. Go to Settings → Devices & Services → Add Integration
+2. Search for "Grocy" and select it
+3. Configure according to your setup:
+
+#### For Grocy Add-on Users
+
+If you use the [official Grocy add-on](https://github.com/hassio-addons/addon-grocy):
+
+1. Install Grocy from the add-on store if you haven't already
+2. In the add-on 'Configuration', set the Network port to `9192` ([see screenshot](#screenshot-addon-config))
+3. Save changes and restart the add-on
+4. Use port `9192` when configuring the integration
+
+#### Configuration Parameters
+
+- **URL**: Your Grocy instance URL (e.g., `http://192.168.1.100` or `https://grocy.example.com`)
+  - Start with `http://` or `https://`
+  - Do **not** include the port in the URL field
+  - Subdomains are supported
+- **API Key**: Generate in Grocy via the wrench icon → "Manage API keys"
+- **Port**:
+  - `9192` for Grocy add-on (without https)
+  - `80` for http or `443` for https (or your custom port)
+- **Verify SSL**: Check if using HTTPS with valid certificate
+
+![Integration Configuration](grocy-integration-config.png)
+
+**All entities are disabled by default.** Enable the entities you want to use in Home Assistant.
 
 
 # Entities
@@ -101,21 +133,49 @@ Translations are done via [Lokalise](https://app.lokalise.com/public/260939135f7
 
 # Troubleshooting
 
-If you have problems with the integration you can add debug prints to the log.
+If you experience issues with the integration:
 
-```yaml
-logger:
-  default: info
-  logs:
-    pygrocy.grocy_api_client: debug
-    custom_components.grocy: debug
-```
+1. **Enable debug logging** by adding this to your `configuration.yaml`:
+   ```yaml
+   logger:
+     default: info
+     logs:
+       pygrocy.grocy_api_client: debug
+       custom_components.grocy: debug
+   ```
 
-If you are having issues and want to report a problem, always start with making sure that you're on the latest _beta_ version of the integration, Grocy and Home Assistant.
+2. **Ensure compatibility**: Use the latest version of the integration, Grocy, and Home Assistant
 
-You can ask for help [in the forums](https://community.home-assistant.io/t/grocy-custom-component-and-card-s/218978), or [make an issue with all of the relevant information here](https://github.com/custom-components/grocy/issues/new?assignees=&labels=&template=bug_report.md&title=).
+3. **Check your setup**: Verify your Grocy URL, API key, and port configuration
 
+4. **Get help**:
+   - [Community Forum Discussion](https://community.home-assistant.io/t/grocy-custom-component-and-card-s/218978)
+   - [Report Issues on GitHub](https://github.com/custom-components/grocy/issues/new?assignees=&labels=&template=bug_report.md&title=)
 
+## Contributing
+
+Want to contribute to this project? Check out our [CONTRIBUTING.md](CONTRIBUTING.md) guide for:
+
+- Setting up the development environment
+- Debugging with VSCode
+- Running development tasks
+- Code structure overview
+- Testing procedures
+- Submission guidelines
+
+We welcome contributions of all kinds! 🎉
+
+## Translations
+
+Translations are managed via [Lokalise](https://app.lokalise.com/public/260939135f7593a05f2b79.75475372/).
+
+Want to help translate into your native language? [Join the translation team](https://app.lokalise.com/public/260939135f7593a05f2b79.75475372/)!
+
+## Screenshots
+
+### <a name="screenshot-addon-config"></a>Add-on Port Configuration
+
+![Grocy Add-on Configuration](grocy-addon-config.png)
 # <a name="integration-configuration"></a>Integration configuration
 
 ## URL
