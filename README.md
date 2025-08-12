@@ -23,7 +23,7 @@ The easiest way to install this integration is with [HACS][hacs].
 
 1. Install [HACS][hacs-download] if you don't have it yet
 2. In Home Assistant, go to `HACS` → 3 dot menu → "Custom repositories"
-3. Add this repository URL: `https://github.com/custom-components/grocy`
+3. Add this repository URL: `https://github.com/iamkarlson/grocy`
 4. Select "Integration" as the type
 5. Find "Grocy custom component" in the list and click on it
 6. Click "Download" → "Download" → Restart Home Assistant
@@ -150,7 +150,7 @@ If you experience issues with the integration:
 
 4. **Get help**:
    - [Community Forum Discussion](https://community.home-assistant.io/t/grocy-custom-component-and-card-s/218978)
-   - [Report Issues on GitHub](https://github.com/custom-components/grocy/issues/new?assignees=&labels=&template=bug_report.md&title=)
+   - [Report Issues on GitHub](https://github.com/iamkarlson/grocy/issues/new?assignees=&labels=&template=bug_report.md&title=)
 
 ## Contributing
 
