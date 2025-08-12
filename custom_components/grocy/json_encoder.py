@@ -11,7 +11,6 @@ class CustomJSONEncoder(ExtendedJSONEncoder):
 
     def default(self, o: Any) -> Any:
         """Convert certain objects."""
-
         if isinstance(o, (datetime.date, datetime.time)):
             return o.isoformat()
 

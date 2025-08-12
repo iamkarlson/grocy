@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
-from pygrocy2.data_models.generic import EntityType
-from pygrocy2.grocy_api_client import TransactionType
 import voluptuous as vol
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
 from pygrocy2.data_models.generic import EntityType
 from pygrocy2.grocy_api_client import TransactionType
-from datetime import datetime
 
 from .const import ATTR_CHORES, ATTR_TASKS, DOMAIN
 from .coordinator import GrocyDataUpdateCoordinator

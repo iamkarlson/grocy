@@ -1,4 +1,5 @@
 """Constants for Grocy."""
+
 from datetime import timedelta
 from typing import Final
 

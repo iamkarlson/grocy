@@ -2,17 +2,11 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from dataclasses import dataclass
 import datetime
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any
-
-from pygrocy2.data_models.battery import Battery
-from pygrocy2.data_models.chore import Chore
-from pygrocy2.data_models.meal_items import MealPlanItem
-from pygrocy2.data_models.product import Product, ShoppingListProduct
-from pygrocy2.data_models.task import Task
 
 from homeassistant.components.todo import (
     TodoItem,
@@ -24,6 +18,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pygrocy2.data_models.battery import Battery
+from pygrocy2.data_models.chore import Chore
+from pygrocy2.data_models.meal_items import MealPlanItem
+from pygrocy2.data_models.product import Product, ShoppingListProduct
+from pygrocy2.data_models.task import Task
 
 from .const import (
     ATTR_BATTERIES,
@@ -420,8 +419,7 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
         elif self.entity_description.key == "unsupported":
             if item.status == TodoItemStatus.COMPLETED:
                 raise NotImplementedError(self.entity_description.key)
-            else:
-                raise NotImplementedError(self.entity_description.key)
+            raise NotImplementedError(self.entity_description.key)
         else:
             raise NotImplementedError(self.entity_description.key)
         await self.coordinator.async_refresh()

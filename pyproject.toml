@@ -42,20 +42,20 @@ ignore = [
     "D212", # multi-line-summary-first-line (incompatible with formatter)
     "COM812", # incompatible with formatter
     "ISC001", # incompatible with formatter
-    
+
     # Additional ignore rules for existing codebase - can be addressed gradually
     "ANN001",   # Missing type annotation for function argument
     "ANN201",   # Missing return type annotation for public function
     "ANN202",   # Missing return type annotation for private function
     "ANN204",   # Missing return type annotation for special method __init__
     "TC001",    # Move application import into type-checking block
-    "TC002",    # Move third-party import into type-checking block  
+    "TC002",    # Move third-party import into type-checking block
     "TC003",    # Move standard library import into type-checking block
-    
+
     # Documentation - can be addressed later (removed D107 to preserve # noqa comments)
     "D101",     # Missing docstring in public class
     "D105",     # Missing docstring in magic method
-    # "D107",   # Missing docstring in __init__ - removed to preserve existing # noqa: D107 comments
+    "D107",     # Missing docstring in __init__
     "D400",     # First line should end with a period
     "D401",     # First line of docstring should be in imperative mood
     "D415",     # First line should end with a period, question mark, or exclamation point    # TODO comments - existing ones can stay

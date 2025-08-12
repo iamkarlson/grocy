@@ -1,8 +1,10 @@
-"""Custom integration to integrate Grocy with Home Assistant.
+"""
+Custom integration to integrate Grocy with Home Assistant.
 
 For more details about this integration, please refer to
 https://github.com/custom-components/grocy
 """
+
 from __future__ import annotations
 
 import logging

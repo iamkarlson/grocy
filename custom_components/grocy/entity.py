@@ -1,4 +1,5 @@
 """Entity for Grocy."""
+
 from __future__ import annotations
 
 import json

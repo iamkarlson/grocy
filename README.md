@@ -23,9 +23,9 @@ The configuration is slightly different for those who use the [official Grocy ad
 ## HACS
 The easiest way to install this integration is with [HACS][hacs]. First, install [HACS][hacs-download] if you don't have it yet. In Home Assistant, go to `HACS`, click on 3 dot menu at the right top, choose "Custom repositories", and in fields below put a link to this repo "https://github.com/custom-components/grocy", and type select "Integration".
 
-New repository should appear in the list "Grocy custom component". Click on it, then press button at the bottom right "Download", then press "Download" in a new window, and finally restart Home Assistant (you should also get a "repair" notification in your Home Assistant Settings menu). 
+New repository should appear in the list "Grocy custom component". Click on it, then press button at the bottom right "Download", then press "Download" in a new window, and finally restart Home Assistant (you should also get a "repair" notification in your Home Assistant Settings menu).
 
-Install the [Grocy integration](https://my.home-assistant.io/redirect/config_flow_start/?domain=grocy). 
+Install the [Grocy integration](https://my.home-assistant.io/redirect/config_flow_start/?domain=grocy).
 Fill out the information according to [this instruction](#integration-configuration).
 
 Future integration updates will appear automatically within Home Assistant via HACS.

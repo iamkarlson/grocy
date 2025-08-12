@@ -2,18 +2,17 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
 
 from aiohttp import hdrs, web
-from pygrocy2.grocy import Grocy
-from pygrocy2.data_models.chore import Chore
-from pygrocy2.data_models.battery import Battery
-
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from pygrocy2.data_models.battery import Battery
+from pygrocy2.data_models.chore import Chore
+from pygrocy2.grocy_api_client import GrocyApiClient
 
 from .const import (
     ATTR_BATTERIES,
@@ -33,7 +32,7 @@ from .const import (
     CONF_PORT,
     CONF_URL,
 )
-from .helpers import ProductWrapper, MealPlanItemWrapper, extract_base_url_and_path
+from .helpers import MealPlanItemWrapper, ProductWrapper, extract_base_url_and_path
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +40,7 @@ _LOGGER = logging.getLogger(__name__)
 class GrocyData:
     """Handles communication and gets the data."""
 
-    def __init__(self, hass: HomeAssistant, api: grocy) -> None:  # noqa: D107
+    def __init__(self, hass: HomeAssistant, api: GrocyApiClient) -> None:
         """Initialize Grocy data."""
         self.hass = hass
         self.api = api
@@ -87,7 +86,6 @@ class GrocyData:
 
     async def async_update_overdue_chores(self):
         """Update overdue chores data."""
-
         query_filter = [f"next_estimated_execution_time<{datetime.now()}"]
 
         def wrapper():
@@ -105,12 +103,10 @@ class GrocyData:
 
     async def async_update_tasks(self):
         """Update tasks data."""
-
         return await self.hass.async_add_executor_job(self.api.tasks)
 
     async def async_update_overdue_tasks(self):
         """Update overdue tasks data."""
-
         and_query_filter = [
             f"due_date<{datetime.now().date()}",
             # It's not possible to pass an empty value to Grocy
@@ -166,7 +162,6 @@ class GrocyData:
 
     async def async_update_meal_plan(self):
         """Update meal plan data."""
-
         # The >= condition is broken before Grocy 3.3.1.
         # So use > to maintain backward compatibility.
         yesterday = datetime.now() - timedelta(1)
@@ -223,7 +218,7 @@ class GrocyPictureView(HomeAssistantView):
     url = "/api/grocy/{picture_type}/{filename}"
     name = "api:grocy:picture"
 
-    def __init__(self, session, base_url, api_key) -> None:  # noqa: D107
+    def __init__(self, session, base_url, api_key) -> None:
         self._session = session
         self._base_url = base_url
         self._api_key = api_key
