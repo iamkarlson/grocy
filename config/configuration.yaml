@@ -1,5 +1,12 @@
 default_config:
 
+# Enable remote debugging
+debugpy:
+  host: localhost
+  port: 5678
+  start: true
+  wait: false
+
 logger:
   default: info
   logs:
