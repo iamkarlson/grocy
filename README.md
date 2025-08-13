@@ -81,6 +81,8 @@ If you use the [official Grocy add-on](https://github.com/hassio-addons/addon-gr
 You get a sensor each for chores, meal plan, shopping list, stock, tasks and batteries.
 You get a binary sensor each for overdue, expired, expiring and missing products and for overdue tasks, overdue chores and overdue batteries.
 
+If you enable a certain entity (like *todo*), you should also enable a sensor. Otherwise, you may have errors in Home Assistant stating that the "entity is unknown".
+
 
 # Services
 
