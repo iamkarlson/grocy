@@ -14,7 +14,7 @@
                     "url": "Grocy API-URL (bijv. \"http:\/\/yourgrocyurl.com\")",
                     "verify_ssl": "SSL-certificaat verifiëren"
                 },
-                "description": "Als je hulp nodig hebt bij de configuratie, kijk dan hier: https:\/\/github.com\/custom-components\/grocy",
+                "description": "Als je hulp nodig hebt bij de configuratie, kijk dan hier: https:\/\/github.com\/iamkarlson\/grocy",
                 "title": "Grocy"
             }
         },

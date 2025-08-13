@@ -14,7 +14,7 @@
                     "url": "Adresa URL a API-ului Grocy (de exemplu, „http:\/\/yourgrocyurl.com”)",
                     "verify_ssl": "Verificați certificatul SSL"
                 },
-                "description": "Dacă aveți nevoie de ajutor cu configurarea, aruncați o privire aici: https:\/\/github.com\/custom-components\/grocy",
+                "description": "Dacă aveți nevoie de ajutor cu configurarea, aruncați o privire aici: https:\/\/github.com\/iamkarlson\/grocy",
                 "title": "Grocy"
             }
         },

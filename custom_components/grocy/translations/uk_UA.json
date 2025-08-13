@@ -14,7 +14,7 @@
                     "url": "URL-адреса Grocy API (наприклад, \"http:\/\/yourgrocyurl.com\")",
                     "verify_ssl": "Перевірте сертифікат SSL"
                 },
-                "description": "Якщо вам потрібна допомога з налаштуванням, подивіться тут: https:\/\/github.com\/custom-components\/grocy",
+                "description": "Якщо вам потрібна допомога з налаштуванням, подивіться тут: https:\/\/github.com\/iamkarlson\/grocy",
                 "title": "Grocy"
             }
         },

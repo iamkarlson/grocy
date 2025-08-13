@@ -14,7 +14,7 @@
                     "url": "Grocy API URL (npr. \"http:\/\/yourgrocyurl.com\")",
                     "verify_ssl": "Provjerite SSL certifikat."
                 },
-                "description": "Ako vam je potrebna pomoć oko konfiguracije, pogledajte ovdje: https:\/\/github.com\/custom-components\/grocy",
+                "description": "Ako vam je potrebna pomoć oko konfiguracije, pogledajte ovdje: https:\/\/github.com\/iamkarlson\/grocy",
                 "title": "Grocy"
             }
         },

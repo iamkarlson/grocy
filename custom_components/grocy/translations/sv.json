@@ -14,7 +14,7 @@
                     "url": "Grocy API URL (t.ex. \"http:\/\/yourgrocyurl.se\")",
                     "verify_ssl": "Verifiera SSL certifikat"
                 },
-                "description": "Om du behöver hjälp med konfigurationen, kolla här: https:\/\/github.com\/custom-components\/grocy",
+                "description": "Om du behöver hjälp med konfigurationen, kolla här: https:\/\/github.com\/iamkarlson\/grocy",
                 "title": "Grocy"
             }
         },

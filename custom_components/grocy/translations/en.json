@@ -14,7 +14,7 @@
                     "url": "Grocy API URL (e.g. \"http:\/\/yourgrocyurl.com\")",
                     "verify_ssl": "Verify SSL Certificate"
                 },
-                "description": "If you need help with the configuration have a look here: https:\/\/github.com\/custom-components\/grocy",
+                "description": "If you need help with the configuration have a look here: https:\/\/github.com\/iamkarlson\/grocy",
                 "title": "Grocy"
             }
         },
