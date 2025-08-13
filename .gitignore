@@ -139,3 +139,5 @@ dmypy.json
 # Home Assistant configuration
 config/*
 !config/configuration.yaml
+.history/
+.github/copilot-instructions.md

@@ -6,13 +6,13 @@ import logging
 from datetime import datetime, timedelta
 
 from aiohttp import hdrs, web
-from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.http import HomeAssistantView
 from pygrocy2.data_models.battery import Battery
 from pygrocy2.data_models.chore import Chore
-from pygrocy2.grocy_api_client import GrocyApiClient
+from pygrocy2.grocy import Grocy
 
 from .const import (
     ATTR_BATTERIES,
@@ -40,7 +40,7 @@ _LOGGER = logging.getLogger(__name__)
 class GrocyData:
     """Handles communication and gets the data."""
 
-    def __init__(self, hass: HomeAssistant, api: GrocyApiClient) -> None:
+    def __init__(self, hass: HomeAssistant, api: Grocy) -> None:
         """Initialize Grocy data."""
         self.hass = hass
         self.api = api
@@ -198,7 +198,7 @@ async def async_setup_endpoint_for_image_proxy(
     """Do setup and register the image api for grocy images with HA."""
     session = async_get_clientsession(hass)
 
-    url = config_entry.get(CONF_URL)
+    url = config_entry.get(CONF_URL) or ""
     (grocy_base_url, grocy_path) = extract_base_url_and_path(url)
     api_key = config_entry.get(CONF_API_KEY)
     port_number = config_entry.get(CONF_PORT)
