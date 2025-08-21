@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Attach to Home Assistant",
+            "type": "debugpy",
+            "request": "attach",
+            "connect": {
+                "port": 5678,
+                "host": "localhost"
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}/custom_components",
+                    "remoteRoot": "/workspaces/grocy-custom-component/custom_components"
+                }
+            ],
+            "justMyCode": false,
+            "subProcess": true,
+            "showReturnValue": true
+        }
+    ]
+}
