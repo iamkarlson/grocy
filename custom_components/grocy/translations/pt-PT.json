@@ -14,8 +14,10 @@
                     "url": "Link AP da Grocy (e.g. \"http:\/\/yourgrocyurl.com\")",
                     "verify_ssl": "Verificar o certificado SSL Certificate"
                 },
+                "description": "Se precisar de ajuda com a configuração, dê uma vista de olhos aqui: https:\/\/github.com\/iamkarlson\/grocy",
                 "title": "Ligar a tua instância Grocy "
             }
-        }
+        },
+        "title": "Grocy"
     }
 }
