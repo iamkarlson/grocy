@@ -21,6 +21,33 @@ code .
 
 The container mounts your local code as a volume, so file changes persist. Terminal runs inside the container with all dependencies available.
 
+### Local Development Setup
+
+The easiest way to contribute in this repo using devcontainer as you will have all the tools. However, you may still need a few things running outside of the container like `uv` and `pre-commit`
+
+#### uv
+
+This project uses [uv](https://docs.astral.sh/uv/) for Python package management. Install uv following the [official installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+
+```bash
+# Install dependencies
+uv sync
+
+# Install pre-commit hooks
+uv run pre-commit install
+```
+
+#### Pre-commit hooks
+
+Pre-commit hooks run automatic checks on your code before each commit. In the pipeline, `pre-commit` is run on all files to ensure that code is verified even if you pushed with `--no-verify` option.
+
+```bash
+# Run hooks manually on all files
+uv run pre-commit run --all-files
+```
+
+The hooks include code formatting with Ruff and other quality checks defined in `.pre-commit-config.yaml`.
+
 ### Debugging
 
 The project includes debugpy configuration. Start Home Assistant (`scripts/develop`), then attach VSCode debugger (`F5` → "Python: Attach to Home Assistant"). Set breakpoints in `custom_components/grocy/` files.
