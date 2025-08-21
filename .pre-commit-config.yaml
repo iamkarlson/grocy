@@ -33,3 +33,10 @@ repos:
         language: system
         files: ^custom_components/.*/manifest\.json$
         pass_filenames: false
+
+      - id: validate-translations
+        name: Validate translation completeness
+        entry: uv run python scripts/validate_translations.py
+        language: system
+        files: ^custom_components/.*/translations/.*\.json$
+        pass_filenames: false

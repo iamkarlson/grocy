@@ -1,21 +1,21 @@
 {
     "config": {
-        "step": {
-            "user": {
-                "title": "Ligar a tua instância Grocy ",
-                "data": {
-                    "url": "Link AP da Grocy (e.g. \"http://yourgrocyurl.com\")",
-                    "api_key": "Grocy chave da API",
-                    "port": "Número da Porta (9192)",
-                    "verify_ssl": "Verificar o certificado SSL Certificate"
-                }
-            }
+        "abort": {
+            "single_instance_allowed": "Apenas uma configuração do Grocy é permitida."
         },
         "error": {
             "auth": "Algo correu mal."
         },
-        "abort": {
-            "single_instance_allowed": "Apenas uma configuração do Grocy é permitida."
+        "step": {
+            "user": {
+                "data": {
+                    "api_key": "Grocy chave da API",
+                    "port": "Número da Porta (9192)",
+                    "url": "Link AP da Grocy (e.g. \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Verificar o certificado SSL Certificate"
+                },
+                "title": "Ligar a tua instância Grocy "
+            }
         }
     }
 }
