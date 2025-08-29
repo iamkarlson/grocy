@@ -5,7 +5,18 @@
             "label": "Run Home Assistant on port 8123",
             "type": "shell",
             "command": "scripts/develop",
-            "problemMatcher": []
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "homeassistant",
+                "pattern": {
+                    "regexp": "."
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": ".*Home Assistant.*started.*|.*Serving on.*"
+                }
+            }
         },
         {
             "label": "Rerun setup",
