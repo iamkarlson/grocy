@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import logging
 
+from aiohttp import ClientConnectorError
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 
 from .const import (
     ATTR_BATTERIES,
@@ -42,10 +44,21 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     _LOGGER.info(STARTUP_MESSAGE)
 
     coordinator: GrocyDataUpdateCoordinator = GrocyDataUpdateCoordinator(hass)
-    coordinator.available_entities = await _async_get_available_entities(
-        coordinator.grocy_data
-    )
-    await coordinator.async_config_entry_first_refresh()
+
+    try:
+        coordinator.available_entities = await _async_get_available_entities(
+            coordinator.grocy_data
+        )
+        await coordinator.async_config_entry_first_refresh()
+    except (
+        ConnectionRefusedError,
+        ClientConnectorError,
+        OSError,
+        TimeoutError,
+    ) as error:
+        _LOGGER.warning("Unable to connect to Grocy: %s", error)
+        raise ConfigEntryNotReady(f"Unable to connect to Grocy: {error}") from error
+
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN] = coordinator
 
