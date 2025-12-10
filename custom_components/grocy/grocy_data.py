@@ -208,20 +208,23 @@ async def async_setup_endpoint_for_image_proxy(
         grocy_full_url = f"{grocy_base_url}:{port_number}"
 
     _LOGGER.debug("Generated image api url to grocy: '%s'", grocy_full_url)
-    hass.http.register_view(GrocyPictureView(session, grocy_full_url, api_key))
+    # Use entry_id to create unique view per instance
+    view = GrocyPictureView(session, grocy_full_url, api_key, config_entry.entry_id)
+    hass.http.register_view(view)
 
 
 class GrocyPictureView(HomeAssistantView):
     """View to render pictures from grocy without auth."""
 
     requires_auth = False
-    url = "/api/grocy/{picture_type}/{filename}"
-    name = "api:grocy:picture"
 
-    def __init__(self, session, base_url, api_key) -> None:
+    def __init__(self, session, base_url, api_key, entry_id: str) -> None:
         self._session = session
         self._base_url = base_url
         self._api_key = api_key
+        # Make URL and name unique per instance
+        self.url = f"/api/grocy/{entry_id}/{{picture_type}}/{{filename}}"
+        self.name = f"api:grocy:picture:{entry_id}"
 
     async def get(self, request, picture_type: str, filename: str) -> web.Response:
         """GET request for the image."""
