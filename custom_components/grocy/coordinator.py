@@ -86,7 +86,29 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
 
     async def _async_update_data(self) -> GrocyCoordinatorData:
         """Fetch data."""
-        data = GrocyCoordinatorData()
+        # Start with current data to prevent entities from going unavailable during update
+        current_data = self.data
+        if current_data is None:
+            # First update - start with empty data
+            data = GrocyCoordinatorData()
+        else:
+            # Preserve existing data during update to prevent unavailable state
+            data = GrocyCoordinatorData(
+                batteries=current_data.batteries,
+                chores=current_data.chores,
+                expired_products=current_data.expired_products,
+                expiring_products=current_data.expiring_products,
+                meal_plan=current_data.meal_plan,
+                missing_products=current_data.missing_products,
+                overdue_batteries=current_data.overdue_batteries,
+                overdue_chores=current_data.overdue_chores,
+                overdue_products=current_data.overdue_products,
+                overdue_tasks=current_data.overdue_tasks,
+                shopping_list=current_data.shopping_list,
+                stock=current_data.stock,
+                tasks=current_data.tasks,
+            )
+        
         for entity in self.entities:
             if not entity.enabled:
                 _LOGGER.debug("Entity %s is disabled", entity.entity_id)
