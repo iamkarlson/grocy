@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -10,6 +12,8 @@ from pygrocy2.grocy_api_client import TransactionType
 
 from .const import ATTR_CHORES, ATTR_TASKS, DOMAIN
 from .coordinator import GrocyDataUpdateCoordinator
+
+_LOGGER = logging.getLogger(__name__)
 
 SERVICE_PRODUCT_ID = "product_id"
 SERVICE_AMOUNT = "amount"
@@ -29,6 +33,7 @@ SERVICE_RECIPE_ID = "recipe_id"
 SERVICE_BATTERY_ID = "battery_id"
 SERVICE_OBJECT_ID = "object_id"
 SERVICE_LIST_ID = "list_id"
+SERVICE_INSTANCE_ID = "grocy_instance"
 
 SERVICE_ADD_PRODUCT = "add_product_to_stock"
 SERVICE_OPEN_PRODUCT = "open_product"
@@ -49,7 +54,9 @@ SERVICE_ADD_PRODUCT_SCHEMA = vol.All(
             vol.Required(SERVICE_PRODUCT_ID): vol.Coerce(int),
             vol.Required(SERVICE_AMOUNT): vol.Coerce(float),
             vol.Optional(SERVICE_PRICE): str,
-        }
+            vol.Optional(SERVICE_INSTANCE_ID): str,
+        },
+        extra=vol.ALLOW_EXTRA,
     )
 )
 
@@ -59,7 +66,9 @@ SERVICE_OPEN_PRODUCT_SCHEMA = vol.All(
             vol.Required(SERVICE_PRODUCT_ID): vol.Coerce(int),
             vol.Required(SERVICE_AMOUNT): vol.Coerce(float),
             vol.Optional(SERVICE_SUBPRODUCT_SUBSTITUTION): bool,
-        }
+            vol.Optional(SERVICE_INSTANCE_ID): str,
+        },
+        extra=vol.ALLOW_EXTRA,
     )
 )
 
@@ -71,7 +80,9 @@ SERVICE_CONSUME_PRODUCT_SCHEMA = vol.All(
             vol.Optional(SERVICE_SPOILED): bool,
             vol.Optional(SERVICE_SUBPRODUCT_SUBSTITUTION): bool,
             vol.Optional(SERVICE_TRANSACTION_TYPE): str,
-        }
+            vol.Optional(SERVICE_INSTANCE_ID): str,
+        },
+        extra=vol.ALLOW_EXTRA,
     )
 )
 
@@ -82,7 +93,9 @@ SERVICE_EXECUTE_CHORE_SCHEMA = vol.All(
             vol.Optional(SERVICE_DONE_BY): vol.Coerce(int),
             vol.Optional(SERVICE_EXECUTION_NOW): bool,
             vol.Optional(SERVICE_SKIPPED): bool,
-        }
+            vol.Optional(SERVICE_INSTANCE_ID): str,
+        },
+        extra=vol.ALLOW_EXTRA,
     )
 )
 
@@ -90,7 +103,9 @@ SERVICE_COMPLETE_TASK_SCHEMA = vol.All(
     vol.Schema(
         {
             vol.Required(SERVICE_TASK_ID): vol.Coerce(int),
-        }
+            vol.Optional(SERVICE_INSTANCE_ID): str,
+        },
+        extra=vol.ALLOW_EXTRA,
     )
 )
 
@@ -99,7 +114,9 @@ SERVICE_ADD_GENERIC_SCHEMA = vol.All(
         {
             vol.Required(SERVICE_ENTITY_TYPE): str,
             vol.Required(SERVICE_DATA): object,
-        }
+            vol.Optional(SERVICE_INSTANCE_ID): str,
+        },
+        extra=vol.ALLOW_EXTRA,
     )
 )
 
@@ -109,7 +126,9 @@ SERVICE_UPDATE_GENERIC_SCHEMA = vol.All(
             vol.Required(SERVICE_ENTITY_TYPE): str,
             vol.Required(SERVICE_OBJECT_ID): vol.Coerce(int),
             vol.Required(SERVICE_DATA): object,
-        }
+            vol.Optional(SERVICE_INSTANCE_ID): str,
+        },
+        extra=vol.ALLOW_EXTRA,
     )
 )
 
@@ -118,7 +137,9 @@ SERVICE_DELETE_GENERIC_SCHEMA = vol.All(
         {
             vol.Required(SERVICE_ENTITY_TYPE): str,
             vol.Required(SERVICE_OBJECT_ID): vol.Coerce(int),
-        }
+            vol.Optional(SERVICE_INSTANCE_ID): str,
+        },
+        extra=vol.ALLOW_EXTRA,
     )
 )
 
@@ -126,7 +147,9 @@ SERVICE_CONSUME_RECIPE_SCHEMA = vol.All(
     vol.Schema(
         {
             vol.Required(SERVICE_RECIPE_ID): vol.Coerce(int),
-        }
+            vol.Optional(SERVICE_INSTANCE_ID): str,
+        },
+        extra=vol.ALLOW_EXTRA,
     )
 )
 
@@ -134,7 +157,9 @@ SERVICE_TRACK_BATTERY_SCHEMA = vol.All(
     vol.Schema(
         {
             vol.Required(SERVICE_BATTERY_ID): vol.Coerce(int),
-        }
+            vol.Optional(SERVICE_INSTANCE_ID): str,
+        },
+        extra=vol.ALLOW_EXTRA,
     )
 )
 
@@ -142,7 +167,9 @@ SERVICE_ADD_MISSING_PRODUCTS_TO_SHOPPING_LIST_SCHEMA = vol.All(
     vol.Schema(
         {
             vol.Optional(SERVICE_LIST_ID): vol.Coerce(int),
-        }
+            vol.Optional(SERVICE_INSTANCE_ID): str,
+        },
+        extra=vol.ALLOW_EXTRA,
     )
 )
 
@@ -152,7 +179,9 @@ SERVICE_REMOVE_PRODUCT_IN_SHOPPING_LIST_SCHEMA = vol.All(
             vol.Required(SERVICE_PRODUCT_ID): vol.Coerce(int),
             vol.Optional(SERVICE_LIST_ID): vol.Coerce(int),
             vol.Required(SERVICE_AMOUNT): vol.Coerce(float),
-        }
+            vol.Optional(SERVICE_INSTANCE_ID): str,
+        },
+        extra=vol.ALLOW_EXTRA,
     )
 )
 
@@ -178,19 +207,54 @@ SERVICES_WITH_ACCOMPANYING_SCHEMA: list[tuple[str, vol.Schema]] = [
 ]
 
 
+def _get_coordinator(
+    hass: HomeAssistant, instance_id: str | None = None
+) -> GrocyDataUpdateCoordinator | None:
+    """Get coordinator for the specified instance or first available."""
+    if DOMAIN not in hass.data:
+        return None
+    
+    coordinators = hass.data[DOMAIN]
+    
+    # Handle migration from old structure (direct coordinator) to new (dict)
+    if not isinstance(coordinators, dict):
+        # Old structure: hass.data[DOMAIN] is a coordinator directly
+        if instance_id:
+            # Can't get specific instance from old structure
+            return None
+        return coordinators
+    
+    if not coordinators:
+        return None
+    
+    if instance_id:
+        return coordinators.get(instance_id)
+    
+    # Return first available coordinator for backward compatibility
+    return next(iter(coordinators.values()))
+
+
 async def async_setup_services(
     hass: HomeAssistant,
     config_entry: ConfigEntry,  # pylint: disable=unused-argument
 ) -> None:
     """Set up services for Grocy integration."""
-    coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
+    # Only register services once
     if hass.services.async_services().get(DOMAIN):
         return
 
     async def async_call_grocy_service(service_call: ServiceCall) -> None:
         """Call correct Grocy service."""
         service = service_call.service
-        service_data = service_call.data
+        service_data = service_call.data.copy()  # Make a copy to avoid modifying original
+        
+        # Get instance_id from service data if provided
+        instance_id = service_data.pop(SERVICE_INSTANCE_ID, None)
+        coordinator = _get_coordinator(hass, instance_id)
+        
+        if coordinator is None:
+            _LOGGER.error("No Grocy instance available")
+            return
 
         if service == SERVICE_ADD_PRODUCT:
             await async_add_product_service(hass, coordinator, service_data)
@@ -236,13 +300,13 @@ async def async_setup_services(
         hass.services.async_register(DOMAIN, service, async_call_grocy_service, schema)
 
 
-async def async_unload_services(hass: HomeAssistant) -> None:
+async def async_unload_services(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
     """Unload Grocy services."""
-    if not hass.services.async_services().get(DOMAIN):
-        return
-
-    for service, _ in SERVICES_WITH_ACCOMPANYING_SCHEMA:
-        hass.services.async_remove(DOMAIN, service)
+    # Only unload services if this is the last instance
+    if DOMAIN not in hass.data or not hass.data[DOMAIN]:
+        if hass.services.async_services().get(DOMAIN):
+            for service, _ in SERVICES_WITH_ACCOMPANYING_SCHEMA:
+                hass.services.async_remove(DOMAIN, service)
 
 
 async def async_add_product_service(

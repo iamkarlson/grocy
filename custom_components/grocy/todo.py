@@ -68,7 +68,25 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ):
     """Do setup todo platform."""
-    coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
+    # Handle both old and new structures for backward compatibility
+    if DOMAIN not in hass.data:
+        _LOGGER.error("Grocy integration not initialized")
+        return
+    
+    domain_data = hass.data[DOMAIN]
+    
+    # Handle old structure (direct coordinator) - should be migrated in __init__.py
+    if not isinstance(domain_data, dict):
+        if hasattr(domain_data, "config_entry") and domain_data.config_entry.entry_id == config_entry.entry_id:
+            coordinator = domain_data
+        else:
+            _LOGGER.error("Coordinator not found for entry %s (old structure)", config_entry.entry_id)
+            return
+    else:
+        coordinator = domain_data.get(config_entry.entry_id)
+        if coordinator is None:
+            _LOGGER.error("Coordinator not found for entry %s", config_entry.entry_id)
+            return
     entities = []
     for description in TODOS:
         if description.exists_fn(coordinator.available_entities):

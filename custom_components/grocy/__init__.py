@@ -43,7 +43,19 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Set up this integration using UI."""
     _LOGGER.info(STARTUP_MESSAGE)
 
-    coordinator: GrocyDataUpdateCoordinator = GrocyDataUpdateCoordinator(hass)
+    # Migrate old structure (direct coordinator) to new structure (dict by entry_id)
+    if DOMAIN in hass.data and not isinstance(hass.data[DOMAIN], dict):
+        _LOGGER.info("Migrating from old single-instance structure to multi-instance structure")
+        old_coordinator = hass.data[DOMAIN]
+        # If the old coordinator has a config_entry, migrate it
+        if hasattr(old_coordinator, "config_entry") and old_coordinator.config_entry:
+            old_entry_id = old_coordinator.config_entry.entry_id
+            hass.data[DOMAIN] = {old_entry_id: old_coordinator}
+        else:
+            # Can't migrate without entry_id, start fresh
+            hass.data[DOMAIN] = {}
+
+    coordinator: GrocyDataUpdateCoordinator = GrocyDataUpdateCoordinator(hass, config_entry)
 
     try:
         coordinator.available_entities = await _async_get_available_entities(
@@ -60,7 +72,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         raise ConfigEntryNotReady(f"Unable to connect to Grocy: {error}") from error
 
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN] = coordinator
+    hass.data[DOMAIN][config_entry.entry_id] = coordinator
 
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
     await async_setup_services(hass, config_entry)
@@ -71,11 +83,14 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    await async_unload_services(hass)
+    await async_unload_services(hass, config_entry)
     if unloaded := await hass.config_entries.async_unload_platforms(
         config_entry, PLATFORMS
     ):
-        del hass.data[DOMAIN]
+        hass.data[DOMAIN].pop(config_entry.entry_id, None)
+        # Clean up if no more instances
+        if not hass.data[DOMAIN]:
+            del hass.data[DOMAIN]
 
     return unloaded
 

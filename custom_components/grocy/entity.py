@@ -9,7 +9,7 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, NAME, VERSION
+from .const import CONF_URL, DOMAIN, NAME, VERSION
 from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
 from .json_encoder import CustomJSONEncoder
 
@@ -32,9 +32,11 @@ class GrocyEntity(CoordinatorEntity[GrocyDataUpdateCoordinator]):
     @property
     def device_info(self) -> DeviceInfo:
         """Grocy device information."""
+        url = self.coordinator.config_entry.data.get(CONF_URL, "")
+        device_name = f"{NAME} ({url})" if url else NAME
         return DeviceInfo(
             identifiers={(DOMAIN, self.coordinator.config_entry.entry_id)},
-            name=NAME,
+            name=device_name,
             manufacturer=NAME,
             sw_version=VERSION,
             entry_type=DeviceEntryType.SERVICE,

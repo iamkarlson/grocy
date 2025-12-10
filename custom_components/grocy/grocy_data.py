@@ -198,10 +198,10 @@ async def async_setup_endpoint_for_image_proxy(
     """Do setup and register the image api for grocy images with HA."""
     session = async_get_clientsession(hass)
 
-    url = config_entry.get(CONF_URL) or ""
+    url = config_entry.data.get(CONF_URL) or ""
     (grocy_base_url, grocy_path) = extract_base_url_and_path(url)
-    api_key = config_entry.get(CONF_API_KEY)
-    port_number = config_entry.get(CONF_PORT)
+    api_key = config_entry.data.get(CONF_API_KEY)
+    port_number = config_entry.data.get(CONF_PORT)
     if grocy_path:
         grocy_full_url = f"{grocy_base_url}:{port_number}/{grocy_path}"
     else:

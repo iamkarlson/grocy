@@ -36,9 +36,6 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self._errors = {}
         _LOGGER.debug("Step user")
 
-        if self._async_current_entries():
-            return self.async_abort(reason="single_instance_allowed")
-
         if user_input is not None:
             valid = await self._test_credentials(
                 user_input[CONF_URL],
@@ -49,7 +46,10 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.debug("Testing of credentials returned: ")
             _LOGGER.debug(valid)
             if valid:
-                return self.async_create_entry(title=NAME, data=user_input)
+                # Use URL as part of title to make each instance unique
+                url = user_input[CONF_URL]
+                title = f"{NAME} ({url})"
+                return self.async_create_entry(title=title, data=user_input)
 
             self._errors["base"] = "auth"
             return await self._show_config_form(user_input)
