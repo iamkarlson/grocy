@@ -35,7 +35,7 @@ from .const import (
 )
 from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
 from .entity import GrocyEntity
-from .helpers import MealPlanItemWrapper
+from .helpers import MealPlanItemWrapper, ProductWrapper
 from .services import (
     SERVICE_AMOUNT,
     SERVICE_BATTERY_ID,
@@ -160,6 +160,7 @@ class GrocyTodoItem(TodoItem):
         | MealPlanItem
         | MealPlanItemWrapper
         | Product
+        | ProductWrapper
         | ShoppingListProduct
         | Task
         | None = None,
@@ -204,6 +205,17 @@ class GrocyTodoItem(TodoItem):
                 due=due,
                 status=_calculate_item_status(days_until),
                 description=item.meal_plan.recipe.description or None,
+            )
+        elif isinstance(item, ProductWrapper):
+            product = item.product
+            super().__init__(
+                uid=product.id.__str__(),
+                summary=f"{product.available_amount:.2f}x {product.name}",
+                status=TodoItemStatus.NEEDS_ACTION
+                if (product.available_amount or 0) > 0
+                else TodoItemStatus.COMPLETED,
+                # TODO, the description attribute isn't pulled for products in pygrocy
+                description=None,
             )
         elif isinstance(item, Product):
             super().__init__(
@@ -272,7 +284,11 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
         return [
             item
             for item in entity_data
-            if (item.id if hasattr(item, "id") else item.meal_plan.id).__str__()
+            if (
+                item.product.id if isinstance(item, ProductWrapper)
+                else item.id if hasattr(item, "id")
+                else item.meal_plan.id
+            ).__str__()
             == item_id
         ][0] or None
 
@@ -396,12 +412,13 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
         elif self.entity_description.key == ATTR_STOCK:
             if item.status == TodoItemStatus.COMPLETED:
                 grocy_item = self._get_grocy_item(item.uid)
+                amount = grocy_item.product.available_amount if isinstance(grocy_item, ProductWrapper) else grocy_item.available_amount
                 await async_consume_product_service(
                     self.hass,
                     self.coordinator,
                     {
                         SERVICE_PRODUCT_ID: item.uid,
-                        SERVICE_AMOUNT: grocy_item.available_amount,
+                        SERVICE_AMOUNT: amount,
                     },
                 )
             else:
