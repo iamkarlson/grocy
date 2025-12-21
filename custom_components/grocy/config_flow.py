@@ -57,7 +57,7 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         config_entry: config_entries.ConfigEntry,
     ) -> "GrocyOptionsFlowHandler":
         """Get the options flow for this handler."""
-        return GrocyOptionsFlowHandler(config_entry)
+        return GrocyOptionsFlowHandler()
 
     async def async_step_reauth(self, user_input=None):
         """Perform reauth upon an API authentication error."""
@@ -230,9 +230,9 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 class GrocyOptionsFlowHandler(config_entries.OptionsFlow):
     """Options flow for Grocy."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+    def __init__(self) -> None:
         """Initialize options flow."""
-        self.config_entry = config_entry
+        super().__init__()
         self._errors = {}
 
     async def async_step_init(self, user_input=None):
