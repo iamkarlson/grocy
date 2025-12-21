@@ -75,13 +75,15 @@ class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
         await super().async_added_to_hass()
-        # Fetch iCal URL on startup
-        await self._fetch_ical_url()
+        # Fetch iCal URL on startup (don't fail if it errors)
+        try:
+            await self._fetch_ical_url()
+        except Exception as error:
+            _LOGGER.warning("Error fetching iCal URL during startup: %s", error)
         # Set up periodic updates
         self._schedule_update()
         # Ensure entity is marked as available
         self._attr_available = True
-        self.async_write_ha_state()
 
     async def async_will_remove_from_hass(self) -> None:
         """When entity will be removed from hass."""
@@ -277,4 +279,11 @@ class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
         except Exception as error:
             _LOGGER.error("Error parsing iCal data: %s", error)
             self._events = []
+
+    @property
+    def extra_state_attributes(self) -> dict | None:
+        """Return the extra state attributes."""
+        # Calendar entity doesn't use coordinator data, so return None
+        # to avoid accessing coordinator.data["calendar"] which doesn't exist
+        return None
 
