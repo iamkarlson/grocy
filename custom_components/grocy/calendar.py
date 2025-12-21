@@ -95,14 +95,22 @@ class GrocyCalendarEntity(CalendarEntity):
     def event(self) -> CalendarEvent | None:
         """Return the next upcoming event."""
         now = dt_util.utcnow()
-        # Sort events by start time and find the first upcoming event
-        upcoming_events = [
-            event for event in self._events if event.start >= now
-        ]
-        if not upcoming_events:
+        # Find events that are currently happening or upcoming
+        # An event is "current" if now is between start and end
+        # An event is "upcoming" if start is in the future
+        current_or_upcoming = []
+        for event in self._events:
+            # Event is current if now is between start and end
+            if event.start <= now <= event.end:
+                current_or_upcoming.append(event)
+            # Event is upcoming if start is in the future
+            elif event.start > now:
+                current_or_upcoming.append(event)
+        
+        if not current_or_upcoming:
             return None
-        # Return the earliest upcoming event
-        return min(upcoming_events, key=lambda e: e.start)
+        # Return the earliest event (current or upcoming)
+        return min(current_or_upcoming, key=lambda e: e.start)
 
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
@@ -263,7 +271,10 @@ class GrocyCalendarEntity(CalendarEntity):
                     return
 
                 ical_data = await response.text()
-                calendar = icalendar.Calendar.from_ical(ical_data)
+                # Run icalendar parsing in executor to avoid blocking I/O
+                calendar = await self.hass.async_add_executor_job(
+                    icalendar.Calendar.from_ical, ical_data
+                )
 
                 events: list[CalendarEvent] = []
 
