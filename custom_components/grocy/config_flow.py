@@ -53,7 +53,7 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     async def async_get_options_flow(
         config_entry: config_entries.ConfigEntry,
-    ) -> GrocyOptionsFlowHandler:
+    ) -> "GrocyOptionsFlowHandler":
         """Get the options flow for this handler."""
         return GrocyOptionsFlowHandler(config_entry)
 
