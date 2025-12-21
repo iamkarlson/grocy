@@ -10,6 +10,7 @@
             "user": {
                 "data": {
                     "api_key": "Grocy API-sleutel",
+                    "calendar_sync_interval": "Kalendersynchronisatie-interval (minuten)",
                     "port": "Poortnummer (9192)",
                     "url": "Grocy API-URL (bijv. \"http:\/\/yourgrocyurl.com\")",
                     "verify_ssl": "SSL-certificaat verifiëren"

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 import icalendar
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -85,6 +85,10 @@ class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
         """Schedule the next update."""
         if self._unsub_update:
             self._unsub_update()
+        # Get current sync interval from config entry
+        self._sync_interval_minutes = self.coordinator.config_entry.data.get(
+            CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
+        )
         interval = timedelta(minutes=self._sync_interval_minutes)
         self._unsub_update = async_track_time_interval(
             self.hass, self._async_update_calendar, interval

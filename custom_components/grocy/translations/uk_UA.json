@@ -10,6 +10,7 @@
             "user": {
                 "data": {
                     "api_key": "Ключ Grocy API",
+                    "calendar_sync_interval": "Інтервал синхронізації календаря (хвилини)",
                     "port": "Номер порту (9192)",
                     "url": "URL-адреса Grocy API (наприклад, \"http:\/\/yourgrocyurl.com\")",
                     "verify_ssl": "Перевірте сертифікат SSL"

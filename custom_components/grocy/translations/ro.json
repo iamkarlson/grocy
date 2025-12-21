@@ -10,8 +10,9 @@
             "user": {
                 "data": {
                     "api_key": "Cheie API Grocy",
+                    "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
                     "port": "Număr port (9192)",
-                    "url": "Adresa URL a API-ului Grocy (de exemplu, „http:\/\/yourgrocyurl.com”)",
+                    "url": "Adresa URL a API-ului Grocy (de exemplu, „http:\/\/yourgrocyurl.com")",
                     "verify_ssl": "Verificați certificatul SSL"
                 },
                 "description": "Dacă aveți nevoie de ajutor cu configurarea, aruncați o privire aici: https:\/\/github.com\/iamkarlson\/grocy",

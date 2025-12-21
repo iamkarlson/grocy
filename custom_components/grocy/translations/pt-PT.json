@@ -10,6 +10,7 @@
             "user": {
                 "data": {
                     "api_key": "Grocy chave da API",
+                    "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
                     "port": "Número da Porta (9192)",
                     "url": "Link AP da Grocy (e.g. \"http:\/\/yourgrocyurl.com\")",
                     "verify_ssl": "Verificar o certificado SSL Certificate"

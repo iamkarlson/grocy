@@ -51,6 +51,13 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             )
         return True
 
+    @staticmethod
+    async def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> GrocyOptionsFlowHandler:
+        """Get the options flow for this handler."""
+        return GrocyOptionsFlowHandler(config_entry)
+
     def __init__(self):
         """Initialize."""
         self._errors = {}
@@ -129,3 +136,46 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         except Exception as error:  # pylint: disable=broad-except
             _LOGGER.error(error)
         return False
+
+
+class GrocyOptionsFlowHandler(config_entries.OptionsFlow):
+    """Options flow for Grocy."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
+        self._errors = {}
+
+    async def async_step_init(self, user_input=None):
+        """Manage the options."""
+        if user_input is not None:
+            # Update the config entry data with new options
+            new_data = {**self.config_entry.data}
+            new_data[CONF_CALENDAR_SYNC_INTERVAL] = user_input[CONF_CALENDAR_SYNC_INTERVAL]
+            
+            # Update the config entry
+            self.hass.config_entries.async_update_entry(
+                self.config_entry, data=new_data
+            )
+            
+            # Reload the integration to apply changes
+            await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+            
+            return self.async_create_entry(title="", data=user_input)
+
+        # Show options form with current values
+        data_schema = OrderedDict()
+        data_schema[
+            vol.Optional(
+                CONF_CALENDAR_SYNC_INTERVAL,
+                default=self.config_entry.data.get(
+                    CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
+                ),
+            )
+        ] = int
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(data_schema),
+            errors=self._errors,
+        )
