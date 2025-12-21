@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import icalendar
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
@@ -15,6 +15,7 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.util import dt as dt_util
 
 from .const import (
     CONF_API_KEY,
@@ -124,11 +125,13 @@ class GrocyCalendarEntity(CalendarEntity):
                 return
 
         # Update events for a wide range (e.g., 1 year back, 1 year forward)
-        start_date = datetime.now() - timedelta(days=365)
-        end_date = datetime.now() + timedelta(days=365)
+        # Use timezone-aware datetime
+        now_utc = dt_util.utcnow()
+        start_date = now_utc - timedelta(days=365)
+        end_date = now_utc + timedelta(days=365)
         try:
             await self._update_events(start_date, end_date)
-            self._last_update = datetime.now()
+            self._last_update = dt_util.utcnow()
             self._attr_available = True
             self.async_write_ha_state()
         except Exception as error:
@@ -159,7 +162,14 @@ class GrocyCalendarEntity(CalendarEntity):
             should_refresh = True
         else:
             # Refresh if last update was more than sync interval ago
-            time_since_update = datetime.now() - self._last_update
+            # Use timezone-aware datetime
+            now_utc = dt_util.utcnow()
+            if self._last_update.tzinfo is None:
+                # If last_update is naive, assume UTC
+                last_update_utc = self._last_update.replace(tzinfo=timezone.utc)
+            else:
+                last_update_utc = self._last_update
+            time_since_update = now_utc - last_update_utc
             if time_since_update >= timedelta(minutes=self._sync_interval_minutes):
                 should_refresh = True
 
@@ -250,10 +260,14 @@ class GrocyCalendarEntity(CalendarEntity):
                             # Handle both date and datetime
                             if isinstance(start.dt, datetime):
                                 event_start = start.dt
+                                # Ensure timezone-aware
+                                if event_start.tzinfo is None:
+                                    # Assume UTC if no timezone info
+                                    event_start = event_start.replace(tzinfo=timezone.utc)
                             else:
-                                # Date-only events
+                                # Date-only events - convert to datetime at midnight UTC
                                 event_start = datetime.combine(
-                                    start.dt, datetime.min.time()
+                                    start.dt, datetime.min.time(), tzinfo=timezone.utc
                                 )
 
                             # Filter events within the requested time range
@@ -261,9 +275,14 @@ class GrocyCalendarEntity(CalendarEntity):
                                 if end:
                                     if isinstance(end.dt, datetime):
                                         event_end = end.dt
+                                        # Ensure timezone-aware
+                                        if event_end.tzinfo is None:
+                                            # Assume UTC if no timezone info
+                                            event_end = event_end.replace(tzinfo=timezone.utc)
                                     else:
+                                        # Date-only end - convert to datetime at end of day UTC
                                         event_end = datetime.combine(
-                                            end.dt, datetime.max.time()
+                                            end.dt, datetime.max.time(), tzinfo=timezone.utc
                                         )
                                 else:
                                     # If no end time, assume 1 hour duration
