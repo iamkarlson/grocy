@@ -11,7 +11,8 @@ from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.entity import EntityDescription
+from homeassistant.helpers.device_registry import DeviceEntryType
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 
@@ -23,9 +24,10 @@ from .const import (
     CONF_VERIFY_SSL,
     DEFAULT_CALENDAR_SYNC_INTERVAL,
     DOMAIN,
+    NAME,
+    VERSION,
 )
 from .coordinator import GrocyDataUpdateCoordinator
-from .entity import GrocyEntity
 from .helpers import extract_base_url_and_path
 
 _LOGGER = logging.getLogger(__name__)
@@ -39,29 +41,23 @@ async def async_setup_entry(
     """Set up Grocy calendar platform."""
     coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
 
-    # Create a simple EntityDescription for the calendar
-    # The iCal calendar includes all events: chores, tasks, meal plans, products, etc.
-    description = EntityDescription(
-        key="calendar",
-        name="Grocy calendar",
-        icon="mdi:calendar",
-    )
-    entity = GrocyCalendarEntity(coordinator, description, config_entry)
+    entity = GrocyCalendarEntity(coordinator, config_entry)
     coordinator.entities.append(entity)
     async_add_entities([entity], True)
 
 
-class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
+class GrocyCalendarEntity(CalendarEntity):
     """Grocy calendar entity definition."""
 
     def __init__(
         self,
         coordinator: GrocyDataUpdateCoordinator,
-        description: EntityDescription,
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize the calendar entity."""
-        super().__init__(coordinator, description, config_entry)
+        super().__init__()
+        self._coordinator = coordinator
+        self._config_entry = config_entry
         self._ical_url: str | None = None
         self._events: list[CalendarEvent] = []
         self._sync_interval_minutes: int = config_entry.data.get(
@@ -69,12 +65,26 @@ class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
         )
         self._unsub_update: Callable[[], None] | None = None
         self._last_update: datetime | None = None
-        # Calendar entity is available independently of coordinator
+
+        # Entity attributes
+        self._attr_name = "Grocy calendar"
+        self._attr_unique_id = f"{config_entry.entry_id}calendar"
         self._attr_available = True
+        self._attr_icon = "mdi:calendar"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Grocy device information."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._config_entry.entry_id)},
+            name=NAME,
+            manufacturer=NAME,
+            sw_version=VERSION,
+            entry_type=DeviceEntryType.SERVICE,
+        )
 
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
-        await super().async_added_to_hass()
         # Fetch iCal URL on startup (don't fail if it errors)
         try:
             await self._fetch_ical_url()
@@ -82,22 +92,19 @@ class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
             _LOGGER.warning("Error fetching iCal URL during startup: %s", error)
         # Set up periodic updates
         self._schedule_update()
-        # Ensure entity is marked as available
-        self._attr_available = True
 
     async def async_will_remove_from_hass(self) -> None:
         """When entity will be removed from hass."""
         if self._unsub_update:
             self._unsub_update()
             self._unsub_update = None
-        await super().async_will_remove_from_hass()
 
     def _schedule_update(self) -> None:
         """Schedule the next update."""
         if self._unsub_update:
             self._unsub_update()
         # Get current sync interval from config entry
-        self._sync_interval_minutes = self.coordinator.config_entry.data.get(
+        self._sync_interval_minutes = self._config_entry.data.get(
             CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
         )
         interval = timedelta(minutes=self._sync_interval_minutes)
@@ -176,10 +183,10 @@ class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
     async def _fetch_ical_url(self) -> None:
         """Fetch the iCal sharing link from Grocy API."""
         try:
-            url = self.coordinator.config_entry.data[CONF_URL]
-            api_key = self.coordinator.config_entry.data[CONF_API_KEY]
-            port = self.coordinator.config_entry.data.get(CONF_PORT, 9192)
-            verify_ssl = self.coordinator.config_entry.data.get(CONF_VERIFY_SSL, False)
+            url = self._config_entry.data[CONF_URL]
+            api_key = self._config_entry.data[CONF_API_KEY]
+            port = self._config_entry.data.get(CONF_PORT, 9192)
+            verify_ssl = self._config_entry.data.get(CONF_VERIFY_SSL, False)
 
             (base_url, path) = extract_base_url_and_path(url)
 
@@ -279,11 +286,3 @@ class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
         except Exception as error:
             _LOGGER.error("Error parsing iCal data: %s", error)
             self._events = []
-
-    @property
-    def extra_state_attributes(self) -> dict | None:
-        """Return the extra state attributes."""
-        # Calendar entity doesn't use coordinator data, so return None
-        # to avoid accessing coordinator.data["calendar"] which doesn't exist
-        return None
-
