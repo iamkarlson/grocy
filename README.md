@@ -78,6 +78,19 @@ If you use the [official Grocy add-on](https://github.com/hassio-addons/addon-gr
 
 **All entities are disabled by default.** Enable the entities you want to use in Home Assistant.
 
+### Editing Integration Settings
+
+To edit connection settings (URL, API Key, Port, etc.) after initial setup:
+
+1. Go to **Settings → Devices & Services**
+2. Find the **Grocy** integration
+3. Click the **three dots menu** (⋮) next to the integration
+4. Select **"Configure"**
+5. Update any settings (URL, API Key, Port, Verify SSL, Calendar Sync Interval)
+6. Click **"Submit"** - the integration will automatically reload with new settings
+
+**Note:** The "Edit" button only allows changing the integration name and area. Use "Configure" to edit connection settings.
+
 
 # Entities
 

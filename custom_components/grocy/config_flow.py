@@ -26,31 +26,31 @@ from .helpers import extract_base_url_and_path
 _LOGGER = logging.getLogger(__name__)
 
 
+async def async_migrate_entry(
+    hass: HomeAssistant, config_entry: config_entries.ConfigEntry
+) -> bool:
+    """Migrate old config entries."""
+    version = config_entry.version
+    if version == 1:
+        # Migrate from version 1 to 2: add calendar_sync_interval with default
+        new_data = {**config_entry.data}
+        new_data[CONF_CALENDAR_SYNC_INTERVAL] = DEFAULT_CALENDAR_SYNC_INTERVAL
+
+        hass.config_entries.async_update_entry(
+            config_entry, data=new_data, version=2
+        )
+        _LOGGER.info(
+            "Migrated config entry from version %s to version %s",
+            version,
+            2,
+        )
+    return True
+
+
 class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for Grocy."""
 
     VERSION = 2
-
-    @staticmethod
-    async def async_migrate_entry(
-        hass: HomeAssistant, config_entry: config_entries.ConfigEntry
-    ) -> bool:
-        """Migrate old config entries."""
-        version = config_entry.version
-        if version == 1:
-            # Migrate from version 1 to 2: add calendar_sync_interval with default
-            new_data = {**config_entry.data}
-            new_data[CONF_CALENDAR_SYNC_INTERVAL] = DEFAULT_CALENDAR_SYNC_INTERVAL
-
-            hass.config_entries.async_update_entry(
-                config_entry, data=new_data, version=2
-            )
-            _LOGGER.info(
-                "Migrated config entry from version %s to version %s",
-                version,
-                2,
-            )
-        return True
 
     @staticmethod
     async def async_get_options_flow(
@@ -59,9 +59,97 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Get the options flow for this handler."""
         return GrocyOptionsFlowHandler(config_entry)
 
+    async def async_step_reauth(self, user_input=None):
+        """Perform reauth upon an API authentication error."""
+        existing_entry = self._async_current_entries()[0]
+        self._reauth_entry = existing_entry
+
+        if user_input is None:
+            # Pre-fill with existing values
+            data_schema = OrderedDict()
+            data_schema[
+                vol.Required(
+                    CONF_URL, default=existing_entry.data.get(CONF_URL, "")
+                )
+            ] = str
+            data_schema[
+                vol.Required(
+                    CONF_API_KEY, default=existing_entry.data.get(CONF_API_KEY, "")
+                )
+            ] = str
+            data_schema[
+                vol.Optional(
+                    CONF_PORT, default=existing_entry.data.get(CONF_PORT, DEFAULT_PORT)
+                )
+            ] = int
+            data_schema[
+                vol.Optional(
+                    CONF_VERIFY_SSL,
+                    default=existing_entry.data.get(CONF_VERIFY_SSL, False),
+                )
+            ] = bool
+
+            return self.async_show_form(
+                step_id="reauth",
+                data_schema=vol.Schema(data_schema),
+                errors=self._errors,
+            )
+
+        # Validate credentials
+        valid = await self._test_credentials(
+            user_input[CONF_URL],
+            user_input[CONF_API_KEY],
+            user_input[CONF_PORT],
+            user_input[CONF_VERIFY_SSL],
+        )
+
+        if not valid:
+            self._errors["base"] = "auth"
+            # Re-show form with errors
+            data_schema = OrderedDict()
+            data_schema[
+                vol.Required(
+                    CONF_URL, default=user_input.get(CONF_URL, "")
+                )
+            ] = str
+            data_schema[
+                vol.Required(
+                    CONF_API_KEY, default=user_input.get(CONF_API_KEY, "")
+                )
+            ] = str
+            data_schema[
+                vol.Optional(
+                    CONF_PORT, default=user_input.get(CONF_PORT, DEFAULT_PORT)
+                )
+            ] = int
+            data_schema[
+                vol.Optional(
+                    CONF_VERIFY_SSL,
+                    default=user_input.get(CONF_VERIFY_SSL, False),
+                )
+            ] = bool
+            return self.async_show_form(
+                step_id="reauth",
+                data_schema=vol.Schema(data_schema),
+                errors=self._errors,
+            )
+
+        # Update the config entry with new credentials
+        new_data = {**existing_entry.data}
+        new_data[CONF_URL] = user_input[CONF_URL]
+        new_data[CONF_API_KEY] = user_input[CONF_API_KEY]
+        new_data[CONF_PORT] = user_input[CONF_PORT]
+        new_data[CONF_VERIFY_SSL] = user_input[CONF_VERIFY_SSL]
+
+        self.hass.config_entries.async_update_entry(existing_entry, data=new_data)
+        await self.hass.config_entries.async_reload(existing_entry.entry_id)
+
+        return self.async_abort(reason="reauth_successful")
+
     def __init__(self):
         """Initialize."""
         self._errors = {}
+        self._reauth_entry: config_entries.ConfigEntry | None = None
 
     async def async_step_user(self, user_input=None):
         """Handle a flow initialized by the user."""
