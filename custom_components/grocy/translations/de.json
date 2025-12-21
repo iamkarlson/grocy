@@ -25,7 +25,11 @@
         "step": {
             "init": {
                 "data": {
-                    "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)"
+                    "api_key": "Grocy API Schlüssel",
+                    "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
+                    "port": "Portnummer (9192)",
+                    "url": "Grocy API URL",
+                    "verify_ssl": "SSL-Zertifikat verifizieren"
                 },
                 "description": "Grocy-Integrationsoptionen konfigurieren.",
                 "title": "Grocy-Optionen"

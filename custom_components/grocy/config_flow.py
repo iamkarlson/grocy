@@ -148,27 +148,93 @@ class GrocyOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         """Manage the options."""
         if user_input is not None:
+            # Validate credentials if URL or API key changed
+            url_changed = user_input[CONF_URL] != self.config_entry.data.get(CONF_URL)
+            api_key_changed = user_input[CONF_API_KEY] != self.config_entry.data.get(CONF_API_KEY)
+            port_changed = user_input[CONF_PORT] != self.config_entry.data.get(CONF_PORT)
+            verify_ssl_changed = user_input[CONF_VERIFY_SSL] != self.config_entry.data.get(
+                CONF_VERIFY_SSL, False
+            )
+
+            if url_changed or api_key_changed or port_changed or verify_ssl_changed:
+                # Test credentials before saving
+                valid = await self._test_credentials(
+                    user_input[CONF_URL],
+                    user_input[CONF_API_KEY],
+                    user_input[CONF_PORT],
+                    user_input[CONF_VERIFY_SSL],
+                )
+                if not valid:
+                    self._errors["base"] = "auth"
+                    return await self._show_options_form(user_input)
+
             # Update the config entry data with new options
             new_data = {**self.config_entry.data}
+            new_data[CONF_URL] = user_input[CONF_URL]
+            new_data[CONF_API_KEY] = user_input[CONF_API_KEY]
+            new_data[CONF_PORT] = user_input[CONF_PORT]
+            new_data[CONF_VERIFY_SSL] = user_input[CONF_VERIFY_SSL]
             new_data[CONF_CALENDAR_SYNC_INTERVAL] = user_input[CONF_CALENDAR_SYNC_INTERVAL]
-            
+
             # Update the config entry
             self.hass.config_entries.async_update_entry(
                 self.config_entry, data=new_data
             )
-            
+
             # Reload the integration to apply changes
             await self.hass.config_entries.async_reload(self.config_entry.entry_id)
-            
+
             return self.async_create_entry(title="", data=user_input)
+
+        return await self._show_options_form()
+
+    async def _show_options_form(self, user_input=None):
+        """Show the options form."""
+        if user_input is None:
+            user_input = {}
 
         # Show options form with current values
         data_schema = OrderedDict()
         data_schema[
+            vol.Required(
+                CONF_URL,
+                default=user_input.get(
+                    CONF_URL, self.config_entry.data.get(CONF_URL, "")
+                ),
+            )
+        ] = str
+        data_schema[
+            vol.Required(
+                CONF_API_KEY,
+                default=user_input.get(
+                    CONF_API_KEY, self.config_entry.data.get(CONF_API_KEY, "")
+                ),
+            )
+        ] = str
+        data_schema[
+            vol.Optional(
+                CONF_PORT,
+                default=user_input.get(
+                    CONF_PORT, self.config_entry.data.get(CONF_PORT, DEFAULT_PORT)
+                ),
+            )
+        ] = int
+        data_schema[
+            vol.Optional(
+                CONF_VERIFY_SSL,
+                default=user_input.get(
+                    CONF_VERIFY_SSL, self.config_entry.data.get(CONF_VERIFY_SSL, False)
+                ),
+            )
+        ] = bool
+        data_schema[
             vol.Optional(
                 CONF_CALENDAR_SYNC_INTERVAL,
-                default=self.config_entry.data.get(
-                    CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
+                default=user_input.get(
+                    CONF_CALENDAR_SYNC_INTERVAL,
+                    self.config_entry.data.get(
+                        CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
+                    ),
                 ),
             )
         ] = int
@@ -178,3 +244,25 @@ class GrocyOptionsFlowHandler(config_entries.OptionsFlow):
             data_schema=vol.Schema(data_schema),
             errors=self._errors,
         )
+
+    async def _test_credentials(self, url, api_key, port, verify_ssl):
+        """Return true if credentials is valid."""
+        try:
+            from .helpers import extract_base_url_and_path
+
+            (base_url, path) = extract_base_url_and_path(url)
+            client = Grocy(
+                base_url, api_key, port=port, path=path, verify_ssl=verify_ssl
+            )
+
+            _LOGGER.debug("Testing credentials")
+
+            def system_info():
+                """Get system information from Grocy."""
+                return client.get_system_info()
+
+            await self.hass.async_add_executor_job(system_info)
+            return True
+        except Exception as error:  # pylint: disable=broad-except
+            _LOGGER.error(error)
+        return False

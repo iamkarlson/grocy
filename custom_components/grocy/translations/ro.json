@@ -25,7 +25,11 @@
         "step": {
             "init": {
                 "data": {
-                    "calendar_sync_interval": "Interval de sincronizare calendar (minute)"
+                    "api_key": "Cheie API Grocy",
+                    "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
+                    "port": "Număr port (9192)",
+                    "url": "Adresa URL a API-ului Grocy (de exemplu, „http:\/\/yourgrocyurl.com")",
+                    "verify_ssl": "Verificați certificatul SSL"
                 },
                 "description": "Configurați opțiunile de integrare Grocy.",
                 "title": "Opțiuni Grocy"
