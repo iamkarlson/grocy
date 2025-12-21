@@ -12,7 +12,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import DeviceEntryType
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.util import dt as dt_util
@@ -73,6 +73,13 @@ class GrocyCalendarEntity(CalendarEntity):
         self._attr_available = True
         self._attr_icon = "mdi:calendar"
 
+        # Add entity_description for coordinator compatibility
+        # (even though calendar doesn't use coordinator data)
+        self.entity_description = EntityDescription(
+            key="calendar",
+            name="Grocy calendar",
+        )
+
     @property
     def device_info(self) -> DeviceInfo:
         """Grocy device information."""
@@ -83,6 +90,19 @@ class GrocyCalendarEntity(CalendarEntity):
             sw_version=VERSION,
             entry_type=DeviceEntryType.SERVICE,
         )
+
+    @property
+    def event(self) -> CalendarEvent | None:
+        """Return the next upcoming event."""
+        now = dt_util.utcnow()
+        # Sort events by start time and find the first upcoming event
+        upcoming_events = [
+            event for event in self._events if event.start >= now
+        ]
+        if not upcoming_events:
+            return None
+        # Return the earliest upcoming event
+        return min(upcoming_events, key=lambda e: e.start)
 
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
@@ -263,42 +283,49 @@ class GrocyCalendarEntity(CalendarEntity):
                                 # Ensure timezone-aware
                                 if event_start.tzinfo is None:
                                     # Assume UTC if no timezone info
-                                    event_start = event_start.replace(tzinfo=timezone.utc)
+                                    event_start = event_start.replace(
+                                        tzinfo=timezone.utc
+                                    )
                             else:
                                 # Date-only events - convert to datetime at midnight UTC
                                 event_start = datetime.combine(
                                     start.dt, datetime.min.time(), tzinfo=timezone.utc
                                 )
 
-                            # Filter events within the requested time range
-                            if start_date <= event_start <= end_date:
-                                if end:
-                                    if isinstance(end.dt, datetime):
-                                        event_end = end.dt
-                                        # Ensure timezone-aware
-                                        if event_end.tzinfo is None:
-                                            # Assume UTC if no timezone info
-                                            event_end = event_end.replace(tzinfo=timezone.utc)
-                                    else:
-                                        # Date-only end - convert to datetime at end of day UTC
-                                        event_end = datetime.combine(
-                                            end.dt, datetime.max.time(), tzinfo=timezone.utc
+                            # Don't filter here - cache all events, filter when needed
+                            if end:
+                                if isinstance(end.dt, datetime):
+                                    event_end = end.dt
+                                    # Ensure timezone-aware
+                                    if event_end.tzinfo is None:
+                                        # Assume UTC if no timezone info
+                                        event_end = event_end.replace(
+                                            tzinfo=timezone.utc
                                         )
                                 else:
-                                    # If no end time, assume 1 hour duration
-                                    event_end = event_start + timedelta(hours=1)
-
-                                events.append(
-                                    CalendarEvent(
-                                        summary=summary,
-                                        start=event_start,
-                                        end=event_end,
-                                        description=description,
-                                        location=location,
-                                        uid=uid,
+                                    # Date-only end - convert to datetime at end of day UTC
+                                    event_end = datetime.combine(
+                                        end.dt,
+                                        datetime.max.time(),
+                                        tzinfo=timezone.utc,
                                     )
-                                )
+                            else:
+                                # If no end time, assume 1 hour duration
+                                event_end = event_start + timedelta(hours=1)
 
+                            events.append(
+                                CalendarEvent(
+                                    summary=summary,
+                                    start=event_start,
+                                    end=event_end,
+                                    description=description,
+                                    location=location,
+                                    uid=uid,
+                                )
+                            )
+
+                # Sort events by start time for better performance
+                events.sort(key=lambda e: e.start)
                 self._events = events
                 _LOGGER.debug("Fetched %d calendar events", len(events))
 

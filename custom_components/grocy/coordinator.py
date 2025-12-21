@@ -93,6 +93,10 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
                 _LOGGER.debug("Entity %s is disabled", entity.entity_id)
                 continue
 
+            # Skip calendar entity - it doesn't use coordinator data
+            if not hasattr(entity, "entity_description") or entity.entity_description.key == "calendar":
+                continue
+
             try:
                 data[
                     entity.entity_description.key
