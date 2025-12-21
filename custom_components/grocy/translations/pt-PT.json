@@ -20,5 +20,16 @@
             }
         },
         "title": "Grocy"
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)"
+                },
+                "description": "Configurar opções de integração do Grocy.",
+                "title": "Opções do Grocy"
+            }
+        }
     }
 }

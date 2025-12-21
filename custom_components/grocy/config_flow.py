@@ -28,7 +28,6 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for Grocy."""
 
     VERSION = 2
-    CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
     @staticmethod
     async def async_migrate_entry(
