@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import icalendar
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
@@ -96,11 +96,12 @@ class GrocyCalendarEntity(CalendarEntity):
         """Return the next upcoming event."""
         now = dt_util.utcnow()
         # Find events that are currently happening or upcoming
-        # An event is "current" if now is between start and end
+        # An event is "current" if now is between start and end (inclusive)
         # An event is "upcoming" if start is in the future
         current_or_upcoming = []
         for event in self._events:
-            # Event is current if now is between start and end
+            # Event is current if now is between start and end (inclusive)
+            # For all-day events, start is 00:00:00 and end is 23:59:59 of the day
             if event.start <= now <= event.end:
                 current_or_upcoming.append(event)
             # Event is upcoming if start is in the future
@@ -288,6 +289,9 @@ class GrocyCalendarEntity(CalendarEntity):
                         uid = str(component.get("uid", ""))
 
                         if start:
+                            # Check if this is a date-only (all-day) event
+                            is_all_day = not isinstance(start.dt, datetime)
+                            
                             # Handle both date and datetime
                             if isinstance(start.dt, datetime):
                                 event_start = start.dt
@@ -298,7 +302,7 @@ class GrocyCalendarEntity(CalendarEntity):
                                         tzinfo=timezone.utc
                                     )
                             else:
-                                # Date-only events - convert to datetime at midnight UTC
+                                # Date-only events (all-day) - convert to datetime at start of day UTC
                                 event_start = datetime.combine(
                                     start.dt, datetime.min.time(), tzinfo=timezone.utc
                                 )
@@ -314,15 +318,37 @@ class GrocyCalendarEntity(CalendarEntity):
                                             tzinfo=timezone.utc
                                         )
                                 else:
-                                    # Date-only end - convert to datetime at end of day UTC
+                                    # Date-only end - for all-day events, end date is exclusive
+                                    # In iCal, if an event is on Dec 21, end date is Dec 22
+                                    # So we subtract 1 day and set to end of that day
+                                    end_date = end.dt
+                                    if isinstance(end_date, date):
+                                        # End date is exclusive, so subtract 1 day for the actual end
+                                        # Then set to end of that day (23:59:59.999999)
+                                        actual_end_date = end_date - timedelta(days=1)
+                                        event_end = datetime.combine(
+                                            actual_end_date,
+                                            datetime.max.time(),
+                                            tzinfo=timezone.utc,
+                                        )
+                                    else:
+                                        # Shouldn't happen, but handle it
+                                        event_end = datetime.combine(
+                                            end_date,
+                                            datetime.max.time(),
+                                            tzinfo=timezone.utc,
+                                        )
+                            else:
+                                if is_all_day:
+                                    # All-day event with no end - ends at end of start day
                                     event_end = datetime.combine(
-                                        end.dt,
+                                        start.dt,
                                         datetime.max.time(),
                                         tzinfo=timezone.utc,
                                     )
-                            else:
-                                # If no end time, assume 1 hour duration
-                                event_end = event_start + timedelta(hours=1)
+                                else:
+                                    # If no end time, assume 1 hour duration
+                                    event_end = event_start + timedelta(hours=1)
 
                             events.append(
                                 CalendarEvent(
