@@ -35,5 +35,22 @@
                 "title": "Параметри Grocy"
             }
         }
+    },
+    "reauth": {
+        "step": {
+            "reauth": {
+                "data": {
+                    "api_key": "Ключ Grocy API",
+                    "port": "Номер порту (9192)",
+                    "url": "URL-адреса Grocy API (наприклад, \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Перевірте сертифікат SSL"
+                },
+                "description": "Оновіть налаштування підключення Grocy.",
+                "title": "Повторна автентифікація Grocy"
+            }
+        },
+        "abort": {
+            "reauth_successful": "Повторна автентифікація успішна"
+        }
     }
 }

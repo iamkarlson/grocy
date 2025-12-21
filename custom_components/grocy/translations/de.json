@@ -35,5 +35,22 @@
                 "title": "Grocy-Optionen"
             }
         }
+    },
+    "reauth": {
+        "step": {
+            "reauth": {
+                "data": {
+                    "api_key": "Grocy API Schlüssel",
+                    "port": "Portnummer (9192)",
+                    "url": "Grocy API URL",
+                    "verify_ssl": "SSL-Zertifikat verifizieren"
+                },
+                "description": "Aktualisieren Sie Ihre Grocy-Verbindungseinstellungen.",
+                "title": "Grocy erneut authentifizieren"
+            }
+        },
+        "abort": {
+            "reauth_successful": "Erneute Authentifizierung erfolgreich"
+        }
     }
 }

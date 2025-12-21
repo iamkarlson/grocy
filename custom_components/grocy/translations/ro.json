@@ -35,5 +35,22 @@
                 "title": "Opțiuni Grocy"
             }
         }
+    },
+    "reauth": {
+        "step": {
+            "reauth": {
+                "data": {
+                    "api_key": "Cheie API Grocy",
+                    "port": "Număr port (9192)",
+                    "url": "Adresa URL a API-ului Grocy (de exemplu, „http:\/\/yourgrocyurl.com")",
+                    "verify_ssl": "Verificați certificatul SSL"
+                },
+                "description": "Actualizați setările de conexiune Grocy.",
+                "title": "Reautentificare Grocy"
+            }
+        },
+        "abort": {
+            "reauth_successful": "Reautentificare reușită"
+        }
     }
 }

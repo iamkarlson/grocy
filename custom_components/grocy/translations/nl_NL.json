@@ -35,5 +35,22 @@
                 "title": "Grocy-opties"
             }
         }
+    },
+    "reauth": {
+        "step": {
+            "reauth": {
+                "data": {
+                    "api_key": "Grocy API-sleutel",
+                    "port": "Poortnummer (9192)",
+                    "url": "Grocy API-URL (bijv. \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "SSL-certificaat verifiëren"
+                },
+                "description": "Werk uw Grocy-verbindingsinstellingen bij.",
+                "title": "Grocy opnieuw authenticeren"
+            }
+        },
+        "abort": {
+            "reauth_successful": "Herauthenticatie succesvol"
+        }
     }
 }

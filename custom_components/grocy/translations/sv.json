@@ -35,5 +35,22 @@
                 "title": "Grocy-alternativ"
             }
         }
+    },
+    "reauth": {
+        "step": {
+            "reauth": {
+                "data": {
+                    "api_key": "Grocy API nyckel",
+                    "port": "Portnummer (9192)",
+                    "url": "Grocy API URL (t.ex. \"http:\/\/yourgrocyurl.se\")",
+                    "verify_ssl": "Verifiera SSL certifikat"
+                },
+                "description": "Uppdatera dina Grocy-anslutningsinställningar.",
+                "title": "Återautentisera Grocy"
+            }
+        },
+        "abort": {
+            "reauth_successful": "Återautentisering lyckades"
+        }
     }
 }
