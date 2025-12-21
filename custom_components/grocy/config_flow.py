@@ -5,13 +5,16 @@ from collections import OrderedDict
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.core import HomeAssistant
 from pygrocy2.grocy import Grocy
 
 from .const import (
     CONF_API_KEY,
+    CONF_CALENDAR_SYNC_INTERVAL,
     CONF_PORT,
     CONF_URL,
     CONF_VERIFY_SSL,
+    DEFAULT_CALENDAR_SYNC_INTERVAL,
     DEFAULT_PORT,
     DOMAIN,
     NAME,
@@ -24,8 +27,29 @@ _LOGGER = logging.getLogger(__name__)
 class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for Grocy."""
 
-    VERSION = 1
+    VERSION = 2
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
+
+    @staticmethod
+    async def async_migrate_entry(
+        hass: HomeAssistant, config_entry: config_entries.ConfigEntry
+    ) -> bool:
+        """Migrate old config entries."""
+        version = config_entry.version
+        if version == 1:
+            # Migrate from version 1 to 2: add calendar_sync_interval with default
+            new_data = {**config_entry.data}
+            new_data[CONF_CALENDAR_SYNC_INTERVAL] = DEFAULT_CALENDAR_SYNC_INTERVAL
+
+            hass.config_entries.async_update_entry(
+                config_entry, data=new_data, version=2
+            )
+            _LOGGER.info(
+                "Migrated config entry from version %s to version %s",
+                version,
+                2,
+            )
+        return True
 
     def __init__(self):
         """Initialize."""
@@ -49,6 +73,11 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.debug("Testing of credentials returned: ")
             _LOGGER.debug(valid)
             if valid:
+                # Set default calendar sync interval if not provided
+                if CONF_CALENDAR_SYNC_INTERVAL not in user_input:
+                    user_input[CONF_CALENDAR_SYNC_INTERVAL] = (
+                        DEFAULT_CALENDAR_SYNC_INTERVAL
+                    )
                 return self.async_create_entry(title=NAME, data=user_input)
 
             self._errors["base"] = "auth"
@@ -68,6 +97,11 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         ] = str
         data_schema[vol.Optional(CONF_PORT, default=DEFAULT_PORT)] = int
         data_schema[vol.Optional(CONF_VERIFY_SSL, default=False)] = bool
+        data_schema[
+            vol.Optional(
+                CONF_CALENDAR_SYNC_INTERVAL, default=DEFAULT_CALENDAR_SYNC_INTERVAL
+            )
+        ] = int
         _LOGGER.debug("config form")
 
         return self.async_show_form(

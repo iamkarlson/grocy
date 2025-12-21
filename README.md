@@ -69,6 +69,10 @@ If you use the [official Grocy add-on](https://github.com/hassio-addons/addon-gr
   - `9192` for Grocy add-on (without https)
   - `80` for http or `443` for https (or your custom port)
 - **Verify SSL**: Check if using HTTPS with valid certificate
+- **Calendar Sync Interval**: How often to sync calendar events from Grocy (in minutes)
+  - Default: `5` minutes
+  - The calendar includes all events: chores, tasks, meal plans, products, etc.
+  - Lower values provide more frequent updates but may increase API usage
 
 ![Integration Configuration](grocy-integration-config.png)
 
@@ -80,8 +84,21 @@ If you use the [official Grocy add-on](https://github.com/hassio-addons/addon-gr
 **All entities are disabled from the start. You have to manually enable the entities you want to use in Home Assistant.**
 You get a sensor each for chores, meal plan, shopping list, stock, tasks and batteries.
 You get a binary sensor each for overdue, expired, expiring and missing products and for overdue tasks, overdue chores and overdue batteries.
+You get a calendar entity (`calendar.grocy_calendar`) that displays all Grocy events including chores, tasks, meal plans, products, and more.
 
 If you enable a certain entity (like *todo*), you should also enable a sensor. Otherwise, you may have errors in Home Assistant stating that the "entity is unknown".
+
+## Calendar Entity
+
+The calendar entity (`calendar.grocy_calendar`) provides a Home Assistant calendar that syncs with your Grocy instance's iCal feed. It includes:
+
+- **Chores**: Upcoming chore executions
+- **Tasks**: Task due dates
+- **Meal Plans**: Planned meals
+- **Products**: Product expiration dates and other product-related events
+- **All other Grocy calendar events**
+
+The calendar automatically syncs at the interval configured during setup (default: 5 minutes). You can view and interact with the calendar through Home Assistant's calendar interface, use it in automations, and integrate it with other calendar integrations.
 
 
 # Services

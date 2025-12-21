@@ -1,0 +1,259 @@
+"""Calendar platform for Grocy."""
+
+from __future__ import annotations
+
+import logging
+from collections.abc import Callable
+from datetime import datetime, timedelta
+
+import icalendar
+from homeassistant.components.calendar import CalendarEntity, CalendarEvent
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.entity import EntityDescription
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.event import async_track_time_interval
+
+from .const import (
+    CONF_CALENDAR_SYNC_INTERVAL,
+    DEFAULT_CALENDAR_SYNC_INTERVAL,
+    DOMAIN,
+)
+from .coordinator import GrocyDataUpdateCoordinator
+from .entity import GrocyEntity
+from .helpers import extract_base_url_and_path
+
+_LOGGER = logging.getLogger(__name__)
+
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up Grocy calendar platform."""
+    coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
+
+    # Create a simple EntityDescription for the calendar
+    # The iCal calendar includes all events: chores, tasks, meal plans, products, etc.
+    description = EntityDescription(
+        key="calendar",
+        name="Grocy calendar",
+        icon="mdi:calendar",
+    )
+    entity = GrocyCalendarEntity(coordinator, description, config_entry)
+    coordinator.entities.append(entity)
+    async_add_entities([entity], True)
+
+
+class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
+    """Grocy calendar entity definition."""
+
+    def __init__(
+        self,
+        coordinator: GrocyDataUpdateCoordinator,
+        description: EntityDescription,
+        config_entry: ConfigEntry,
+    ) -> None:
+        """Initialize the calendar entity."""
+        super().__init__(coordinator, description, config_entry)
+        self._ical_url: str | None = None
+        self._events: list[CalendarEvent] = []
+        self._sync_interval_minutes: int = config_entry.data.get(
+            CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
+        )
+        self._unsub_update: Callable[[], None] | None = None
+        self._last_update: datetime | None = None
+
+    async def async_added_to_hass(self) -> None:
+        """When entity is added to hass."""
+        await super().async_added_to_hass()
+        # Fetch iCal URL on startup
+        await self._fetch_ical_url()
+        # Set up periodic updates
+        self._schedule_update()
+
+    async def async_will_remove_from_hass(self) -> None:
+        """When entity will be removed from hass."""
+        if self._unsub_update:
+            self._unsub_update()
+            self._unsub_update = None
+        await super().async_will_remove_from_hass()
+
+    def _schedule_update(self) -> None:
+        """Schedule the next update."""
+        if self._unsub_update:
+            self._unsub_update()
+        interval = timedelta(minutes=self._sync_interval_minutes)
+        self._unsub_update = async_track_time_interval(
+            self.hass, self._async_update_calendar, interval
+        )
+
+    async def _async_update_calendar(self, now: datetime) -> None:
+        """Update calendar events periodically."""
+        if not self._ical_url:
+            await self._fetch_ical_url()
+            if not self._ical_url:
+                return
+
+        # Update events for a wide range (e.g., 1 year back, 1 year forward)
+        start_date = datetime.now() - timedelta(days=365)
+        end_date = datetime.now() + timedelta(days=365)
+        try:
+            await self._update_events(start_date, end_date)
+            self._last_update = datetime.now()
+            self.async_write_ha_state()
+        except Exception as error:
+            _LOGGER.error("Error updating calendar events: %s", error)
+
+    async def async_get_events(
+        self,
+        hass: HomeAssistant,
+        start_date: datetime,
+        end_date: datetime,
+    ) -> list[CalendarEvent]:
+        """Get all events in a specific time frame."""
+        if not self._ical_url:
+            await self._fetch_ical_url()
+
+        if not self._ical_url:
+            _LOGGER.warning("Unable to fetch iCal URL from Grocy")
+            return []
+
+        # Check if we need to refresh events
+        should_refresh = False
+        if not self._events:
+            should_refresh = True
+        elif self._last_update is None:
+            should_refresh = True
+        else:
+            # Refresh if last update was more than sync interval ago
+            time_since_update = datetime.now() - self._last_update
+            if time_since_update >= timedelta(minutes=self._sync_interval_minutes):
+                should_refresh = True
+
+        if should_refresh:
+            # Expand range to ensure we have enough events cached
+            expanded_start = start_date - timedelta(days=30)
+            expanded_end = end_date + timedelta(days=30)
+            try:
+                await self._update_events(expanded_start, expanded_end)
+            except Exception as error:
+                _LOGGER.error("Error fetching calendar events: %s", error)
+
+        # Filter events to requested time range
+        filtered_events = [
+            event
+            for event in self._events
+            if start_date <= event.start <= end_date
+        ]
+        return filtered_events
+
+    async def _fetch_ical_url(self) -> None:
+        """Fetch the iCal sharing link from Grocy API."""
+        try:
+            url = self.coordinator.config_entry.data["url"]
+            api_key = self.coordinator.config_entry.data["api_key"]
+            port = self.coordinator.config_entry.data.get("port", 9192)
+            verify_ssl = self.coordinator.config_entry.data.get("verify_ssl", False)
+
+            (base_url, path) = extract_base_url_and_path(url)
+
+            if path:
+                api_url = (
+                    f"{base_url}:{port}/{path}/api/calendar/ical/sharing-link"
+                )
+            else:
+                api_url = f"{base_url}:{port}/api/calendar/ical/sharing-link"
+
+            headers = {
+                "GROCY-API-KEY": api_key,
+                "accept": "application/json",
+            }
+
+            session = async_get_clientsession(self.hass, verify_ssl=verify_ssl)
+
+            async with session.get(api_url, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self._ical_url = data.get("url")
+                    _LOGGER.debug("Fetched iCal URL: %s", self._ical_url)
+                else:
+                    _LOGGER.error(
+                        "Failed to fetch iCal URL: HTTP %s", response.status
+                    )
+        except Exception as error:
+            _LOGGER.error("Error fetching iCal URL: %s", error)
+
+    async def _update_events(
+        self, start_date: datetime, end_date: datetime
+    ) -> None:
+        """Update events from iCal URL."""
+        if not self._ical_url:
+            return
+
+        try:
+            session = async_get_clientsession(self.hass)
+            async with session.get(self._ical_url) as response:
+                if response.status != 200:
+                    _LOGGER.error(
+                        "Failed to fetch iCal data: HTTP %s", response.status
+                    )
+                    return
+
+                ical_data = await response.text()
+                calendar = icalendar.Calendar.from_ical(ical_data)
+
+                events: list[CalendarEvent] = []
+
+                for component in calendar.walk():
+                    if component.name == "VEVENT":
+                        summary = str(component.get("summary", ""))
+                        start = component.get("dtstart")
+                        end = component.get("dtend")
+                        description = str(component.get("description", ""))
+                        location = str(component.get("location", ""))
+                        uid = str(component.get("uid", ""))
+
+                        if start:
+                            # Handle both date and datetime
+                            if isinstance(start.dt, datetime):
+                                event_start = start.dt
+                            else:
+                                # Date-only events
+                                event_start = datetime.combine(
+                                    start.dt, datetime.min.time()
+                                )
+
+                            # Filter events within the requested time range
+                            if start_date <= event_start <= end_date:
+                                if end:
+                                    if isinstance(end.dt, datetime):
+                                        event_end = end.dt
+                                    else:
+                                        event_end = datetime.combine(
+                                            end.dt, datetime.max.time()
+                                        )
+                                else:
+                                    # If no end time, assume 1 hour duration
+                                    event_end = event_start + timedelta(hours=1)
+
+                                events.append(
+                                    CalendarEvent(
+                                        summary=summary,
+                                        start=event_start,
+                                        end=event_end,
+                                        description=description,
+                                        location=location,
+                                        uid=uid,
+                                    )
+                                )
+
+                self._events = events
+                _LOGGER.debug("Fetched %d calendar events", len(events))
+
+        except Exception as error:
+            _LOGGER.error("Error parsing iCal data: %s", error)
+            self._events = []
+
