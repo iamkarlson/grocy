@@ -16,7 +16,11 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 
 from .const import (
+    CONF_API_KEY,
     CONF_CALENDAR_SYNC_INTERVAL,
+    CONF_PORT,
+    CONF_URL,
+    CONF_VERIFY_SSL,
     DEFAULT_CALENDAR_SYNC_INTERVAL,
     DOMAIN,
 )
@@ -65,6 +69,8 @@ class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
         )
         self._unsub_update: Callable[[], None] | None = None
         self._last_update: datetime | None = None
+        # Calendar entity is available independently of coordinator
+        self._attr_available = True
 
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
@@ -73,6 +79,9 @@ class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
         await self._fetch_ical_url()
         # Set up periodic updates
         self._schedule_update()
+        # Ensure entity is marked as available
+        self._attr_available = True
+        self.async_write_ha_state()
 
     async def async_will_remove_from_hass(self) -> None:
         """When entity will be removed from hass."""
@@ -99,6 +108,10 @@ class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
         if not self._ical_url:
             await self._fetch_ical_url()
             if not self._ical_url:
+                # Still mark as available even if URL fetch fails
+                # The entity can retry later
+                self._attr_available = True
+                self.async_write_ha_state()
                 return
 
         # Update events for a wide range (e.g., 1 year back, 1 year forward)
@@ -107,9 +120,13 @@ class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
         try:
             await self._update_events(start_date, end_date)
             self._last_update = datetime.now()
+            self._attr_available = True
             self.async_write_ha_state()
         except Exception as error:
             _LOGGER.error("Error updating calendar events: %s", error)
+            # Keep entity available even on error, so it can retry
+            self._attr_available = True
+            self.async_write_ha_state()
 
     async def async_get_events(
         self,
@@ -157,10 +174,10 @@ class GrocyCalendarEntity(GrocyEntity, CalendarEntity):
     async def _fetch_ical_url(self) -> None:
         """Fetch the iCal sharing link from Grocy API."""
         try:
-            url = self.coordinator.config_entry.data["url"]
-            api_key = self.coordinator.config_entry.data["api_key"]
-            port = self.coordinator.config_entry.data.get("port", 9192)
-            verify_ssl = self.coordinator.config_entry.data.get("verify_ssl", False)
+            url = self.coordinator.config_entry.data[CONF_URL]
+            api_key = self.coordinator.config_entry.data[CONF_API_KEY]
+            port = self.coordinator.config_entry.data.get(CONF_PORT, 9192)
+            verify_ssl = self.coordinator.config_entry.data.get(CONF_VERIFY_SSL, False)
 
             (base_url, path) = extract_base_url_and_path(url)
 
