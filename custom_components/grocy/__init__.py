@@ -43,7 +43,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Set up this integration using UI."""
     _LOGGER.info(STARTUP_MESSAGE)
 
-    coordinator: GrocyDataUpdateCoordinator = GrocyDataUpdateCoordinator(hass)
+    coordinator: GrocyDataUpdateCoordinator = GrocyDataUpdateCoordinator(
+        hass, config_entry
+    )
 
     try:
         coordinator.available_entities = await _async_get_available_entities(

@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -57,6 +58,7 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
     def __init__(
         self,
         hass: HomeAssistant,
+        config_entry: ConfigEntry,
     ) -> None:
         """Initialize Grocy data update coordinator."""
         super().__init__(
@@ -65,6 +67,8 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
             name=DOMAIN,
             update_interval=SCAN_INTERVAL,
         )
+
+        self.config_entry = config_entry
 
         url = self.config_entry.data[CONF_URL]
         api_key = self.config_entry.data[CONF_API_KEY]
