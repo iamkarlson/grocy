@@ -94,7 +94,7 @@ class GrocyCalendarEntity(CalendarEntity):
     @property
     def event(self) -> CalendarEvent | None:
         """Return the next upcoming event."""
-        now = dt_util.utcnow()
+        now = dt_util.now()
         # Find events that are currently happening or upcoming
         # An event is "current" if now is between start and end (inclusive)
         # An event is "upcoming" if start is in the future
@@ -154,13 +154,13 @@ class GrocyCalendarEntity(CalendarEntity):
                 return
 
         # Update events for a wide range (e.g., 1 year back, 1 year forward)
-        # Use timezone-aware datetime
-        now_utc = dt_util.utcnow()
-        start_date = now_utc - timedelta(days=365)
-        end_date = now_utc + timedelta(days=365)
+        # Use local timezone
+        now = dt_util.now()
+        start_date = now - timedelta(days=365)
+        end_date = now + timedelta(days=365)
         try:
             await self._update_events(start_date, end_date)
-            self._last_update = dt_util.utcnow()
+            self._last_update = dt_util.now()
             self._attr_available = True
             self.async_write_ha_state()
         except Exception as error:
@@ -191,14 +191,15 @@ class GrocyCalendarEntity(CalendarEntity):
             should_refresh = True
         else:
             # Refresh if last update was more than sync interval ago
-            # Use timezone-aware datetime
-            now_utc = dt_util.utcnow()
+            # Use local timezone
+            now = dt_util.now()
             if self._last_update.tzinfo is None:
-                # If last_update is naive, assume UTC
-                last_update_utc = self._last_update.replace(tzinfo=timezone.utc)
+                # If last_update is naive, assume local timezone
+                local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
+                last_update_local = self._last_update.replace(tzinfo=local_tz)
             else:
-                last_update_utc = self._last_update
-            time_since_update = now_utc - last_update_utc
+                last_update_local = dt_util.as_local(self._last_update)
+            time_since_update = now - last_update_local
             if time_since_update >= timedelta(minutes=self._sync_interval_minutes):
                 should_refresh = True
 
@@ -292,19 +293,25 @@ class GrocyCalendarEntity(CalendarEntity):
                             # Check if this is a date-only (all-day) event
                             is_all_day = not isinstance(start.dt, datetime)
                             
+                            # Get local timezone
+                            local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
+                            
                             # Handle both date and datetime
                             if isinstance(start.dt, datetime):
                                 event_start = start.dt
                                 # Ensure timezone-aware
                                 if event_start.tzinfo is None:
-                                    # Assume UTC if no timezone info
+                                    # Assume local timezone if no timezone info
                                     event_start = event_start.replace(
-                                        tzinfo=timezone.utc
+                                        tzinfo=local_tz
                                     )
+                                else:
+                                    # Convert to local timezone
+                                    event_start = dt_util.as_local(event_start)
                             else:
-                                # Date-only events (all-day) - convert to datetime at start of day UTC
+                                # Date-only events (all-day) - convert to datetime at start of day in local timezone
                                 event_start = datetime.combine(
-                                    start.dt, datetime.min.time(), tzinfo=timezone.utc
+                                    start.dt, datetime.min.time(), tzinfo=local_tz
                                 )
 
                             # Don't filter here - cache all events, filter when needed
@@ -313,10 +320,13 @@ class GrocyCalendarEntity(CalendarEntity):
                                     event_end = end.dt
                                     # Ensure timezone-aware
                                     if event_end.tzinfo is None:
-                                        # Assume UTC if no timezone info
+                                        # Assume local timezone if no timezone info
                                         event_end = event_end.replace(
-                                            tzinfo=timezone.utc
+                                            tzinfo=local_tz
                                         )
+                                    else:
+                                        # Convert to local timezone
+                                        event_end = dt_util.as_local(event_end)
                                 else:
                                     # Date-only end - for all-day events, end date is exclusive
                                     # In iCal, if an event is on Dec 21, end date is Dec 22
@@ -324,27 +334,27 @@ class GrocyCalendarEntity(CalendarEntity):
                                     end_date = end.dt
                                     if isinstance(end_date, date):
                                         # End date is exclusive, so subtract 1 day for the actual end
-                                        # Then set to end of that day (23:59:59.999999)
+                                        # Then set to end of that day (23:59:59.999999) in local timezone
                                         actual_end_date = end_date - timedelta(days=1)
                                         event_end = datetime.combine(
                                             actual_end_date,
                                             datetime.max.time(),
-                                            tzinfo=timezone.utc,
+                                            tzinfo=local_tz,
                                         )
                                     else:
                                         # Shouldn't happen, but handle it
                                         event_end = datetime.combine(
                                             end_date,
                                             datetime.max.time(),
-                                            tzinfo=timezone.utc,
+                                            tzinfo=local_tz,
                                         )
                             else:
                                 if is_all_day:
-                                    # All-day event with no end - ends at end of start day
+                                    # All-day event with no end - ends at end of start day in local timezone
                                     event_end = datetime.combine(
                                         start.dt,
                                         datetime.max.time(),
-                                        tzinfo=timezone.utc,
+                                        tzinfo=local_tz,
                                     )
                                 else:
                                     # If no end time, assume 1 hour duration
