@@ -11,6 +11,7 @@
                 "data": {
                     "api_key": "Grocy API ključ",
                     "calendar_sync_interval": "Interval sinkronizacije kalendara (minute)",
+                    "calendar_fix_timezone": "Popravi vremensku zonu za kalendar",
                     "port": "Broj port-a (9192)",
                     "url": "Grocy API URL (npr. \"http:\/\/yourgrocyurl.com\")",
                     "verify_ssl": "Provjerite SSL certifikat."
@@ -27,6 +28,7 @@
                 "data": {
                     "api_key": "Grocy API ključ",
                     "calendar_sync_interval": "Interval sinkronizacije kalendara (minute)",
+                    "calendar_fix_timezone": "Popravi vremensku zonu za kalendar",
                     "port": "Broj port-a (9192)",
                     "url": "Grocy API URL (npr. \"http:\/\/yourgrocyurl.com\")",
                     "verify_ssl": "Provjerite SSL certifikat."

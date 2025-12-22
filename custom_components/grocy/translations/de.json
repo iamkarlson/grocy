@@ -11,6 +11,7 @@
                 "data": {
                     "api_key": "Grocy API Schlüssel",
                     "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
+                    "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "SSL-Zertifikat verifizieren"
@@ -27,6 +28,7 @@
                 "data": {
                     "api_key": "Grocy API Schlüssel",
                     "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
+                    "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "SSL-Zertifikat verifizieren"

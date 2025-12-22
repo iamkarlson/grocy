@@ -11,6 +11,7 @@
                 "data": {
                     "api_key": "Grocy API nyckel",
                     "calendar_sync_interval": "Kalendersynkroniseringsintervall (minuter)",
+                    "calendar_fix_timezone": "Åtgärda tidszon för kalender",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL (t.ex. \"http:\/\/yourgrocyurl.se\")",
                     "verify_ssl": "Verifiera SSL certifikat"
@@ -27,6 +28,7 @@
                 "data": {
                     "api_key": "Grocy API nyckel",
                     "calendar_sync_interval": "Kalendersynkroniseringsintervall (minuter)",
+                    "calendar_fix_timezone": "Åtgärda tidszon för kalender",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL (t.ex. \"http:\/\/yourgrocyurl.se\")",
                     "verify_ssl": "Verifiera SSL certifikat"
