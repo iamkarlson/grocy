@@ -301,12 +301,16 @@ class GrocyCalendarEntity(CalendarEntity):
                                 event_start = start.dt
                                 # Ensure timezone-aware
                                 if event_start.tzinfo is None:
-                                    # Assume local timezone if no timezone info
-                                    event_start = event_start.replace(
-                                        tzinfo=local_tz
+                                    # Naive datetime from iCal - typically UTC in iCal format
+                                    # Convert from UTC to local timezone
+                                    event_start_utc = event_start.replace(
+                                        tzinfo=timezone.utc
                                     )
+                                    event_start = dt_util.as_local(event_start_utc)
                                 else:
-                                    # Convert to local timezone
+                                    # Has timezone info - convert to local timezone
+                                    # This handles UTC or other timezones from Grocy
+                                    original_start = event_start
                                     event_start = dt_util.as_local(event_start)
                             else:
                                 # Date-only events (all-day) - convert to datetime at start of day in local timezone
@@ -320,12 +324,15 @@ class GrocyCalendarEntity(CalendarEntity):
                                     event_end = end.dt
                                     # Ensure timezone-aware
                                     if event_end.tzinfo is None:
-                                        # Assume local timezone if no timezone info
-                                        event_end = event_end.replace(
-                                            tzinfo=local_tz
+                                        # Naive datetime from iCal - typically UTC in iCal format
+                                        # Convert from UTC to local timezone
+                                        event_end_utc = event_end.replace(
+                                            tzinfo=timezone.utc
                                         )
+                                        event_end = dt_util.as_local(event_end_utc)
                                     else:
-                                        # Convert to local timezone
+                                        # Has timezone info - convert to local timezone
+                                        # This handles UTC or other timezones from Grocy
                                         event_end = dt_util.as_local(event_end)
                                 else:
                                     # Date-only end - for all-day events, end date is exclusive
