@@ -11,7 +11,7 @@
                 "data": {
                     "api_key": "Grocy API Key",
                     "port": "Port Number (9192)",
-                    "url": "Grocy API URL (e.g. \"http:\/\/yourgrocyurl.com\")",
+                    "url": "Grocy API URL (e.g. \"http:\/\/yourgrocyurl.com\", with no path)",
                     "verify_ssl": "Verify SSL Certificate"
                 },
                 "description": "If you need help with the configuration have a look here: https:\/\/github.com\/iamkarlson\/grocy",
