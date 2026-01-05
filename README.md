@@ -63,6 +63,7 @@ If you use the [official Grocy add-on](https://github.com/hassio-addons/addon-gr
 - **URL**: Your Grocy instance URL (e.g., `http://192.168.1.100` or `https://grocy.example.com`)
   - Start with `http://` or `https://`
   - Do **not** include the port in the URL field
+  - If you are connecting to the Grocy add-on, do **not** include any path after the URL
   - Subdomains are supported
 - **API Key**: Generate in Grocy via the wrench icon → "Manage API keys"
 - **Port**:
@@ -175,7 +176,7 @@ We welcome contributions of all kinds! 🎉
 # <a name="integration-configuration"></a>Integration configuration
 
 ## URL
-The Grocy url should be in the form below (start with `http://` or `https://`) and point to your Grocy instance. If you use a SSL certificate you should have `https` and also check the "Verify SSL Certificate" box. Do **not** enter a port in the url field. Subdomains are also supported, fill out the full url in the field.
+The Grocy url should be in the form below (start with `http://` or `https://`) and point to your Grocy instance. If you use a SSL certificate you should have `https` and also check the "Verify SSL Certificate" box. Do **not** enter a port in the url field. If you are connecting to the Grocy add-on do not include any path, even though the 'api browser' in grocy implies you need one. Subdomains are also supported, fill out the full url in the field.
 
 ## API key
 Go to your Grocy instance. Navigate via the wrench icon in the top right corner to "Manage API keys" and add a new API key. Copy and paste the generated key.
