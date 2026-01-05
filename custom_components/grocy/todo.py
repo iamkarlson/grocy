@@ -220,10 +220,9 @@ class GrocyTodoItem(TodoItem):
                 uid=item.id.__str__(),
                 summary=f"{item.amount:.2f}x {item.product.name}",
                 due=None,
-                status=TodoItemStatus.NEEDS_ACTION
-                # TODO, needs the 'done' attribute instead; however, this isn't supported by pygrocy yet.
-                if item.amount > 0
-                else TodoItemStatus.COMPLETED,
+                status=TodoItemStatus.COMPLETED
+                if item.done
+                else TodoItemStatus.NEEDS_ACTION,
                 description=item.note or None,
             )
         elif isinstance(item, Task):
