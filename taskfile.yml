@@ -1,0 +1,51 @@
+version: '3'
+
+vars:
+  CONFIG_DIR: '{{.ROOT_DIR}}/config'
+  CUSTOM_COMPONENTS: '{{.ROOT_DIR}}/custom_components'
+
+tasks:
+  dev:
+    desc: Run Home Assistant in development mode
+    cmds:
+      - mkdir -p {{.CONFIG_DIR}}
+      - cmd: uv run hass --config {{.CONFIG_DIR}} --script ensure_config
+        ignore_error: true
+      - task: run
+
+  run:
+    desc: Run Home Assistant on port 8123
+    env:
+      PYTHONPATH: '{{.PYTHONPATH}}:{{.CUSTOM_COMPONENTS}}'
+    cmds:
+      - uv run hass --config {{.CONFIG_DIR}} --debug
+
+  debug:
+    desc: Run Home Assistant with remote debugger on port 5678
+    env:
+      PYTHONPATH: '{{.PYTHONPATH}}:{{.CUSTOM_COMPONENTS}}'
+    cmds:
+      - mkdir -p {{.CONFIG_DIR}}
+      - cmd: uv run hass --config {{.CONFIG_DIR}} --script ensure_config
+        ignore_error: true
+      - uv run python -m debugpy --listen 0.0.0.0:5678 -m homeassistant --config {{.CONFIG_DIR}} --debug
+
+  debug-wait:
+    desc: Run Home Assistant with remote debugger (wait for client)
+    env:
+      PYTHONPATH: '{{.PYTHONPATH}}:{{.CUSTOM_COMPONENTS}}'
+    cmds:
+      - mkdir -p {{.CONFIG_DIR}}
+      - cmd: uv run hass --config {{.CONFIG_DIR}} --script ensure_config
+        ignore_error: true
+      - uv run python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m homeassistant --config {{.CONFIG_DIR}} --debug
+
+  clean:
+    desc: Clean config directory
+    cmds:
+      - rm -rf {{.CONFIG_DIR}}
+
+  install:
+    desc: Install dependencies
+    cmds:
+      - uv sync

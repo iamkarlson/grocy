@@ -2,28 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Home Assistant with Debug",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "homeassistant",
-            "args": ["--config", "${workspaceFolder}/config", "--debug"],
-            "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${env:PYTHONPATH}:${workspaceFolder}/custom_components"
-            },
-            "pathMappings": [
-                {
-                    "localRoot": "${workspaceFolder}/custom_components",
-                    "remoteRoot": "/workspaces/grocy-custom-component/custom_components"
-                }
-            ],
-            "justMyCode": false,
-            "subProcess": true,
-            "showReturnValue": true
-        },
-        {
-            "name": "Python: Attach to Home Assistant",
+            "name": "Attach to Home Assistant",
             "type": "debugpy",
             "request": "attach",
             "connect": {
@@ -34,6 +13,33 @@
                 {
                     "localRoot": "${workspaceFolder}/custom_components",
                     "remoteRoot": "/workspaces/grocy-custom-component/custom_components"
+                },
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/workspaces/grocy-custom-component"
+                }
+            ],
+            "justMyCode": false,
+            "subProcess": true,
+            "showReturnValue": true
+        },
+        {
+            "name": "Start HA + Attach Debugger",
+            "type": "debugpy",
+            "request": "attach",
+            "connect": {
+                "port": 5678,
+                "host": "localhost"
+            },
+            "preLaunchTask": "task: debug",
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}/custom_components",
+                    "remoteRoot": "/workspaces/grocy-custom-component/custom_components"
+                },
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/workspaces/grocy-custom-component"
                 }
             ],
             "justMyCode": false,

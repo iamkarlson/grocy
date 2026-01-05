@@ -3,6 +3,6 @@
   "render_readme": true,
   "zip_release": true,
   "hide_default_branch": true,
-  "homeassistant": "2025.6.1",
+  "homeassistant": "2025.11.2",
   "filename": "grocy.zip"
 }

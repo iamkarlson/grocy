@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13.2"
 dependencies = [
     "colorlog==6.9.0",
-    "homeassistant==2025.8.1",
+    "homeassistant==2025.11.2",
     "pip>=21.3.1",
     "ruff==0.12.2",
     "pygrocy2==2.5.0",
@@ -16,10 +16,11 @@ dependencies = [
 Homepage = "https://github.com/iamkarlson/grocy"
 Issues = "https://github.com/iamkarlson/grocy/issues"
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "ruff==0.12.2",
     "pre-commit>=3.0.0",
+    "debugpy>=1.8.0",
 ]
 
 [tool.ruff]
