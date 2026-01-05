@@ -52,6 +52,35 @@ The hooks include code formatting with Ruff and other quality checks defined in 
 
 The project includes debugpy configuration. Start Home Assistant (`scripts/develop`), then attach VSCode debugger (`F5` → "Python: Attach to Home Assistant"). Set breakpoints in `custom_components/grocy/` files.
 
+### HA empty config backup to test
+
+Encryption key:
+```
+23WA-L0MU-FI8I-CEEH-JJ5K-IJ7W-85N1
+```
+
+```
+
+Home Assistant Backup Emergency Kit
+
+This emergency kit contains your backup encryption key. You need this key to be able to restore your Home Assistant backups.
+
+Date: January 5, 2026 at 8:06 PM
+
+Instance:
+Home
+
+URL:
+http://localhost:8123
+
+Encryption key:
+23WA-L0MU-FI8I-CEEH-JJ5K-IJ7W-85N1
+
+For more information, visit https://www.home-assistant.io/more-info/backup-emergency-kit
+
+```
+
+
 ## Architecture
 
 - **Coordinator pattern**: Single `DataUpdateCoordinator` fetches all data from Grocy API

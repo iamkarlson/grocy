@@ -4,7 +4,13 @@
         {
             "label": "Run Home Assistant on port 8123",
             "type": "shell",
-            "command": "scripts/develop",
+            "command": "bash",
+            "args": [
+                "${workspaceFolder}/scripts/develop"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
             "isBackground": true,
             "problemMatcher": {
                 "owner": "homeassistant",
@@ -16,13 +22,39 @@
                     "beginsPattern": ".*",
                     "endsPattern": ".*Home Assistant.*started.*|.*Serving on.*"
                 }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
             }
         },
         {
-            "label": "Rerun setup",
+            "label": "Run Home Assistant with Remote Debugger",
             "type": "shell",
-            "command": "scripts/setup",
-            "problemMatcher": []
+            "command": "bash",
+            "args": [
+                "-c",
+                "cd ${workspaceFolder} && mkdir -p config && export PYTHONPATH=\"${PYTHONPATH}:${workspaceFolder}/custom_components\" && uv run python -m debugpy --listen 0.0.0.0:5678 -m homeassistant --config ${workspaceFolder}/config --debug"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "homeassistant",
+                "pattern": {
+                    "regexp": "."
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": ".*Home Assistant.*started.*|.*Serving on.*"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
         }
     ]
 }

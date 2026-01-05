@@ -16,10 +16,11 @@ dependencies = [
 Homepage = "https://github.com/iamkarlson/grocy"
 Issues = "https://github.com/iamkarlson/grocy/issues"
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "ruff==0.12.2",
     "pre-commit>=3.0.0",
+    "debugpy>=1.8.0",
 ]
 
 [tool.ruff]
