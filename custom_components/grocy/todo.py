@@ -35,7 +35,7 @@ from .const import (
 )
 from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
 from .entity import GrocyEntity
-from .helpers import MealPlanItemWrapper
+from .helpers import MealPlanItemWrapper, ProductWrapper
 from .services import (
     SERVICE_AMOUNT,
     SERVICE_BATTERY_ID,
@@ -213,6 +213,16 @@ class GrocyTodoItem(TodoItem):
                 if (item.available_amount or 0) > 0
                 else TodoItemStatus.COMPLETED,
                 # TODO, the description attribute isn't pulled for products in pygrocy
+                description=None,
+            )
+        elif isinstance(item, ProductWrapper):
+            product = item.product
+            super().__init__(
+                uid=product.id.__str__(),
+                summary=f"{product.available_amount:.2f}x {product.name}",
+                status=TodoItemStatus.NEEDS_ACTION
+                if (product.available_amount or 0) > 0
+                else TodoItemStatus.COMPLETED,
                 description=None,
             )
         elif isinstance(item, ShoppingListProduct):
