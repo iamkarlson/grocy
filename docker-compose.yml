@@ -1,6 +1,19 @@
-version: "3.8"
-
 services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: ha-dev
+    depends_on:
+      - grocy
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+      - "5678:5678"
+    environment:
+      - TZ=UTC
+    volumes:
+      - ./config:/config
+      - ./custom_components:/config/custom_components
+
   grocy:
     image: linuxserver/grocy:latest
     container_name: grocy-dev
@@ -13,10 +26,3 @@ services:
       - PGID=1000
     volumes:
       - ./.grocy-data:/config
-    networks:
-      - grocy-network
-
-networks:
-  grocy-network:
-    name: grocy-dev-network
-    driver: bridge

@@ -192,3 +192,59 @@ It should work with for example a Duck DNS address as well, but you still have t
 # <a name="screenshot-addon-config"></a>Add-on port configuration
 
 ![alt text](grocy-addon-config.png)
+
+## Development
+
+This project uses [Task](https://taskfile.dev/) for development workflow management.
+
+### Prerequisites
+
+- Python 3.13+ with [uv](https://docs.astral.sh/uv/) package manager
+- Docker and Docker Compose for running Grocy test instance
+- [Task](https://taskfile.dev/) for running development commands
+- VS Code with Python extensions (optional, for debugging)
+
+### Getting Started
+
+1. **Install dependencies:**
+   ```bash
+   task install
+   ```
+
+2. **Start Grocy test instance:**
+   ```bash
+   task infra_up
+   ```
+   This starts a Grocy container at http://localhost:9192
+
+3. **Run Home Assistant with debugger:**
+   ```bash
+   task debug
+   ```
+   This starts Home Assistant with debugpy listening on port 5678
+
+4. **Attach VS Code debugger (optional):**
+   - Run `task debug` in your shell first
+   - Then use the "Attach to Home Assistant" launch configuration in VS Code
+
+### Available Tasks
+
+All tasks should be run manually from your shell:
+
+- `task dev` - Run Home Assistant in development mode
+- `task debug` - Run Home Assistant with remote debugger
+- `task debug-wait` - Run Home Assistant with debugger (waits for client)
+- `task infra_up` - Start Grocy container in daemon mode
+- `task infra_down` - Stop Grocy containers
+- `task infra_status` - Show Grocy container status
+- `task infra_logs` - Show Grocy container logs
+- `task clean` - Clean config directory
+
+### Development Workflow
+
+1. Start Grocy container: `task infra_up`
+2. Configure Grocy at http://localhost:9192
+3. Start HA with debugger: `task debug` (run in shell)
+4. Attach VS Code debugger (optional)
+5. Make changes to code
+6. Restart HA to test changes

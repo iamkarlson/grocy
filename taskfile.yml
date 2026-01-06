@@ -5,47 +5,73 @@ vars:
   CUSTOM_COMPONENTS: '{{.ROOT_DIR}}/custom_components'
 
 tasks:
-  dev:
-    desc: Run Home Assistant in development mode
+  ha:run:
+    desc: Run Home Assistant in foreground (Docker)
     cmds:
-      - mkdir -p {{.CONFIG_DIR}}
-      - cmd: uv run hass --config {{.CONFIG_DIR}} --script ensure_config
-        ignore_error: true
-      - task: run
+      - docker compose up homeassistant
 
-  run:
-    desc: Run Home Assistant on port 8123
-    env:
-      PYTHONPATH: '{{.PYTHONPATH}}:{{.CUSTOM_COMPONENTS}}'
+  ha:dev:
+    desc: Alias for ha:run
     cmds:
-      - uv run hass --config {{.CONFIG_DIR}} --debug
+      - task: ha:run
 
-  debug:
-    desc: Run Home Assistant with remote debugger on port 5678
-    env:
-      PYTHONPATH: '{{.PYTHONPATH}}:{{.CUSTOM_COMPONENTS}}'
+  ha:up:
+    desc: Start Home Assistant in daemon mode
     cmds:
-      - mkdir -p {{.CONFIG_DIR}}
-      - cmd: uv run hass --config {{.CONFIG_DIR}} --script ensure_config
-        ignore_error: true
-      - uv run python -m debugpy --listen 0.0.0.0:5678 -m homeassistant --config {{.CONFIG_DIR}} --debug
+      - docker compose up -d homeassistant
 
-  debug-wait:
-    desc: Run Home Assistant with remote debugger (wait for client)
-    env:
-      PYTHONPATH: '{{.PYTHONPATH}}:{{.CUSTOM_COMPONENTS}}'
+  ha:down:
+    desc: Stop Home Assistant container
     cmds:
-      - mkdir -p {{.CONFIG_DIR}}
-      - cmd: uv run hass --config {{.CONFIG_DIR}} --script ensure_config
-        ignore_error: true
-      - uv run python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m homeassistant --config {{.CONFIG_DIR}} --debug
+      - docker compose stop homeassistant
+
+  ha:restart:
+    desc: Restart Home Assistant container
+    cmds:
+      - docker compose restart homeassistant
+
+  ha:logs:
+    desc: Tail Home Assistant logs
+    cmds:
+      - docker compose logs -f homeassistant
+
+  ha:shell:
+    desc: Access Home Assistant container shell
+    cmds:
+      - docker compose exec homeassistant bash
 
   clean:
     desc: Clean config directory
     cmds:
-      - rm -rf {{.CONFIG_DIR}}
+      - rm -r {{.CONFIG_DIR}}
 
   install:
     desc: Install dependencies
     cmds:
       - uv sync
+
+  # Infrastructure/Grocy container management
+  grocy:up:
+    desc: Start grocy container in daemon mode
+    cmds:
+      - docker compose up -d grocy
+
+  grocy:down:
+    desc: Stop and remove grocy containers
+    cmds:
+      - docker compose down grocy
+
+  grocy:restart:
+    desc: Restart grocy containers
+    cmds:
+      - docker compose restart grocy
+
+  grocy:logs:
+    desc: Show grocy container logs
+    cmds:
+      - docker compose logs -f grocy
+
+  grocy:shell:
+    desc: Access grocy container shell
+    cmds:
+      - docker compose exec grocy bash

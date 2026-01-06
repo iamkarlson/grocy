@@ -12,11 +12,11 @@
             "pathMappings": [
                 {
                     "localRoot": "${workspaceFolder}/custom_components",
-                    "remoteRoot": "/workspaces/grocy-custom-component/custom_components"
+                    "remoteRoot": "/config/custom_components"
                 },
                 {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "/workspaces/grocy-custom-component"
+                    "localRoot": "${workspaceFolder}/config",
+                    "remoteRoot": "/config"
                 }
             ],
             "justMyCode": false,
@@ -24,22 +24,21 @@
             "showReturnValue": true
         },
         {
-            "name": "Start HA + Attach Debugger",
+            "name": "Attach to Home Assistant (Manual)",
             "type": "debugpy",
             "request": "attach",
             "connect": {
                 "port": 5678,
                 "host": "localhost"
             },
-            "preLaunchTask": "task: debug",
             "pathMappings": [
                 {
                     "localRoot": "${workspaceFolder}/custom_components",
-                    "remoteRoot": "/workspaces/grocy-custom-component/custom_components"
+                    "remoteRoot": "/config/custom_components"
                 },
                 {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "/workspaces/grocy-custom-component"
+                    "localRoot": "${workspaceFolder}/config",
+                    "remoteRoot": "/config"
                 }
             ],
             "justMyCode": false,
