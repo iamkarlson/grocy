@@ -10,6 +10,8 @@ services:
       - "5678:5678"
     environment:
       - TZ=UTC
+      - PYDEVD_DISABLE_FILE_VALIDATION=1
+      - PYTHONDONTWRITEBYTECODE=1
     volumes:
       - ./config:/config
       - ./custom_components:/config/custom_components

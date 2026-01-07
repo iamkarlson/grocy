@@ -139,21 +139,21 @@ Before this was forked, translation was done using paid service lokalise.com. Ho
 If you experience issues with the integration:
 
 1. **Enable debug logging** by adding this to your `configuration.yaml`:
-   ```yaml
-   logger:
-     default: info
-     logs:
-       pygrocy.grocy_api_client: debug
-       custom_components.grocy: debug
-   ```
+    ```yaml
+    logger:
+       default: info
+       logs:
+          pygrocy.grocy_api_client: debug
+          custom_components.grocy: debug
+    ```
 
 2. **Ensure compatibility**: Use the latest version of the integration, Grocy, and Home Assistant
 
 3. **Check your setup**: Verify your Grocy URL, API key, and port configuration
 
 4. **Get help**:
-   - [Community Forum Discussion](https://community.home-assistant.io/t/grocy-custom-component-and-card-s/218978)
-   - [Report Issues on GitHub](https://github.com/iamkarlson/grocy/issues/new?assignees=&labels=&template=bug_report.md&title=)
+    - [Community Forum Discussion](https://community.home-assistant.io/t/grocy-custom-component-and-card-s/218978)
+    - [Report Issues on GitHub](https://github.com/iamkarlson/grocy/issues/new?assignees=&labels=&template=bug_report.md&title=)
 
 ## Contributing
 
@@ -199,52 +199,26 @@ This project uses [Task](https://taskfile.dev/) for development workflow managem
 
 ### Prerequisites
 
-- Python 3.13+ with [uv](https://docs.astral.sh/uv/) package manager
-- Docker and Docker Compose for running Grocy test instance
-- [Task](https://taskfile.dev/) for running development commands
-- VS Code with Python extensions (optional, for debugging)
+- Python 3.13+ with [uv](https://docs.astral.sh/uv/) package manager.
+- Docker and Docker Compose for running Grocy test instance.
+- [Task](https://taskfile.dev/) for running development commands.
+- VS Code with Python extensions (optional, for debugging).
 
-### Getting Started
+### Common Tasks
 
-1. **Install dependencies:**
-   ```bash
-   task install
-   ```
+- Install dependencies: `task deps`.
+- Start Grocy container: `task grocy:up`.
+- Start Home Assistant in foreground: `task ha:run` (or `task ha:up` for detached mode).
+- Inspect logs: `task ha:logs` and `task grocy:logs`.
+- Stop services: `task ha:down` and `task grocy:down`.
+- Clean local config: `task clean`.
 
-2. **Start Grocy test instance:**
-   ```bash
-   task infra_up
-   ```
-   This starts a Grocy container at http://localhost:9192
+### Workflow Tips
 
-3. **Run Home Assistant with debugger:**
-   ```bash
-   task debug
-   ```
-   This starts Home Assistant with debugpy listening on port 5678
+1. Start Grocy with `task grocy:up` and wait for it to become healthy.
+2. Launch Home Assistant via `task ha:run` for interactive logs, or `task ha:up` to run detached.
+3. Enable the integration in the dev instance and point it to the Grocy container at `http://localhost:9192` with your API key.
+4. Use `task ha:restart` after code changes to refresh.
+5. When finished, stop containers with `task ha:down` and `task grocy:down`.
 
-4. **Attach VS Code debugger (optional):**
-   - Run `task debug` in your shell first
-   - Then use the "Attach to Home Assistant" launch configuration in VS Code
-
-### Available Tasks
-
-All tasks should be run manually from your shell:
-
-- `task dev` - Run Home Assistant in development mode
-- `task debug` - Run Home Assistant with remote debugger
-- `task debug-wait` - Run Home Assistant with debugger (waits for client)
-- `task infra_up` - Start Grocy container in daemon mode
-- `task infra_down` - Stop Grocy containers
-- `task infra_status` - Show Grocy container status
-- `task infra_logs` - Show Grocy container logs
-- `task clean` - Clean config directory
-
-### Development Workflow
-
-1. Start Grocy container: `task infra_up`
-2. Configure Grocy at http://localhost:9192
-3. Start HA with debugger: `task debug` (run in shell)
-4. Attach VS Code debugger (optional)
-5. Make changes to code
-6. Restart HA to test changes
+Report issues or feature ideas via the GitHub [issue tracker](https://github.com/iamkarlson/grocy/issues).
