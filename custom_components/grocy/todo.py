@@ -226,12 +226,19 @@ class GrocyTodoItem(TodoItem):
                 description=None,
             )
         elif isinstance(item, ShoppingListProduct):
+            amount = item.amount or 0
+            product_name = item.product.name if item.product else "Unknown product"
+            done_flag = getattr(item, "done", getattr(item, "_done", None))
+            if isinstance(done_flag, str):
+                is_done = done_flag.strip().lower() in {"1", "true", "yes"}
+            else:
+                is_done = bool(done_flag)
             super().__init__(
                 uid=item.id.__str__(),
-                summary=f"{item.amount:.2f}x {item.product.name}",
+                summary=f"{amount:.2f}x {product_name}",
                 due=None,
                 status=TodoItemStatus.COMPLETED
-                if item.done
+                if is_done
                 else TodoItemStatus.NEEDS_ACTION,
                 description=item.note or None,
             )
