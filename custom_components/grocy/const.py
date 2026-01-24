@@ -9,15 +9,18 @@ VERSION = "0.0.0"
 
 ISSUE_URL: Final = "https://github.com/iamkarlson/grocy/issues"
 
-PLATFORMS: Final = ["binary_sensor", "sensor", "todo"]
+PLATFORMS: Final = ["binary_sensor", "sensor", "todo", "calendar"]
 
 SCAN_INTERVAL = timedelta(seconds=30)
 
 DEFAULT_PORT: Final = 9192
+DEFAULT_CALENDAR_SYNC_INTERVAL: Final = 5  # minutes
 CONF_URL: Final = "url"
 CONF_PORT: Final = "port"
 CONF_API_KEY: Final = "api_key"
 CONF_VERIFY_SSL: Final = "verify_ssl"
+CONF_CALENDAR_SYNC_INTERVAL: Final = "calendar_sync_interval"
+CONF_CALENDAR_FIX_TIMEZONE: Final = "calendar_fix_timezone"
 
 STARTUP_MESSAGE: Final = f"""
 -------------------------------------------------------------------

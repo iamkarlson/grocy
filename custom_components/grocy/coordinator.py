@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -57,6 +58,7 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
     def __init__(
         self,
         hass: HomeAssistant,
+        config_entry: ConfigEntry,
     ) -> None:
         """Initialize Grocy data update coordinator."""
         super().__init__(
@@ -65,6 +67,8 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
             name=DOMAIN,
             update_interval=SCAN_INTERVAL,
         )
+
+        self.config_entry = config_entry
 
         url = self.config_entry.data[CONF_URL]
         api_key = self.config_entry.data[CONF_API_KEY]
@@ -87,6 +91,10 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
         for entity in self.entities:
             if not entity.enabled:
                 _LOGGER.debug("Entity %s is disabled", entity.entity_id)
+                continue
+
+            # Skip calendar entity - it doesn't use coordinator data
+            if not hasattr(entity, "entity_description") or entity.entity_description.key == "calendar":
                 continue
 
             try:

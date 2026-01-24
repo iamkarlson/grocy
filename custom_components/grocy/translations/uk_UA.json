@@ -10,6 +10,8 @@
             "user": {
                 "data": {
                     "api_key": "Ключ Grocy API",
+                    "calendar_sync_interval": "Інтервал синхронізації календаря (хвилини)",
+                    "calendar_fix_timezone": "Виправити часовий пояс для календаря",
                     "port": "Номер порту (9192)",
                     "url": "URL-адреса Grocy API (наприклад, \"http:\/\/yourgrocyurl.com\")",
                     "verify_ssl": "Перевірте сертифікат SSL"
@@ -19,5 +21,38 @@
             }
         },
         "title": "Grocy"
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Ключ Grocy API",
+                    "calendar_sync_interval": "Інтервал синхронізації календаря (хвилини)",
+                    "calendar_fix_timezone": "Виправити часовий пояс для календаря",
+                    "port": "Номер порту (9192)",
+                    "url": "URL-адреса Grocy API (наприклад, \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Перевірте сертифікат SSL"
+                },
+                "description": "Налаштувати параметри інтеграції Grocy.",
+                "title": "Параметри Grocy"
+            }
+        }
+    },
+    "reauth": {
+        "step": {
+            "reauth": {
+                "data": {
+                    "api_key": "Ключ Grocy API",
+                    "port": "Номер порту (9192)",
+                    "url": "URL-адреса Grocy API (наприклад, \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Перевірте сертифікат SSL"
+                },
+                "description": "Оновіть налаштування підключення Grocy.",
+                "title": "Повторна автентифікація Grocy"
+            }
+        },
+        "abort": {
+            "reauth_successful": "Повторна автентифікація успішна"
+        }
     }
 }
