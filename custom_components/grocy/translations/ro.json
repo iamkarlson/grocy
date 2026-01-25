@@ -10,10 +10,8 @@
             "user": {
                 "data": {
                     "api_key": "Cheie API Grocy",
-                    "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
-                    "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
                     "port": "Număr port (9192)",
-                    "url": "Adresa URL a API-ului Grocy (de exemplu, „http:\/\/yourgrocyurl.com")",
+                    "url": "Adresa URL a API-ului Grocy (de exemplu, „http:\/\/yourgrocyurl.com”)",
                     "verify_ssl": "Verificați certificatul SSL"
                 },
                 "description": "Dacă aveți nevoie de ajutor cu configurarea, aruncați o privire aici: https:\/\/github.com\/iamkarlson\/grocy",
@@ -21,38 +19,5 @@
             }
         },
         "title": "Grocy"
-    },
-    "options": {
-        "step": {
-            "init": {
-                "data": {
-                    "api_key": "Cheie API Grocy",
-                    "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
-                    "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
-                    "port": "Număr port (9192)",
-                    "url": "Adresa URL a API-ului Grocy (de exemplu, „http:\/\/yourgrocyurl.com")",
-                    "verify_ssl": "Verificați certificatul SSL"
-                },
-                "description": "Configurați opțiunile de integrare Grocy.",
-                "title": "Opțiuni Grocy"
-            }
-        }
-    },
-    "reauth": {
-        "step": {
-            "reauth": {
-                "data": {
-                    "api_key": "Cheie API Grocy",
-                    "port": "Număr port (9192)",
-                    "url": "Adresa URL a API-ului Grocy (de exemplu, „http:\/\/yourgrocyurl.com")",
-                    "verify_ssl": "Verificați certificatul SSL"
-                },
-                "description": "Actualizați setările de conexiune Grocy.",
-                "title": "Reautentificare Grocy"
-            }
-        },
-        "abort": {
-            "reauth_successful": "Reautentificare reușită"
-        }
     }
 }

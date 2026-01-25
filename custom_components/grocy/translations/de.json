@@ -10,8 +10,6 @@
             "user": {
                 "data": {
                     "api_key": "Grocy API Schlüssel",
-                    "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
-                    "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "SSL-Zertifikat verifizieren"
@@ -21,38 +19,5 @@
             }
         },
         "title": "Grocy"
-    },
-    "options": {
-        "step": {
-            "init": {
-                "data": {
-                    "api_key": "Grocy API Schlüssel",
-                    "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
-                    "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
-                    "port": "Portnummer (9192)",
-                    "url": "Grocy API URL",
-                    "verify_ssl": "SSL-Zertifikat verifizieren"
-                },
-                "description": "Grocy-Integrationsoptionen konfigurieren.",
-                "title": "Grocy-Optionen"
-            }
-        }
-    },
-    "reauth": {
-        "step": {
-            "reauth": {
-                "data": {
-                    "api_key": "Grocy API Schlüssel",
-                    "port": "Portnummer (9192)",
-                    "url": "Grocy API URL",
-                    "verify_ssl": "SSL-Zertifikat verifizieren"
-                },
-                "description": "Aktualisieren Sie Ihre Grocy-Verbindungseinstellungen.",
-                "title": "Grocy erneut authentifizieren"
-            }
-        },
-        "abort": {
-            "reauth_successful": "Erneute Authentifizierung erfolgreich"
-        }
     }
 }

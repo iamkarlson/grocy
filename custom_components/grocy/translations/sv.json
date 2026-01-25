@@ -10,8 +10,6 @@
             "user": {
                 "data": {
                     "api_key": "Grocy API nyckel",
-                    "calendar_sync_interval": "Kalendersynkroniseringsintervall (minuter)",
-                    "calendar_fix_timezone": "Åtgärda tidszon för kalender",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL (t.ex. \"http:\/\/yourgrocyurl.se\")",
                     "verify_ssl": "Verifiera SSL certifikat"
@@ -21,38 +19,5 @@
             }
         },
         "title": "Grocy"
-    },
-    "options": {
-        "step": {
-            "init": {
-                "data": {
-                    "api_key": "Grocy API nyckel",
-                    "calendar_sync_interval": "Kalendersynkroniseringsintervall (minuter)",
-                    "calendar_fix_timezone": "Åtgärda tidszon för kalender",
-                    "port": "Portnummer (9192)",
-                    "url": "Grocy API URL (t.ex. \"http:\/\/yourgrocyurl.se\")",
-                    "verify_ssl": "Verifiera SSL certifikat"
-                },
-                "description": "Konfigurera Grocy-integrationsalternativ.",
-                "title": "Grocy-alternativ"
-            }
-        }
-    },
-    "reauth": {
-        "step": {
-            "reauth": {
-                "data": {
-                    "api_key": "Grocy API nyckel",
-                    "port": "Portnummer (9192)",
-                    "url": "Grocy API URL (t.ex. \"http:\/\/yourgrocyurl.se\")",
-                    "verify_ssl": "Verifiera SSL certifikat"
-                },
-                "description": "Uppdatera dina Grocy-anslutningsinställningar.",
-                "title": "Återautentisera Grocy"
-            }
-        },
-        "abort": {
-            "reauth_successful": "Återautentisering lyckades"
-        }
     }
 }
