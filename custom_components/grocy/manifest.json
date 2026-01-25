@@ -1,6 +1,6 @@
 {
-  "domain": "grocy_test",
-  "name": "Grocy_test",
+  "domain": "grocy",
+  "name": "Grocy",
   "codeowners": ["@chrislanks"],
   "config_flow": true,
   "dependencies": ["http"],
