@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from pygrocy2.data_models.battery import Battery
 from pygrocy2.data_models.chore import Chore
 from pygrocy2.data_models.product import Product, ShoppingListProduct
@@ -94,16 +94,58 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
                 continue
 
             # Skip calendar entity - it doesn't use coordinator data
-            if not hasattr(entity, "entity_description") or entity.entity_description.key == "calendar":
+            if (
+                not hasattr(entity, "entity_description")
+                or entity.entity_description.key == "calendar"
+            ):
+                _LOGGER.debug("Skipping calendar entity in coordinator update")
                 continue
 
             try:
-                data[
-                    entity.entity_description.key
-                ] = await self.grocy_data.async_update_data(
-                    entity.entity_description.key
-                )
+                entity_key = entity.entity_description.key
+                result = await self.grocy_data.async_update_data(entity_key)
+                # Log if result is empty (for list-based entities)
+                if isinstance(result, list) and len(result) == 0:
+                    _LOGGER.debug(
+                        "Entity %s (entity_id: %s) returned empty list - this may indicate no data available",
+                        entity_key,
+                        entity.entity_id,
+                    )
+                data[entity_key] = result
             except Exception as error:  # pylint: disable=broad-except
-                raise UpdateFailed(f"Update failed: {error}") from error
+                entity_key = (
+                    entity.entity_description.key
+                    if hasattr(entity, "entity_description")
+                    else "unknown"
+                )
+                _LOGGER.warning(
+                    "Error updating entity %s (entity_id: %s): %s",
+                    entity_key,
+                    entity.entity_id,
+                    error,
+                )
+                # Continue with other entities instead of failing completely
+                # For list-based entities, set to empty list; for others, set to None
+                if hasattr(entity, "entity_description"):
+                    entity_key = entity.entity_description.key
+                    # List-based entities should default to empty list
+                    if entity_key in (
+                        "chores",
+                        "tasks",
+                        "batteries",
+                        "stock",
+                        "shopping_list",
+                        "expired_products",
+                        "expiring_products",
+                        "overdue_products",
+                        "missing_products",
+                        "overdue_chores",
+                        "overdue_tasks",
+                        "overdue_batteries",
+                        "meal_plan",
+                    ):
+                        data[entity_key] = []
+                    else:
+                        data[entity_key] = None
 
         return data
