@@ -1,103 +1,68 @@
 # Contributing to Grocy Custom Component
 
+This guide keeps development fast while preserving the context you need.
+
 ## Quick Start
 
-Fork the repo, open in VS Code dev container, run `scripts/setup` then `scripts/develop`. Access Home Assistant at [localhost:8123](http://localhost:8123).
+1. Fork the repository and clone your fork.
+2. Ensure Docker, Docker Compose, and [Task](https://taskfile.dev) are installed locally.
+3. Install tooling with `task install`.
 
-## Development Environment
+## Development Workflow
 
-### Dev Container Setup
+- Start Grocy backend: `task grocy:up` (exposes http://localhost:9192).
+- Launch Home Assistant: `task ha:run` for foreground logs or `task ha:up` to run it in the background.
+- Inspect logs: `task grocy:logs` and `task ha:logs`.
+- Launch VSCode debugger "Attach to Home Assistant"
+- Set breakpoints and debug info should be available
+- To apply code changes, restart HA: `task ha:restart` or restart it from the HA UI.
+- Shut everything down: `task grocy:down` and `task ha:down`.
+- Need a fresh config snapshot? Run `task clean` (removes local `config`).
 
-Dev containers provide isolated, reproducible development environments using Docker. Install the "Dev Containers" extension in VS Code, then:
 
-```bash
-git clone git@github.com:iamkarlson/grocy.git
-cd grocy-custom-component
-code .
-# VS Code will detect .devcontainer config and prompt "Reopen in Container" - click it
-# Otherwise, run "Remote-Containers: Reopen in Container" from the command palette
-# Container builds automatically with Python 3.13, HA dependencies, and tools pre-installed
-```
+## Architecture Overview
 
-The container mounts your local code as a volume, so file changes persist. Terminal runs inside the container with all dependencies available.
+- **Coordinator pattern**: [coordinator.py](custom_components/grocy/coordinator.py) houses a single `DataUpdateCoordinator` fetching all Grocy data on a 30 s interval.
+- **Base entity**: [entity.py](custom_components/grocy/entity.py) defines `GrocyEntity` that wires coordinator data with Home Assistant entities.
+- **Service layer**: [grocy_data.py](custom_components/grocy/grocy_data.py) wraps `pygrocy2` to keep API calls isolated.
+- **Config flow**: [config_flow.py](custom_components/grocy/config_flow.py) validates URL, API key, and port before creating config entries.
 
-### Local Development Setup
+## Extending the Integration
 
-The easiest way to contribute in this repo using devcontainer as you will have all the tools. However, you may still need a few things running outside of the container like `uv` and `pre-commit`
+### Adding Entities
 
-#### uv
+1. Inherit from `GrocyEntity` (see [sensor.py](custom_components/grocy/sensor.py) or [binary_sensor.py](custom_components/grocy/binary_sensor.py)).
+2. Expose entity-specific state/attributes sourced from the coordinator payload.
+3. Register the entity in the appropriate `async_setup_entry` platform.
 
-This project uses [uv](https://docs.astral.sh/uv/) for Python package management. Install uv following the [official installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+### Adding Services
 
-```bash
-# Install dependencies
-uv sync
-
-# Install pre-commit hooks
-uv run pre-commit install
-```
-
-#### Pre-commit hooks
-
-Pre-commit hooks run automatic checks on your code before each commit. In the pipeline, `pre-commit` is run on all files to ensure that code is verified even if you pushed with `--no-verify` option.
-
-```bash
-# Run hooks manually on all files
-uv run pre-commit run --all-files
-```
-
-The hooks include code formatting with Ruff and other quality checks defined in `.pre-commit-config.yaml`.
-
-### Debugging
-
-The project includes debugpy configuration. Start Home Assistant (`scripts/develop`), then attach VSCode debugger (`F5` → "Python: Attach to Home Assistant"). Set breakpoints in `custom_components/grocy/` files.
-
-## Architecture
-
-- **Coordinator pattern**: Single `DataUpdateCoordinator` fetches all data from Grocy API
-- **Entity inheritance**: Common `GrocyEntity` base class handles coordinator integration
-- **Service layer**: `grocy_data.py` abstracts pygrocy API calls
-- **Config flow**: Standard HA config entry setup with validation
-
-## Key Components
-
-### Data Flow
-1. `coordinator.py` polls Grocy API every 30 seconds
-2. Entities subscribe to coordinator updates
-3. Services interact directly with API for commands
-
-### Adding New Entities
-1. Inherit from `GrocyEntity` in `entity.py`
-2. Implement required properties (`name`, `state`, etc.)
-3. Register in platform files (`sensor.py`, `binary_sensor.py`)
-
-### Adding New Services
-1. Add service definition to `services.yaml`
-2. Implement handler in `services.py`
-3. Register in `__init__.py`
+1. Declare service metadata in [services.yaml](custom_components/grocy/services.yaml).
+2. Implement the handler in [services.py](custom_components/grocy/services.py) using `GrocyData` helpers.
+3. Register the service inside [__init__.py](custom_components/grocy/__init__.py) during integration setup.
 
 ## Testing
 
-Manual testing: Configure integration in dev environment, enable entities, test functionality.
-
-For unit tests (if available): `pytest tests/`
+- **Manual**: Configure the integration against the dev containers, enable desired entities, and exercise automations/services.
+- **Automated**: Run `pytest tests/` when adding or updating test coverage (add tests if functionality warrants it).
+- **Static checks**: `uv run pre-commit run --all-files` keeps linting in sync with CI.
 
 ## Pull Requests
 
-- Create feature branch: `git checkout -b feature/description`
-- Test changes in dev environment
-- Ensure compatibility with Grocy 3.2+
-- Update docs if needed
-- Submit PR with clear description
+- Branch from `main`, rebase before submitting, and avoid unrelated churn.
+- Describe behavior changes, testing performed, and any user-facing impacts.
+- Update docs, translations, or manifests when behavior or dependencies change.
+- Target compatibility with Grocy 3.2+ and recent Home Assistant releases (see README requirements).
 
-## Common Issues
+## Common Pitfalls
 
-- **Port conflicts**: `lsof -i :8123` to find conflicting processes
-- **Import errors**: Check `PYTHONPATH` includes `custom_components/`
-- **Config changes**: Restart HA after modifying `manifest.json` or `__init__.py`
-- **Debug logging**: Add to `config/configuration.yaml`:
-  ```yaml
-  logger:
-    logs:
-      custom_components.grocy: debug
-  ```
+- **Port conflicts**: `lsof -i :8123` or `:9192` helps locate existing services.
+- **Stale caches**: Run `task ha:restart` after touching manifests or service registration.
+- **Import resolution**: Ensure Home Assistant config path includes `custom_components/grocy` (Docker mounts in docker-compose.yml handle this).
+- **Verbose logging**: Add to `config/configuration.yaml` when investigating:
+	```yaml
+	logger:
+		logs:
+			custom_components.grocy: debug
+			pygrocy.grocy_api_client: debug
+	```

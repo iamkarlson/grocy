@@ -63,6 +63,7 @@ If you use the [official Grocy add-on](https://github.com/hassio-addons/addon-gr
 - **URL**: Your Grocy instance URL (e.g., `http://192.168.1.100` or `https://grocy.example.com`)
   - Start with `http://` or `https://`
   - Do **not** include the port in the URL field
+  - If you are connecting to the Grocy add-on, do **not** include any path after the URL
   - Subdomains are supported
 - **API Key**: Generate in Grocy via the wrench icon → "Manage API keys"
 - **Port**:
@@ -175,21 +176,21 @@ Before this was forked, translation was done using paid service lokalise.com. Ho
 If you experience issues with the integration:
 
 1. **Enable debug logging** by adding this to your `configuration.yaml`:
-   ```yaml
-   logger:
-     default: info
-     logs:
-       pygrocy.grocy_api_client: debug
-       custom_components.grocy: debug
-   ```
+    ```yaml
+    logger:
+       default: info
+       logs:
+          pygrocy.grocy_api_client: debug
+          custom_components.grocy: debug
+    ```
 
 2. **Ensure compatibility**: Use the latest version of the integration, Grocy, and Home Assistant
 
 3. **Check your setup**: Verify your Grocy URL, API key, and port configuration
 
 4. **Get help**:
-   - [Community Forum Discussion](https://community.home-assistant.io/t/grocy-custom-component-and-card-s/218978)
-   - [Report Issues on GitHub](https://github.com/iamkarlson/grocy/issues/new?assignees=&labels=&template=bug_report.md&title=)
+    - [Community Forum Discussion](https://community.home-assistant.io/t/grocy-custom-component-and-card-s/218978)
+    - [Report Issues on GitHub](https://github.com/iamkarlson/grocy/issues/new?assignees=&labels=&template=bug_report.md&title=)
 
 ## Contributing
 
@@ -212,7 +213,7 @@ We welcome contributions of all kinds! 🎉
 # <a name="integration-configuration"></a>Integration configuration
 
 ## URL
-The Grocy url should be in the form below (start with `http://` or `https://`) and point to your Grocy instance. If you use a SSL certificate you should have `https` and also check the "Verify SSL Certificate" box. Do **not** enter a port in the url field. Subdomains are also supported, fill out the full url in the field.
+The Grocy url should be in the form below (start with `http://` or `https://`) and point to your Grocy instance. If you use a SSL certificate you should have `https` and also check the "Verify SSL Certificate" box. Do **not** enter a port in the url field. If you are connecting to the Grocy add-on do not include any path, even though the 'api browser' in grocy implies you need one. Subdomains are also supported, fill out the full url in the field.
 
 ## API key
 Go to your Grocy instance. Navigate via the wrench icon in the top right corner to "Manage API keys" and add a new API key. Copy and paste the generated key.
@@ -228,3 +229,33 @@ It should work with for example a Duck DNS address as well, but you still have t
 # <a name="screenshot-addon-config"></a>Add-on port configuration
 
 ![alt text](grocy-addon-config.png)
+
+## Development
+
+This project uses [Task](https://taskfile.dev/) for development workflow management.
+
+### Prerequisites
+
+- Python 3.13+ with [uv](https://docs.astral.sh/uv/) package manager.
+- Docker and Docker Compose for running Grocy test instance.
+- [Task](https://taskfile.dev/) for running development commands.
+- VS Code with Python extensions (optional, for debugging).
+
+### Common Tasks
+
+- Install dependencies: `task deps`.
+- Start Grocy container: `task grocy:up`.
+- Start Home Assistant in foreground: `task ha:run` (or `task ha:up` for detached mode).
+- Inspect logs: `task ha:logs` and `task grocy:logs`.
+- Stop services: `task ha:down` and `task grocy:down`.
+- Clean local config: `task clean`.
+
+### Workflow Tips
+
+1. Start Grocy with `task grocy:up` and wait for it to become healthy.
+2. Launch Home Assistant via `task ha:run` for interactive logs, or `task ha:up` to run detached.
+3. Enable the integration in the dev instance and point it to the Grocy container at `http://localhost:9192` with your API key.
+4. Use `task ha:restart` after code changes to refresh.
+5. When finished, stop containers with `task ha:down` and `task grocy:down`.
+
+Report issues or feature ideas via the GitHub [issue tracker](https://github.com/iamkarlson/grocy/issues).

@@ -1,0 +1,30 @@
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: ha-dev
+    depends_on:
+      - grocy
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+      - "5678:5678"
+    environment:
+      - TZ=UTC
+      - PYDEVD_DISABLE_FILE_VALIDATION=1
+      - PYTHONDONTWRITEBYTECODE=1
+    volumes:
+      - ./config:/config
+      - ./custom_components:/config/custom_components
+
+  grocy:
+    image: linuxserver/grocy:latest
+    container_name: grocy-dev
+    restart: unless-stopped
+    ports:
+      - "9192:80"
+    environment:
+      - TZ=UTC
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ./.grocy-data:/config

@@ -2,5 +2,8 @@
     "files.associations": {
         "*.yaml": "home-assistant"
     },
-    "python.useEnvironmentsExtension": true
+    "python.useEnvironmentsExtension": true,
+    "task": {
+        "path": "/usr/local/bin/task"
+    }
 }

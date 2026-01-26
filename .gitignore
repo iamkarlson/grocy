@@ -141,3 +141,6 @@ config/*
 !config/configuration.yaml
 .history/
 .github/copilot-instructions.md
+
+# Grocy development data
+.grocy-data/

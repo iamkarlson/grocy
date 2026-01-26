@@ -35,7 +35,7 @@ from .const import (
 )
 from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
 from .entity import GrocyEntity
-from .helpers import MealPlanItemWrapper
+from .helpers import MealPlanItemWrapper, ProductWrapper
 from .services import (
     SERVICE_AMOUNT,
     SERVICE_BATTERY_ID,
@@ -215,15 +215,31 @@ class GrocyTodoItem(TodoItem):
                 # TODO, the description attribute isn't pulled for products in pygrocy
                 description=None,
             )
+        elif isinstance(item, ProductWrapper):
+            product = item.product
+            super().__init__(
+                uid=product.id.__str__(),
+                summary=f"{product.available_amount:.2f}x {product.name}",
+                status=TodoItemStatus.NEEDS_ACTION
+                if (product.available_amount or 0) > 0
+                else TodoItemStatus.COMPLETED,
+                description=None,
+            )
         elif isinstance(item, ShoppingListProduct):
+            amount = item.amount or 0
+            product_name = item.product.name if item.product else "Unknown product"
+            done_flag = getattr(item, "done", getattr(item, "_done", None))
+            if isinstance(done_flag, str):
+                is_done = done_flag.strip().lower() in {"1", "true", "yes"}
+            else:
+                is_done = bool(done_flag)
             super().__init__(
                 uid=item.id.__str__(),
-                summary=f"{item.amount:.2f}x {item.product.name}",
+                summary=f"{amount:.2f}x {product_name}",
                 due=None,
-                status=TodoItemStatus.NEEDS_ACTION
-                # TODO, needs the 'done' attribute instead; however, this isn't supported by pygrocy yet.
-                if item.amount > 0
-                else TodoItemStatus.COMPLETED,
+                status=TodoItemStatus.COMPLETED
+                if is_done
+                else TodoItemStatus.NEEDS_ACTION,
                 description=item.note or None,
             )
         elif isinstance(item, Task):

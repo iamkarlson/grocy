@@ -1,0 +1,82 @@
+version: '3'
+
+tasks:
+  install:
+    desc: install all dependencies including dev dependencies
+    cmds:
+      - uv sync --dev --frozen
+      - uv run pre-commit install
+
+  deps:
+    desc: Install dependencies
+    cmds:
+      - uv sync --frozen
+
+  ha:restore:
+    desc: |
+      Restore Home Assistant backup into config without custom components.
+      To remove old Home Assistant files, run `git clean -fdX config/` first from the repo root.
+    dir: config
+    requires:
+      vars: [BACKUP]
+    cmds:
+      - tar -xf backups/{{.BACKUP}} homeassistant.tar.gz
+      - tar -xzf homeassistant.tar.gz --strip-components=1 --exclude custom_components
+      - rm homeassistant.tar.gz
+
+
+  ha:run:
+    desc: Run Home Assistant in foreground (Docker)
+    cmds:
+      - docker compose up homeassistant
+
+  ha:up:
+    desc: Start Home Assistant in daemon mode
+    cmds:
+      - docker compose up -d homeassistant
+
+  ha:down:
+    desc: Stop Home Assistant container
+    cmds:
+      - docker compose stop homeassistant
+
+  ha:restart:
+    desc: Restart Home Assistant container
+    cmds:
+      - docker compose up -d --force-recreate homeassistant
+
+  ha:logs:
+    desc: Tail Home Assistant logs
+    cmds:
+      - docker compose logs -f homeassistant
+
+  ha:shell:
+    desc: Access Home Assistant container shell
+    cmds:
+      - docker compose exec homeassistant bash
+
+  # Infrastructure/Grocy container management
+  grocy:up:
+    desc: Start grocy container in daemon mode
+    cmds:
+      - docker compose up -d grocy
+
+  grocy:down:
+    desc: Stop and remove grocy containers
+    cmds:
+      - docker compose down grocy
+
+  grocy:restart:
+    desc: Restart grocy containers
+    cmds:
+      - docker compose up -d --force-recreate grocy
+
+  grocy:logs:
+    desc: Show grocy container logs
+    cmds:
+      - docker compose logs -f grocy
+
+  grocy:shell:
+    desc: Access grocy container shell
+    cmds:
+      - docker compose exec grocy bash
