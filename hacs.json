@@ -1,7 +1,8 @@
 {
   "name": "Grocy custom component",
   "render_readme": true,
-  "zip_release": false,
+  "zip_release": true,
   "hide_default_branch": true,
-  "homeassistant": "2025.11.2"
+  "homeassistant": "2025.11.2",
+  "filename": "grocy.zip"
 }
