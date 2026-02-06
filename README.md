@@ -2,7 +2,7 @@
 
 # Grocy Custom Component for Home Assistant
 
-A Home Assistant custom integration for [Grocy](https://grocy.info/) - the self-hosted groceries & household management solution.
+A Home Assistant custom integration for [Grocy](https://grocy.info/) - the self-hosted groceries & household management solution. Heavily relies on https://github.com/iamkarlson/pygrocy2
 
 ---
 **IMPORTANT INFORMATION**
