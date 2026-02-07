@@ -80,7 +80,18 @@ class GrocyData:
         """Update chores data."""
 
         def wrapper() -> list[Chore]:
-            return self.api.chores(True)
+            try:
+                return self.api.chores(True)
+            except (ValueError, TypeError) as error:
+                # Handle JSON parsing errors (empty response, invalid JSON)
+                error_msg = str(error)
+                if "Expecting value" in error_msg or "JSON" in error_msg:
+                    _LOGGER.debug(
+                        "Empty or invalid JSON response from Grocy chores API: %s",
+                        error_msg,
+                    )
+                    return []
+                raise
 
         return await self.hass.async_add_executor_job(wrapper)
 
@@ -89,7 +100,18 @@ class GrocyData:
         query_filter = [f"next_estimated_execution_time<{datetime.now()}"]
 
         def wrapper():
-            return self.api.chores(get_details=True, query_filters=query_filter)
+            try:
+                return self.api.chores(get_details=True, query_filters=query_filter)
+            except (ValueError, TypeError) as error:
+                # Handle JSON parsing errors (empty response, invalid JSON)
+                error_msg = str(error)
+                if "Expecting value" in error_msg or "JSON" in error_msg:
+                    _LOGGER.debug(
+                        "Empty or invalid JSON response from Grocy overdue chores API: %s",
+                        error_msg,
+                    )
+                    return []
+                raise
 
         return await self.hass.async_add_executor_job(wrapper)
 

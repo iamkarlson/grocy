@@ -10,6 +10,8 @@
             "user": {
                 "data": {
                     "api_key": "Grocy API ključ",
+                    "calendar_sync_interval": "Interval sinkronizacije kalendara (minute)",
+                    "calendar_fix_timezone": "Popravi vremensku zonu za kalendar",
                     "port": "Broj port-a (9192)",
                     "url": "Grocy API URL (npr. \"http:\/\/yourgrocyurl.com\")",
                     "verify_ssl": "Provjerite SSL certifikat."
@@ -19,5 +21,38 @@
             }
         },
         "title": "Grocy"
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Grocy API ključ",
+                    "calendar_sync_interval": "Interval sinkronizacije kalendara (minute)",
+                    "calendar_fix_timezone": "Popravi vremensku zonu za kalendar",
+                    "port": "Broj port-a (9192)",
+                    "url": "Grocy API URL (npr. \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Provjerite SSL certifikat."
+                },
+                "description": "Konfiguriraj opcije Grocy integracije.",
+                "title": "Grocy opcije"
+            }
+        }
+    },
+    "reauth": {
+        "step": {
+            "reauth": {
+                "data": {
+                    "api_key": "Grocy API ključ",
+                    "port": "Broj port-a (9192)",
+                    "url": "Grocy API URL (npr. \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Provjerite SSL certifikat."
+                },
+                "description": "Ažurirajte postavke veze Grocy.",
+                "title": "Ponovno autentificiraj Grocy"
+            }
+        },
+        "abort": {
+            "reauth_successful": "Ponovna autentifikacija uspješna"
+        }
     }
 }
