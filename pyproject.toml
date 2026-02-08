@@ -5,10 +5,7 @@ description = "Grocy custom component for Home Assistant"
 readme = "README.md"
 requires-python = ">=3.13.2"
 dependencies = [
-    "colorlog==6.9.0",
     "homeassistant",
-    "pip>=21.3.1",
-    "ruff==0.12.2",
     "pygrocy2==2.5.0",
 ]
 
