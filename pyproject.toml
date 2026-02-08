@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13.2"
 dependencies = [
     "homeassistant",
-    "pygrocy2==2.5.0",
+    "grocy-py==0.0.2",
 ]
 
 [project.urls]

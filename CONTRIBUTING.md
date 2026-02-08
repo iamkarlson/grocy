@@ -24,7 +24,7 @@ This guide keeps development fast while preserving the context you need.
 
 - **Coordinator pattern**: [coordinator.py](custom_components/grocy/coordinator.py) houses a single `DataUpdateCoordinator` fetching all Grocy data on a 30 s interval.
 - **Base entity**: [entity.py](custom_components/grocy/entity.py) defines `GrocyEntity` that wires coordinator data with Home Assistant entities.
-- **Service layer**: [grocy_data.py](custom_components/grocy/grocy_data.py) wraps `pygrocy2` to keep API calls isolated.
+- **Service layer**: [grocy_data.py](custom_components/grocy/grocy_data.py) wraps `grocy-py` to keep API calls isolated.
 - **Config flow**: [config_flow.py](custom_components/grocy/config_flow.py) validates URL, API key, and port before creating config entries.
 
 ## Extending the Integration
@@ -64,5 +64,5 @@ This guide keeps development fast while preserving the context you need.
 	logger:
 		logs:
 			custom_components.grocy: debug
-			pygrocy.grocy_api_client: debug
+			grocy.grocy_api_client: debug
 	```

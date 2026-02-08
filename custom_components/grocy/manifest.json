@@ -7,6 +7,6 @@
   "documentation": "https://github.com/iamkarlson/grocy",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/iamkarlson/grocy/issues",
-  "requirements": ["pygrocy2==2.5.0"],
+  "requirements": ["grocy-py==0.0.2"],
   "version": "1.3.2"
 }

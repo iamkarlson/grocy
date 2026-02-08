@@ -18,11 +18,12 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pygrocy2.data_models.battery import Battery
-from pygrocy2.data_models.chore import Chore
-from pygrocy2.data_models.meal_items import MealPlanItem
-from pygrocy2.data_models.product import Product, ShoppingListProduct
-from pygrocy2.data_models.task import Task
+
+from grocy.data_models.battery import Battery
+from grocy.data_models.chore import Chore
+from grocy.data_models.meal_items import MealPlanItem
+from grocy.data_models.product import Product, ShoppingListProduct
+from grocy.data_models.task import Task
 
 from .const import (
     ATTR_BATTERIES,
@@ -212,7 +213,7 @@ class GrocyTodoItem(TodoItem):
                 status=TodoItemStatus.NEEDS_ACTION
                 if (item.available_amount or 0) > 0
                 else TodoItemStatus.COMPLETED,
-                # TODO, the description attribute isn't pulled for products in pygrocy
+                # TODO, the description attribute isn't pulled for products in grocy-py
                 description=None,
             )
         elif isinstance(item, ProductWrapper):
@@ -305,7 +306,7 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
     async def async_create_todo_item(self, item: TodoItem) -> None:
         """Add an item to the To-do list."""
         if self.entity_description.key == ATTR_BATTERIES:
-            # TODO pygrocy needs support for empty description, empty used_in
+            # TODO grocy-py needs support for empty description, empty used_in
             await async_add_generic_service(
                 self.hass,
                 self.coordinator,
@@ -396,7 +397,7 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
                 raise NotImplementedError(self.entity_description.key)
         elif self.entity_description.key == ATTR_SHOPPING_LIST:
             if item.status == TodoItemStatus.COMPLETED:
-                # TODO pygrocy doesn't track shopping lists, but they are needed here
+                # TODO grocy-py doesn't track shopping lists, but they are needed here
                 grocy_item = self._get_grocy_item(item.uid)
                 await async_remove_product_in_shopping_list(
                     self.hass,
