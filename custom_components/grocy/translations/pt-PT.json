@@ -43,8 +43,7 @@
                 "description": "Se precisar de ajuda com a configuração, consulte a documentação no GitHub.",
                 "title": "Ligar a tua instância Grocy "
             }
-        },
-        "title": "Grocy"
+        }
     },
     "options": {
         "step": {
@@ -54,7 +53,7 @@
                     "calendar_fix_timezone": "Corrigir fuso horário para calendário",
                     "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
                     "port": "Número da Porta (9192)",
-                    "url": "Link AP da Grocy (e.g. \"http:\/\/yourgrocyurl.com\")",
+                    "url": "Link AP da Grocy",
                     "verify_ssl": "Verificar o certificado SSL Certificate"
                 },
                 "description": "Configurar opções de integração do Grocy.",
@@ -62,21 +61,5 @@
             }
         }
     },
-    "reauth": {
-        "abort": {
-            "reauth_successful": "Reautenticação bem-sucedida"
-        },
-        "step": {
-            "reauth": {
-                "data": {
-                    "api_key": "Grocy chave da API",
-                    "port": "Número da Porta (9192)",
-                    "url": "Link AP da Grocy (e.g. \"http:\/\/yourgrocyurl.com\")",
-                    "verify_ssl": "Verificar o certificado SSL Certificate"
-                },
-                "description": "Atualize as suas configurações de ligação do Grocy.",
-                "title": "Reautenticar Grocy"
-            }
-        }
-    }
+    "title": "Grocy"
 }
