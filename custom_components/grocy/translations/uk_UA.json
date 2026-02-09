@@ -11,10 +11,10 @@
                 "data": {
                     "api_key": "Ключ Grocy API",
                     "port": "Номер порту (9192)",
-                    "url": "URL-адреса Grocy API (наприклад, \"http:\/\/yourgrocyurl.com\")",
+                    "url": "URL-адреса Grocy API",
                     "verify_ssl": "Перевірте сертифікат SSL"
                 },
-                "description": "Якщо вам потрібна допомога з налаштуванням, подивіться тут: https:\/\/github.com\/iamkarlson\/grocy",
+                "description": "Якщо вам потрібна допомога з налаштуванням, перегляньте документацію на GitHub.",
                 "title": "Grocy"
             }
         },

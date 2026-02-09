@@ -11,10 +11,10 @@
                 "data": {
                     "api_key": "Grocy chave da API",
                     "port": "Número da Porta (9192)",
-                    "url": "Link AP da Grocy (e.g. \"http:\/\/yourgrocyurl.com\")",
+                    "url": "URL da API do Grocy",
                     "verify_ssl": "Verificar o certificado SSL Certificate"
                 },
-                "description": "Se precisar de ajuda com a configuração, dê uma vista de olhos aqui: https:\/\/github.com\/iamkarlson\/grocy",
+                "description": "Se precisar de ajuda com a configuração, consulte a documentação no GitHub.",
                 "title": "Ligar a tua instância Grocy "
             }
         },

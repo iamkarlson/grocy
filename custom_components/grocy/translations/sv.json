@@ -11,10 +11,10 @@
                 "data": {
                     "api_key": "Grocy API nyckel",
                     "port": "Portnummer (9192)",
-                    "url": "Grocy API URL (t.ex. \"http:\/\/yourgrocyurl.se\")",
+                    "url": "Grocy API URL",
                     "verify_ssl": "Verifiera SSL certifikat"
                 },
-                "description": "Om du behöver hjälp med konfigurationen, kolla här: https:\/\/github.com\/iamkarlson\/grocy",
+                "description": "Om du behöver hjälp med konfigurationen, kolla dokumentationen på GitHub.",
                 "title": "Grocy"
             }
         },

@@ -11,10 +11,10 @@
                 "data": {
                     "api_key": "Grocy API-sleutel",
                     "port": "Poortnummer (9192)",
-                    "url": "Grocy API-URL (bijv. \"http:\/\/yourgrocyurl.com\")",
+                    "url": "Grocy API-URL",
                     "verify_ssl": "SSL-certificaat verifiëren"
                 },
-                "description": "Als je hulp nodig hebt bij de configuratie, kijk dan hier: https:\/\/github.com\/iamkarlson\/grocy",
+                "description": "Als je hulp nodig hebt bij de configuratie, kijk dan in de documentatie op GitHub.",
                 "title": "Grocy"
             }
         },

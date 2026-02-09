@@ -11,10 +11,10 @@
                 "data": {
                     "api_key": "Grocy API ključ",
                     "port": "Broj port-a (9192)",
-                    "url": "Grocy API URL (npr. \"http:\/\/yourgrocyurl.com\")",
+                    "url": "Grocy API URL",
                     "verify_ssl": "Provjerite SSL certifikat."
                 },
-                "description": "Ako vam je potrebna pomoć oko konfiguracije, pogledajte ovdje: https:\/\/github.com\/iamkarlson\/grocy",
+                "description": "Ako vam je potrebna pomoć oko konfiguracije, pogledajte dokumentaciju na GitHubu.",
                 "title": "Grocy"
             }
         },
