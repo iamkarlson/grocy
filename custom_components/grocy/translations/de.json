@@ -14,7 +14,7 @@
                     "url": "Grocy API URL",
                     "verify_ssl": "SSL-Zertifikat verifizieren"
                 },
-                "description": "Wenn du Hilfe mit den Einstellungen brauchst, kannst du hier nachsehen: https:\/\/github.com\/iamkarlson\/grocy",
+                "description": "Wenn du Hilfe mit den Einstellungen brauchst, schau in die Dokumentation auf GitHub.",
                 "title": "Grocy"
             }
         },
