@@ -12,6 +12,11 @@ tasks:
     cmds:
       - uv sync --frozen
 
+  test:
+    desc: Run pytest suite
+    cmds:
+      - uv run pytest
+
   ha:restore:
     desc: |
       Restore Home Assistant backup into config without custom components.
