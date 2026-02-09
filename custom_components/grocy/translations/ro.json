@@ -22,6 +22,8 @@
             "reconfigure": {
                 "data": {
                     "api_key": "Cheie API Grocy",
+                    "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
+                    "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
                     "port": "Număr port (9192)",
                     "url": "Adresa URL a API-ului Grocy",
                     "verify_ssl": "Verificați certificatul SSL"
@@ -32,6 +34,8 @@
             "user": {
                 "data": {
                     "api_key": "Cheie API Grocy",
+                    "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
+                    "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
                     "port": "Număr port (9192)",
                     "url": "Adresa URL a API-ului Grocy",
                     "verify_ssl": "Verificați certificatul SSL"
@@ -39,7 +43,23 @@
                 "description": "Dacă aveți nevoie de ajutor cu configurarea, consultați documentația de pe GitHub.",
                 "title": "Grocy"
             }
-        },
-        "title": "Grocy"
-    }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Cheie API Grocy",
+                    "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
+                    "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
+                    "port": "Număr port (9192)",
+                    "url": "Adresa URL a API-ului Grocy",
+                    "verify_ssl": "Verificați certificatul SSL"
+                },
+                "description": "Configurați opțiunile de integrare Grocy.",
+                "title": "Opțiuni Grocy"
+            }
+        }
+    },
+    "title": "Grocy"
 }
