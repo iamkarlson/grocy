@@ -14,9 +14,12 @@ from grocy import Grocy
 
 from .const import (
     CONF_API_KEY,
+    CONF_CALENDAR_FIX_TIMEZONE,
+    CONF_CALENDAR_SYNC_INTERVAL,
     CONF_PORT,
     CONF_URL,
     CONF_VERIFY_SSL,
+    DEFAULT_CALENDAR_SYNC_INTERVAL,
     DEFAULT_PORT,
     DOMAIN,
     NAME,
@@ -38,6 +41,16 @@ def _get_user_data_schema(
             vol.Optional(CONF_PORT, default=defaults.get(CONF_PORT, DEFAULT_PORT)): int,
             vol.Optional(
                 CONF_VERIFY_SSL, default=defaults.get(CONF_VERIFY_SSL, False)
+            ): bool,
+            vol.Optional(
+                CONF_CALENDAR_SYNC_INTERVAL,
+                default=defaults.get(
+                    CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
+                ),
+            ): int,
+            vol.Optional(
+                CONF_CALENDAR_FIX_TIMEZONE,
+                default=defaults.get(CONF_CALENDAR_FIX_TIMEZONE, True),
             ): bool,
         }
     )
@@ -72,6 +85,14 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.debug("Testing of credentials returned error: %s", error)
 
             if error is None:
+                # Set default calendar sync interval if not provided
+                if CONF_CALENDAR_SYNC_INTERVAL not in user_input:
+                    user_input[CONF_CALENDAR_SYNC_INTERVAL] = (
+                        DEFAULT_CALENDAR_SYNC_INTERVAL
+                    )
+                # Set default fix timezone if not provided
+                if CONF_CALENDAR_FIX_TIMEZONE not in user_input:
+                    user_input[CONF_CALENDAR_FIX_TIMEZONE] = True
                 return self.async_create_entry(title=NAME, data=user_input)
 
             self._errors["base"] = error

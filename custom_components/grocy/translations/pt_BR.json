@@ -22,6 +22,8 @@
             "reconfigure": {
                 "data": {
                     "api_key": "Chave de API do Grocy",
+                    "calendar_fix_timezone": "Corrigir fuso horário para calendário",
+                    "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
                     "port": "Número da porta (9192)",
                     "url": "URL da API do Grocy",
                     "verify_ssl": "Verificar certificado SSL"
@@ -32,6 +34,8 @@
             "user": {
                 "data": {
                     "api_key": "Chave de API do Grocy",
+                    "calendar_fix_timezone": "Corrigir fuso horário para calendário",
+                    "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
                     "port": "Número da porta (9192)",
                     "url": "URL da API do Grocy",
                     "verify_ssl": "Verificar certificado SSL"
@@ -41,5 +45,38 @@
             }
         },
         "title": "Grocy"
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Chave de API do Grocy",
+                    "calendar_fix_timezone": "Corrigir fuso horário para calendário",
+                    "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
+                    "port": "Número da porta (9192)",
+                    "url": "URL da API do Grocy (por exemplo, \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Verificar certificado SSL"
+                },
+                "description": "Configurar opções de integração do Grocy.",
+                "title": "Opções do Grocy"
+            }
+        }
+    },
+    "reauth": {
+        "abort": {
+            "reauth_successful": "Reautenticação bem-sucedida"
+        },
+        "step": {
+            "reauth": {
+                "data": {
+                    "api_key": "Chave de API do Grocy",
+                    "port": "Número da porta (9192)",
+                    "url": "URL da API do Grocy (por exemplo, \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Verificar certificado SSL"
+                },
+                "description": "Atualize suas configurações de conexão do Grocy.",
+                "title": "Reautenticar Grocy"
+            }
+        }
     }
 }

@@ -22,6 +22,8 @@
             "reconfigure": {
                 "data": {
                     "api_key": "Grocy API ključ",
+                    "calendar_fix_timezone": "Popravi vremensku zonu za kalendar",
+                    "calendar_sync_interval": "Interval sinkronizacije kalendara (minute)",
                     "port": "Broj port-a (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Provjerite SSL certifikat."
@@ -32,6 +34,8 @@
             "user": {
                 "data": {
                     "api_key": "Grocy API ključ",
+                    "calendar_fix_timezone": "Popravi vremensku zonu za kalendar",
+                    "calendar_sync_interval": "Interval sinkronizacije kalendara (minute)",
                     "port": "Broj port-a (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Provjerite SSL certifikat."
@@ -41,5 +45,38 @@
             }
         },
         "title": "Grocy"
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Grocy API ključ",
+                    "calendar_fix_timezone": "Popravi vremensku zonu za kalendar",
+                    "calendar_sync_interval": "Interval sinkronizacije kalendara (minute)",
+                    "port": "Broj port-a (9192)",
+                    "url": "Grocy API URL (npr. \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Provjerite SSL certifikat."
+                },
+                "description": "Konfiguriraj opcije Grocy integracije.",
+                "title": "Grocy opcije"
+            }
+        }
+    },
+    "reauth": {
+        "abort": {
+            "reauth_successful": "Ponovna autentifikacija uspješna"
+        },
+        "step": {
+            "reauth": {
+                "data": {
+                    "api_key": "Grocy API ključ",
+                    "port": "Broj port-a (9192)",
+                    "url": "Grocy API URL (npr. \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Provjerite SSL certifikat."
+                },
+                "description": "Ažurirajte postavke veze Grocy.",
+                "title": "Ponovno autentificiraj Grocy"
+            }
+        }
     }
 }

@@ -22,6 +22,8 @@
             "reconfigure": {
                 "data": {
                     "api_key": "Ключ Grocy API",
+                    "calendar_fix_timezone": "Виправити часовий пояс для календаря",
+                    "calendar_sync_interval": "Інтервал синхронізації календаря (хвилини)",
                     "port": "Номер порту (9192)",
                     "url": "URL-адреса Grocy API",
                     "verify_ssl": "Перевірте сертифікат SSL"
@@ -32,6 +34,8 @@
             "user": {
                 "data": {
                     "api_key": "Ключ Grocy API",
+                    "calendar_fix_timezone": "Виправити часовий пояс для календаря",
+                    "calendar_sync_interval": "Інтервал синхронізації календаря (хвилини)",
                     "port": "Номер порту (9192)",
                     "url": "URL-адреса Grocy API",
                     "verify_ssl": "Перевірте сертифікат SSL"
@@ -41,5 +45,38 @@
             }
         },
         "title": "Grocy"
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Ключ Grocy API",
+                    "calendar_fix_timezone": "Виправити часовий пояс для календаря",
+                    "calendar_sync_interval": "Інтервал синхронізації календаря (хвилини)",
+                    "port": "Номер порту (9192)",
+                    "url": "URL-адреса Grocy API (наприклад, \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Перевірте сертифікат SSL"
+                },
+                "description": "Налаштувати параметри інтеграції Grocy.",
+                "title": "Параметри Grocy"
+            }
+        }
+    },
+    "reauth": {
+        "abort": {
+            "reauth_successful": "Повторна автентифікація успішна"
+        },
+        "step": {
+            "reauth": {
+                "data": {
+                    "api_key": "Ключ Grocy API",
+                    "port": "Номер порту (9192)",
+                    "url": "URL-адреса Grocy API (наприклад, \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Перевірте сертифікат SSL"
+                },
+                "description": "Оновіть налаштування підключення Grocy.",
+                "title": "Повторна автентифікація Grocy"
+            }
+        }
     }
 }

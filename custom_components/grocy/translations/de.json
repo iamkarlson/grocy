@@ -22,6 +22,8 @@
             "reconfigure": {
                 "data": {
                     "api_key": "Grocy API Schlüssel",
+                    "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
+                    "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "SSL-Zertifikat verifizieren"
@@ -32,6 +34,8 @@
             "user": {
                 "data": {
                     "api_key": "Grocy API Schlüssel",
+                    "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
+                    "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "SSL-Zertifikat verifizieren"
@@ -41,5 +45,38 @@
             }
         },
         "title": "Grocy"
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Grocy API Schlüssel",
+                    "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
+                    "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
+                    "port": "Portnummer (9192)",
+                    "url": "Grocy API URL",
+                    "verify_ssl": "SSL-Zertifikat verifizieren"
+                },
+                "description": "Grocy-Integrationsoptionen konfigurieren.",
+                "title": "Grocy-Optionen"
+            }
+        }
+    },
+    "reauth": {
+        "abort": {
+            "reauth_successful": "Erneute Authentifizierung erfolgreich"
+        },
+        "step": {
+            "reauth": {
+                "data": {
+                    "api_key": "Grocy API Schlüssel",
+                    "port": "Portnummer (9192)",
+                    "url": "Grocy API URL",
+                    "verify_ssl": "SSL-Zertifikat verifizieren"
+                },
+                "description": "Aktualisieren Sie Ihre Grocy-Verbindungseinstellungen.",
+                "title": "Grocy erneut authentifizieren"
+            }
+        }
     }
 }
