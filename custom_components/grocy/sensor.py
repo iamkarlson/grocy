@@ -32,6 +32,7 @@ from .const import (
 )
 from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
 from .entity import GrocyEntity
+from .helpers import model_to_dict
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
         icon="mdi:broom",
         exists_fn=lambda entities: ATTR_CHORES in entities,
         attributes_fn=lambda data: {
-            "chores": [x.as_dict() for x in data],
+            "chores": [model_to_dict(x) for x in data],
             "count": len(data),
         },
     ),
@@ -88,7 +89,7 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
         icon="mdi:silverware-variant",
         exists_fn=lambda entities: ATTR_MEAL_PLAN in entities,
         attributes_fn=lambda data: {
-            "meals": [x.as_dict() for x in data],
+            "meals": [model_to_dict(x) for x in data],
             "count": len(data),
         },
     ),
@@ -100,7 +101,7 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
         icon="mdi:cart-outline",
         exists_fn=lambda entities: ATTR_SHOPPING_LIST in entities,
         attributes_fn=lambda data: {
-            "products": [x.as_dict() for x in data],
+            "products": [model_to_dict(x) for x in data],
             "count": len(data),
         },
     ),
@@ -112,7 +113,7 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
         icon="mdi:fridge-outline",
         exists_fn=lambda entities: ATTR_STOCK in entities,
         attributes_fn=lambda data: {
-            "products": [x.as_dict() for x in data],
+            "products": [model_to_dict(x) for x in data],
             "count": len(data),
         },
     ),
@@ -124,7 +125,7 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
         icon="mdi:checkbox-marked-circle-outline",
         exists_fn=lambda entities: ATTR_TASKS in entities,
         attributes_fn=lambda data: {
-            "tasks": [x.as_dict() for x in data],
+            "tasks": [model_to_dict(x) for x in data],
             "count": len(data),
         },
     ),
@@ -136,7 +137,7 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
         icon="mdi:battery",
         exists_fn=lambda entities: ATTR_BATTERIES in entities,
         attributes_fn=lambda data: {
-            "batteries": [x.as_dict() for x in data],
+            "batteries": [model_to_dict(x) for x in data],
             "count": len(data),
         },
     ),

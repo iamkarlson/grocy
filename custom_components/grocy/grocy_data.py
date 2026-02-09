@@ -10,9 +10,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.http import HomeAssistantView
-from pygrocy2.data_models.battery import Battery
-from pygrocy2.data_models.chore import Chore
-from pygrocy2.grocy import Grocy
+
+from grocy import Grocy
+from grocy.data_models.battery import Battery
+from grocy.data_models.chore import Chore
+from grocy.grocy_api_client import CurrentStockResponse
 
 from .const import (
     ATTR_BATTERIES,
@@ -69,10 +71,9 @@ class GrocyData:
         """Update stock data."""
 
         def wrapper():
-            return [
-                ProductWrapper(item, self.hass)
-                for item in self.api._api_client.get_stock()
-            ]
+            stock_client = self.api.stock._api
+            stock_entries: list[CurrentStockResponse] = stock_client.get_stock()
+            return [ProductWrapper(item, self.hass) for item in stock_entries]
 
         return await self.hass.async_add_executor_job(wrapper)
 
@@ -80,7 +81,7 @@ class GrocyData:
         """Update chores data."""
 
         def wrapper() -> list[Chore]:
-            return self.api.chores(True)
+            return self.api.chores.list(get_details=True)
 
         return await self.hass.async_add_executor_job(wrapper)
 
@@ -89,7 +90,7 @@ class GrocyData:
         query_filter = [f"next_estimated_execution_time<{datetime.now()}"]
 
         def wrapper():
-            return self.api.chores(get_details=True, query_filters=query_filter)
+            return self.api.chores.list(get_details=True, query_filters=query_filter)
 
         return await self.hass.async_add_executor_job(wrapper)
 
@@ -97,13 +98,13 @@ class GrocyData:
         """Get the configuration from Grocy."""
 
         def wrapper():
-            return self.api.get_system_config()
+            return self.api.system.config()
 
         return await self.hass.async_add_executor_job(wrapper)
 
     async def async_update_tasks(self):
         """Update tasks data."""
-        return await self.hass.async_add_executor_job(self.api.tasks)
+        return await self.hass.async_add_executor_job(self.api.tasks.list)
 
     async def async_update_overdue_tasks(self):
         """Update overdue tasks data."""
@@ -116,7 +117,7 @@ class GrocyData:
         ]
 
         def wrapper():
-            return self.api.tasks(query_filters=and_query_filter)
+            return self.api.tasks.list(query_filters=and_query_filter)
 
         return await self.hass.async_add_executor_job(wrapper)
 
@@ -124,7 +125,7 @@ class GrocyData:
         """Update shopping list data."""
 
         def wrapper():
-            return self.api.shopping_list(True)
+            return self.api.shopping_list.items(get_details=True)
 
         return await self.hass.async_add_executor_job(wrapper)
 
@@ -132,7 +133,7 @@ class GrocyData:
         """Update expiring products data."""
 
         def wrapper():
-            return self.api.due_products(True)
+            return self.api.stock.due_products(get_details=True)
 
         return await self.hass.async_add_executor_job(wrapper)
 
@@ -140,7 +141,7 @@ class GrocyData:
         """Update expired products data."""
 
         def wrapper():
-            return self.api.expired_products(True)
+            return self.api.stock.expired_products(get_details=True)
 
         return await self.hass.async_add_executor_job(wrapper)
 
@@ -148,7 +149,7 @@ class GrocyData:
         """Update overdue products data."""
 
         def wrapper():
-            return self.api.overdue_products(True)
+            return self.api.stock.overdue_products(get_details=True)
 
         return await self.hass.async_add_executor_job(wrapper)
 
@@ -156,7 +157,7 @@ class GrocyData:
         """Update missing products data."""
 
         def wrapper():
-            return self.api.missing_products(True)
+            return self.api.stock.missing_products(get_details=True)
 
         return await self.hass.async_add_executor_job(wrapper)
 
@@ -168,7 +169,9 @@ class GrocyData:
         query_filter = [f"day>{yesterday.date()}"]
 
         def wrapper():
-            meal_plan = self.api.meal_plan(get_details=True, query_filters=query_filter)
+            meal_plan = self.api.meal_plan.items(
+                get_details=True, query_filters=query_filter
+            )
             plan = [MealPlanItemWrapper(item) for item in meal_plan]
             return sorted(plan, key=lambda item: item.meal_plan.day)
 
@@ -178,7 +181,7 @@ class GrocyData:
         """Update batteries."""
 
         def wrapper():
-            return self.api.batteries(get_details=True)
+            return self.api.batteries.list(get_details=True)
 
         return await self.hass.async_add_executor_job(wrapper)
 
@@ -187,7 +190,7 @@ class GrocyData:
 
         def wrapper():
             filter_query = [f"next_estimated_charge_time<{datetime.now()}"]
-            return self.api.batteries(filter_query, get_details=True)
+            return self.api.batteries.list(filter_query, get_details=True)
 
         return await self.hass.async_add_executor_job(wrapper)
 
