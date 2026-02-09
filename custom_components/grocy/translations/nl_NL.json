@@ -1,23 +1,65 @@
 {
     "config": {
         "abort": {
+            "reauth_successful": "Herauthenticatie was succesvol.",
+            "reconfigure_successful": "Herconfiguratie was succesvol.",
             "single_instance_allowed": "Slechts één configuratie van Grocy is toegestaan."
         },
         "error": {
-            "auth": "Er ging iets mis."
+            "cannot_connect": "Kon geen verbinding maken met de Grocy-server.",
+            "invalid_auth": "Ongeldige API-sleutel of authenticatie mislukt.",
+            "timeout": "Verbinding time-out.",
+            "unknown": "Onverwachte fout"
         },
         "step": {
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "Grocy API-sleutel"
+                },
+                "description": "Voer de API-sleutel voor {host} opnieuw in.",
+                "title": "Grocy opnieuw authenticeren"
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "Grocy API-sleutel",
+                    "calendar_fix_timezone": "Tijdzone voor kalender corrigeren",
+                    "calendar_sync_interval": "Kalendersynchronisatie-interval (minuten)",
+                    "port": "Poortnummer (9192)",
+                    "url": "Grocy API-URL",
+                    "verify_ssl": "SSL-certificaat verifiëren"
+                },
+                "description": "Werk je Grocy-verbindingsinstellingen bij.",
+                "title": "Grocy herconfigureren"
+            },
             "user": {
                 "data": {
                     "api_key": "Grocy API-sleutel",
+                    "calendar_fix_timezone": "Tijdzone voor kalender corrigeren",
+                    "calendar_sync_interval": "Kalendersynchronisatie-interval (minuten)",
                     "port": "Poortnummer (9192)",
-                    "url": "Grocy API-URL (bijv. \"http:\/\/yourgrocyurl.com\")",
+                    "url": "Grocy API-URL",
                     "verify_ssl": "SSL-certificaat verifiëren"
                 },
-                "description": "Als je hulp nodig hebt bij de configuratie, kijk dan hier: https:\/\/github.com\/iamkarlson\/grocy",
+                "description": "Als je hulp nodig hebt bij de configuratie, kijk dan in de documentatie op GitHub.",
                 "title": "Grocy"
             }
-        },
-        "title": "Grocy"
-    }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Grocy API-sleutel",
+                    "calendar_fix_timezone": "Tijdzone voor kalender corrigeren",
+                    "calendar_sync_interval": "Kalendersynchronisatie-interval (minuten)",
+                    "port": "Poortnummer (9192)",
+                    "url": "Grocy API-URL",
+                    "verify_ssl": "SSL-certificaat verifiëren"
+                },
+                "description": "Configureer Grocy-integratieopties.",
+                "title": "Grocy-opties"
+            }
+        }
+    },
+    "title": "Grocy"
 }

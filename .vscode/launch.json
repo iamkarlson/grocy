@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Attach to Home Assistant",
+            "name": "Attach to Home Assistant (Docker)",
             "type": "debugpy",
             "request": "attach",
             "connect": {
@@ -17,6 +17,10 @@
                 {
                     "localRoot": "${workspaceFolder}/config",
                     "remoteRoot": "/config"
+                },
+                {
+                    "localRoot": "${workspaceFolder}/.venv/lib/python3.14/site-packages/homeassistant",
+                    "remoteRoot": "/usr/src/homeassistant/homeassistant"
                 }
             ],
             "justMyCode": false,

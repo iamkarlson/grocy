@@ -144,3 +144,6 @@ config/*
 
 # Grocy development data
 .grocy-data/
+
+# Igrnore VSCode settings
+.vscode/

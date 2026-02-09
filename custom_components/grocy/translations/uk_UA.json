@@ -1,23 +1,65 @@
 {
     "config": {
         "abort": {
+            "reauth_successful": "Повторна автентифікація пройшла успішно.",
+            "reconfigure_successful": "Переналаштування пройшло успішно.",
             "single_instance_allowed": "Дозволена лише одна конфігурація Grocy."
         },
         "error": {
-            "auth": "Щось пішло не так."
+            "cannot_connect": "Не вдалося підключитися до сервера Grocy.",
+            "invalid_auth": "Недійсний ключ API або помилка автентифікації.",
+            "timeout": "Час очікування з'єднання вичерпано.",
+            "unknown": "Неочікувана помилка"
         },
         "step": {
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "Ключ Grocy API"
+                },
+                "description": "Будь ласка, введіть ключ API для {host} ще раз.",
+                "title": "Повторна автентифікація Grocy"
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "Ключ Grocy API",
+                    "calendar_fix_timezone": "Виправити часовий пояс для календаря",
+                    "calendar_sync_interval": "Інтервал синхронізації календаря (хвилини)",
+                    "port": "Номер порту (9192)",
+                    "url": "URL-адреса Grocy API",
+                    "verify_ssl": "Перевірте сертифікат SSL"
+                },
+                "description": "Оновіть налаштування підключення Grocy.",
+                "title": "Переналаштувати Grocy"
+            },
             "user": {
                 "data": {
                     "api_key": "Ключ Grocy API",
+                    "calendar_fix_timezone": "Виправити часовий пояс для календаря",
+                    "calendar_sync_interval": "Інтервал синхронізації календаря (хвилини)",
                     "port": "Номер порту (9192)",
-                    "url": "URL-адреса Grocy API (наприклад, \"http:\/\/yourgrocyurl.com\")",
+                    "url": "URL-адреса Grocy API",
                     "verify_ssl": "Перевірте сертифікат SSL"
                 },
-                "description": "Якщо вам потрібна допомога з налаштуванням, подивіться тут: https:\/\/github.com\/iamkarlson\/grocy",
+                "description": "Якщо вам потрібна допомога з налаштуванням, перегляньте документацію на GitHub.",
                 "title": "Grocy"
             }
-        },
-        "title": "Grocy"
-    }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Ключ Grocy API",
+                    "calendar_fix_timezone": "Виправити часовий пояс для календаря",
+                    "calendar_sync_interval": "Інтервал синхронізації календаря (хвилини)",
+                    "port": "Номер порту (9192)",
+                    "url": "URL-адреса Grocy API",
+                    "verify_ssl": "Перевірте сертифікат SSL"
+                },
+                "description": "Налаштувати параметри інтеграції Grocy.",
+                "title": "Параметри Grocy"
+            }
+        }
+    },
+    "title": "Grocy"
 }

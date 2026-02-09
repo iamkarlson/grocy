@@ -1,6 +1,6 @@
 services:
   homeassistant:
-    image: ghcr.io/home-assistant/home-assistant:stable
+    image: ghcr.io/home-assistant/home-assistant:2026.1.3
     container_name: ha-dev
     depends_on:
       - grocy
@@ -26,5 +26,25 @@ services:
       - TZ=UTC
       - PUID=1000
       - PGID=1000
+      - GROCY_MODE=demo
     volumes:
       - ./.grocy-data:/config
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1 | grep -qi grocy" ]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 30s
+
+  grocy-key-seed:
+    image: keinos/sqlite3
+    container_name: grocy-key-seed
+    depends_on:
+      grocy:
+        condition: service_healthy
+    user: "1000:1000"
+    volumes:
+      - ./.grocy-data:/config
+      - ./scripts:/scripts:ro
+    entrypoint: ["/bin/sh", "/scripts/seed_grocy_api_key.sh"]
+    restart: "no"

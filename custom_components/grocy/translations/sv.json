@@ -1,23 +1,65 @@
 {
     "config": {
         "abort": {
+            "reauth_successful": "Omautentiseringen lyckades.",
+            "reconfigure_successful": "Omkonfigurationen lyckades.",
             "single_instance_allowed": "Endast en konfiguration av Grocy är tillåten."
         },
         "error": {
-            "auth": "Något blev fel."
+            "cannot_connect": "Kunde inte ansluta till Grocy-servern.",
+            "invalid_auth": "Ogiltig API-nyckel eller autentisering misslyckades.",
+            "timeout": "Anslutningstiden överskreds.",
+            "unknown": "Oväntat fel"
         },
         "step": {
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "Grocy API nyckel"
+                },
+                "description": "Vänligen ange API-nyckeln för {host} igen.",
+                "title": "Omautentisera Grocy"
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "Grocy API nyckel",
+                    "calendar_fix_timezone": "Åtgärda tidszon för kalender",
+                    "calendar_sync_interval": "Kalendersynkroniseringsintervall (minuter)",
+                    "port": "Portnummer (9192)",
+                    "url": "Grocy API URL",
+                    "verify_ssl": "Verifiera SSL certifikat"
+                },
+                "description": "Uppdatera dina Grocy-anslutningsinställningar.",
+                "title": "Omkonfigurera Grocy"
+            },
             "user": {
                 "data": {
                     "api_key": "Grocy API nyckel",
+                    "calendar_fix_timezone": "Åtgärda tidszon för kalender",
+                    "calendar_sync_interval": "Kalendersynkroniseringsintervall (minuter)",
                     "port": "Portnummer (9192)",
-                    "url": "Grocy API URL (t.ex. \"http:\/\/yourgrocyurl.se\")",
+                    "url": "Grocy API URL",
                     "verify_ssl": "Verifiera SSL certifikat"
                 },
-                "description": "Om du behöver hjälp med konfigurationen, kolla här: https:\/\/github.com\/iamkarlson\/grocy",
+                "description": "Om du behöver hjälp med konfigurationen, kolla dokumentationen på GitHub.",
                 "title": "Grocy"
             }
-        },
-        "title": "Grocy"
-    }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Grocy API nyckel",
+                    "calendar_fix_timezone": "Åtgärda tidszon för kalender",
+                    "calendar_sync_interval": "Kalendersynkroniseringsintervall (minuter)",
+                    "port": "Portnummer (9192)",
+                    "url": "Grocy API URL",
+                    "verify_ssl": "Verifiera SSL certifikat"
+                },
+                "description": "Konfigurera Grocy-integrationsalternativ.",
+                "title": "Grocy-alternativ"
+            }
+        }
+    },
+    "title": "Grocy"
 }

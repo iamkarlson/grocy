@@ -1,23 +1,65 @@
 {
+    "title": "Grocy",
     "config": {
         "abort": {
-            "single_instance_allowed": "Only a single configuration of Grocy is allowed."
+            "single_instance_allowed": "Only a single configuration of Grocy is allowed.",
+            "reauth_successful": "Re-authentication was successful.",
+            "reconfigure_successful": "Reconfiguration was successful."
         },
         "error": {
-            "auth": "Something went wrong."
+            "invalid_auth": "Invalid API key or authentication failed.",
+            "cannot_connect": "Failed to connect to the Grocy server.",
+            "timeout": "Connection timed out.",
+            "unknown": "Unexpected error"
         },
         "step": {
             "user": {
                 "data": {
                     "api_key": "Grocy API Key",
+                    "calendar_sync_interval": "Calendar Sync Interval (minutes)",
+                    "calendar_fix_timezone": "Fix timezone for calendar",
                     "port": "Port Number (9192)",
-                    "url": "Grocy API URL (e.g. \"http:\/\/yourgrocyurl.com\", with no path)",
+                    "url": "Grocy API URL",
                     "verify_ssl": "Verify SSL Certificate"
                 },
-                "description": "If you need help with the configuration have a look here: https:\/\/github.com\/iamkarlson\/grocy",
+                "description": "If you need help with the configuration have a look at the documentation on GitHub.",
                 "title": "Grocy"
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "Grocy API Key",
+                    "calendar_sync_interval": "Calendar Sync Interval (minutes)",
+                    "calendar_fix_timezone": "Fix timezone for calendar",
+                    "port": "Port Number (9192)",
+                    "url": "Grocy API URL",
+                    "verify_ssl": "Verify SSL Certificate"
+                },
+                "description": "Update your Grocy connection settings.",
+                "title": "Reconfigure Grocy"
+            },
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "Grocy API Key"
+                },
+                "description": "Please re-enter the API key for {host}.",
+                "title": "Re-authenticate Grocy"
             }
-        },
-        "title": "Grocy"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Grocy API Key",
+                    "calendar_sync_interval": "Calendar Sync Interval (minutes)",
+                    "calendar_fix_timezone": "Fix timezone for calendar",
+                    "port": "Port Number (9192)",
+                    "url": "Grocy API URL",
+                    "verify_ssl": "Verify SSL Certificate"
+                },
+                "description": "Configure Grocy integration options.",
+                "title": "Grocy Options"
+            }
+        }
     }
 }

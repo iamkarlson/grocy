@@ -2,7 +2,7 @@
 
 # Grocy Custom Component for Home Assistant
 
-A Home Assistant custom integration for [Grocy](https://grocy.info/) - the self-hosted groceries & household management solution. Heavily relies on https://github.com/iamkarlson/pygrocy2
+A Home Assistant custom integration for [Grocy](https://grocy.info/) - the self-hosted groceries & household management solution. Heavily relies on https://github.com/iamkarlson/grocy-py
 
 ---
 **IMPORTANT INFORMATION**
@@ -70,10 +70,32 @@ If you use the [official Grocy add-on](https://github.com/hassio-addons/addon-gr
   - `9192` for Grocy add-on (without https)
   - `80` for http or `443` for https (or your custom port)
 - **Verify SSL**: Check if using HTTPS with valid certificate
+- **Calendar Sync Interval**: How often to sync calendar events from Grocy (in minutes)
+  - Default: `5` minutes
+  - The calendar includes all events: chores, tasks, meal plans, products, etc.
+  - Lower values provide more frequent updates but may increase API usage
+- **Fix timezone for calendar**: Workaround for Grocy timezone issue
+  - Default: `True` (enabled)
+  - Grocy may send local times marked as UTC in the iCal feed
+  - When enabled, UTC times from Grocy are treated as local time (no conversion)
+  - Disable this if your Grocy instance correctly sends UTC times
 
 ![Integration Configuration](grocy-integration-config.png)
 
 **All entities are disabled by default.** Enable the entities you want to use in Home Assistant.
+
+### Editing Integration Settings
+
+To edit connection settings (URL, API Key, Port, etc.) after initial setup:
+
+1. Go to **Settings → Devices & Services**
+2. Find the **Grocy** integration
+3. Click the **three dots menu** (⋮) next to the integration
+4. Select **"Configure"**
+5. Update any settings (URL, API Key, Port, Verify SSL, Calendar Sync Interval)
+6. Click **"Submit"** - the integration will automatically reload with new settings
+
+**Note:** The "Edit" button only allows changing the integration name and area. Use "Configure" to edit connection settings.
 
 
 # Entities
@@ -81,8 +103,23 @@ If you use the [official Grocy add-on](https://github.com/hassio-addons/addon-gr
 **All entities are disabled from the start. You have to manually enable the entities you want to use in Home Assistant.**
 You get a sensor each for chores, meal plan, shopping list, stock, tasks and batteries.
 You get a binary sensor each for overdue, expired, expiring and missing products and for overdue tasks, overdue chores and overdue batteries.
+You get a calendar entity (`calendar.grocy_calendar`) that displays all Grocy events including chores, tasks, meal plans, products, and more.
 
 If you enable a certain entity (like *todo*), you should also enable a sensor. Otherwise, you may have errors in Home Assistant stating that the "entity is unknown".
+
+## Calendar Entity
+
+The calendar entity (`calendar.grocy_calendar`) provides a Home Assistant calendar that syncs with your Grocy instance's iCal feed. It includes:
+
+- **Chores**: Upcoming chore executions
+- **Tasks**: Task due dates
+- **Meal Plans**: Planned meals
+- **Products**: Product expiration dates and other product-related events
+- **All other Grocy calendar events**
+
+The calendar automatically syncs at the interval configured during setup (default: 5 minutes). You can view and interact with the calendar through Home Assistant's calendar interface, use it in automations, and integrate it with other calendar integrations.
+
+**Note on Timezone Handling:** Grocy may send local times marked as UTC in the iCal feed. The "Fix timezone for calendar" option (enabled by default) addresses this by treating UTC times as local time. If your Grocy instance correctly sends UTC times, you can disable this option in the integration configuration.
 
 
 # Services
@@ -143,7 +180,7 @@ If you experience issues with the integration:
     logger:
        default: info
        logs:
-          pygrocy.grocy_api_client: debug
+          grocy.grocy_api_client: debug
           custom_components.grocy: debug
     ```
 

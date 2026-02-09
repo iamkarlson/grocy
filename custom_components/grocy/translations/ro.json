@@ -1,23 +1,65 @@
 {
     "config": {
         "abort": {
+            "reauth_successful": "Re-autentificarea a reușit.",
+            "reconfigure_successful": "Reconfigurarea a reușit.",
             "single_instance_allowed": "Este permisă doar o singură configurație a lui Grocy."
         },
         "error": {
-            "auth": "Ceva n-a mers bine."
+            "cannot_connect": "Nu s-a putut conecta la serverul Grocy.",
+            "invalid_auth": "Cheie API invalidă sau autentificare eșuată.",
+            "timeout": "Conexiunea a expirat.",
+            "unknown": "Eroare neașteptată"
         },
         "step": {
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "Cheie API Grocy"
+                },
+                "description": "Vă rugăm să introduceți din nou cheia API pentru {host}.",
+                "title": "Re-autentificare Grocy"
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "Cheie API Grocy",
+                    "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
+                    "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
+                    "port": "Număr port (9192)",
+                    "url": "Adresa URL a API-ului Grocy",
+                    "verify_ssl": "Verificați certificatul SSL"
+                },
+                "description": "Actualizați setările de conexiune Grocy.",
+                "title": "Reconfigurare Grocy"
+            },
             "user": {
                 "data": {
                     "api_key": "Cheie API Grocy",
+                    "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
+                    "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
                     "port": "Număr port (9192)",
-                    "url": "Adresa URL a API-ului Grocy (de exemplu, „http:\/\/yourgrocyurl.com”)",
+                    "url": "Adresa URL a API-ului Grocy",
                     "verify_ssl": "Verificați certificatul SSL"
                 },
-                "description": "Dacă aveți nevoie de ajutor cu configurarea, aruncați o privire aici: https:\/\/github.com\/iamkarlson\/grocy",
+                "description": "Dacă aveți nevoie de ajutor cu configurarea, consultați documentația de pe GitHub.",
                 "title": "Grocy"
             }
-        },
-        "title": "Grocy"
-    }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Cheie API Grocy",
+                    "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
+                    "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
+                    "port": "Număr port (9192)",
+                    "url": "Adresa URL a API-ului Grocy",
+                    "verify_ssl": "Verificați certificatul SSL"
+                },
+                "description": "Configurați opțiunile de integrare Grocy.",
+                "title": "Opțiuni Grocy"
+            }
+        }
+    },
+    "title": "Grocy"
 }
