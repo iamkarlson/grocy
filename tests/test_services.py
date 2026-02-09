@@ -663,3 +663,55 @@ async def test_dispatcher_routes_remove_product_in_shopping_list(
     )
 
     mock_grocy.shopping_list.remove_product.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_sync_calendar_service_calls_calendar_update(hass, coordinator) -> None:
+    """Test that sync_calendar service triggers calendar update."""
+    # Create a mock calendar entity
+    mock_calendar_entity = MagicMock()
+    mock_calendar_entity.entity_description = SimpleNamespace(key="calendar")
+    mock_calendar_entity._async_update_calendar = AsyncMock()
+
+    # Add mock entity to coordinator
+    coordinator.entities = [mock_calendar_entity]
+
+    await services.async_sync_calendar_service(coordinator)
+
+    mock_calendar_entity._async_update_calendar.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_sync_calendar_service_handles_no_calendar_entity(
+    hass, coordinator
+) -> None:
+    """Test that sync_calendar service handles missing calendar entity gracefully."""
+    # No calendar entity in coordinator
+    coordinator.entities = []
+
+    # Should not raise an error
+    await services.async_sync_calendar_service(coordinator)
+
+
+@pytest.mark.asyncio
+async def test_dispatcher_routes_sync_calendar(
+    hass, mock_config_entry, mock_grocy
+) -> None:
+    """Test that the dispatcher routes sync_calendar service calls."""
+    mock_calendar_entity = MagicMock()
+    mock_calendar_entity.entity_description = SimpleNamespace(key="calendar")
+    mock_calendar_entity._async_update_calendar = AsyncMock()
+
+    hass.data[DOMAIN] = SimpleNamespace(
+        grocy_api=mock_grocy, entities=[mock_calendar_entity]
+    )
+    await services.async_setup_services(hass, mock_config_entry)
+
+    await hass.services.async_call(
+        DOMAIN,
+        services.SERVICE_SYNC_CALENDAR,
+        {},
+        blocking=True,
+    )
+
+    mock_calendar_entity._async_update_calendar.assert_awaited_once()

@@ -22,6 +22,8 @@
             "reconfigure": {
                 "data": {
                     "api_key": "Grocy API Schlüssel",
+                    "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
+                    "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "SSL-Zertifikat verifizieren"
@@ -32,6 +34,8 @@
             "user": {
                 "data": {
                     "api_key": "Grocy API Schlüssel",
+                    "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
+                    "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "SSL-Zertifikat verifizieren"
@@ -39,7 +43,23 @@
                 "description": "Wenn du Hilfe mit den Einstellungen brauchst, schau in die Dokumentation auf GitHub.",
                 "title": "Grocy"
             }
-        },
-        "title": "Grocy"
-    }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Grocy API Schlüssel",
+                    "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
+                    "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
+                    "port": "Portnummer (9192)",
+                    "url": "Grocy API URL",
+                    "verify_ssl": "SSL-Zertifikat verifizieren"
+                },
+                "description": "Grocy-Integrationsoptionen konfigurieren.",
+                "title": "Grocy-Optionen"
+            }
+        }
+    },
+    "title": "Grocy"
 }
