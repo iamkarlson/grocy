@@ -43,8 +43,7 @@
                 "description": "Als je hulp nodig hebt bij de configuratie, kijk dan in de documentatie op GitHub.",
                 "title": "Grocy"
             }
-        },
-        "title": "Grocy"
+        }
     },
     "options": {
         "step": {
@@ -54,7 +53,7 @@
                     "calendar_fix_timezone": "Tijdzone voor kalender corrigeren",
                     "calendar_sync_interval": "Kalendersynchronisatie-interval (minuten)",
                     "port": "Poortnummer (9192)",
-                    "url": "Grocy API-URL (bijv. \"http:\/\/yourgrocyurl.com\")",
+                    "url": "Grocy API-URL",
                     "verify_ssl": "SSL-certificaat verifiëren"
                 },
                 "description": "Configureer Grocy-integratieopties.",
@@ -62,21 +61,5 @@
             }
         }
     },
-    "reauth": {
-        "abort": {
-            "reauth_successful": "Herauthenticatie succesvol"
-        },
-        "step": {
-            "reauth": {
-                "data": {
-                    "api_key": "Grocy API-sleutel",
-                    "port": "Poortnummer (9192)",
-                    "url": "Grocy API-URL (bijv. \"http:\/\/yourgrocyurl.com\")",
-                    "verify_ssl": "SSL-certificaat verifiëren"
-                },
-                "description": "Werk uw Grocy-verbindingsinstellingen bij.",
-                "title": "Grocy opnieuw authenticeren"
-            }
-        }
-    }
+    "title": "Grocy"
 }

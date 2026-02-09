@@ -43,8 +43,7 @@
                 "description": "Wenn du Hilfe mit den Einstellungen brauchst, schau in die Dokumentation auf GitHub.",
                 "title": "Grocy"
             }
-        },
-        "title": "Grocy"
+        }
     },
     "options": {
         "step": {
@@ -62,21 +61,5 @@
             }
         }
     },
-    "reauth": {
-        "abort": {
-            "reauth_successful": "Erneute Authentifizierung erfolgreich"
-        },
-        "step": {
-            "reauth": {
-                "data": {
-                    "api_key": "Grocy API Schlüssel",
-                    "port": "Portnummer (9192)",
-                    "url": "Grocy API URL",
-                    "verify_ssl": "SSL-Zertifikat verifizieren"
-                },
-                "description": "Aktualisieren Sie Ihre Grocy-Verbindungseinstellungen.",
-                "title": "Grocy erneut authentifizieren"
-            }
-        }
-    }
+    "title": "Grocy"
 }
