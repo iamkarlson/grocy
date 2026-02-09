@@ -353,3 +353,7 @@ remove_product_in_shopping_list:
           min: 1
           max: 1000
           mode: box
+
+sync_calendar:
+  name: Sync Calendar
+  description: Triggers an immediate sync of the Grocy calendar from the iCal feed. Useful when you've made changes in Grocy and want them reflected in Home Assistant without waiting for the automatic sync interval.

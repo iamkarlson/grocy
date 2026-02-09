@@ -5,6 +5,7 @@ from __future__ import annotations
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.util import dt as dt_util
 
 from grocy.data_models.generic import EntityType
 from grocy.grocy_api_client import TransactionType
@@ -43,6 +44,7 @@ SERVICE_CONSUME_RECIPE = "consume_recipe"
 SERVICE_TRACK_BATTERY = "track_battery"
 SERVICE_ADD_MISSING_PRODUCTS_TO_SHOPPING_LIST = "add_missing_products_to_shopping_list"
 SERVICE_REMOVE_PRODUCT_IN_SHOPPING_LIST = "remove_product_in_shopping_list"
+SERVICE_SYNC_CALENDAR = "sync_calendar"
 
 SERVICE_ADD_PRODUCT_SCHEMA = vol.All(
     vol.Schema(
@@ -157,6 +159,8 @@ SERVICE_REMOVE_PRODUCT_IN_SHOPPING_LIST_SCHEMA = vol.All(
     )
 )
 
+SERVICE_SYNC_CALENDAR_SCHEMA = vol.Schema({})
+
 SERVICES_WITH_ACCOMPANYING_SCHEMA: list[tuple[str, vol.Schema]] = [
     (SERVICE_ADD_PRODUCT, SERVICE_ADD_PRODUCT_SCHEMA),
     (SERVICE_OPEN_PRODUCT, SERVICE_OPEN_PRODUCT_SCHEMA),
@@ -176,6 +180,7 @@ SERVICES_WITH_ACCOMPANYING_SCHEMA: list[tuple[str, vol.Schema]] = [
         SERVICE_REMOVE_PRODUCT_IN_SHOPPING_LIST,
         SERVICE_REMOVE_PRODUCT_IN_SHOPPING_LIST_SCHEMA,
     ),
+    (SERVICE_SYNC_CALENDAR, SERVICE_SYNC_CALENDAR_SCHEMA),
 ]
 
 
@@ -232,6 +237,9 @@ async def async_setup_services(
             await async_remove_product_in_shopping_list_service(
                 hass, coordinator, service_data
             )
+
+        elif service == SERVICE_SYNC_CALENDAR:
+            await async_sync_calendar_service(coordinator)
 
     for service, schema in SERVICES_WITH_ACCOMPANYING_SCHEMA:
         hass.services.async_register(DOMAIN, service, async_call_grocy_service, schema)
@@ -481,3 +489,22 @@ async def _async_force_update_entity(
     )
     if entity:
         await entity.async_update_ha_state(force_refresh=True)
+
+
+async def async_sync_calendar_service(
+    coordinator: GrocyDataUpdateCoordinator,
+) -> None:
+    """Trigger a calendar sync."""
+    # Find the calendar entity
+    calendar_entity = next(
+        (
+            entity
+            for entity in coordinator.entities
+            if hasattr(entity, "entity_description")
+            and entity.entity_description.key == "calendar"
+        ),
+        None,
+    )
+    if calendar_entity:
+        # Call the calendar's update method
+        await calendar_entity._async_update_calendar(dt_util.now())
