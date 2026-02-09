@@ -1,12 +1,34 @@
 {
     "config": {
         "abort": {
+            "reauth_successful": "Herauthenticatie was succesvol.",
+            "reconfigure_successful": "Herconfiguratie was succesvol.",
             "single_instance_allowed": "Slechts één configuratie van Grocy is toegestaan."
         },
         "error": {
-            "auth": "Er ging iets mis."
+            "cannot_connect": "Kon geen verbinding maken met de Grocy-server.",
+            "invalid_auth": "Ongeldige API-sleutel of authenticatie mislukt.",
+            "timeout": "Verbinding time-out.",
+            "unknown": "Onverwachte fout"
         },
         "step": {
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "Grocy API-sleutel"
+                },
+                "description": "Voer de API-sleutel voor {host} opnieuw in.",
+                "title": "Grocy opnieuw authenticeren"
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "Grocy API-sleutel",
+                    "port": "Poortnummer (9192)",
+                    "url": "Grocy API-URL",
+                    "verify_ssl": "SSL-certificaat verifiëren"
+                },
+                "description": "Werk je Grocy-verbindingsinstellingen bij.",
+                "title": "Grocy herconfigureren"
+            },
             "user": {
                 "data": {
                     "api_key": "Grocy API-sleutel",

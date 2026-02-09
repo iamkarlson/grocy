@@ -1,12 +1,34 @@
 {
     "config": {
         "abort": {
+            "reauth_successful": "A reautenticação foi bem-sucedida.",
+            "reconfigure_successful": "A reconfiguração foi bem-sucedida.",
             "single_instance_allowed": "Apenas uma configuração do Grocy é permitida."
         },
         "error": {
-            "auth": "Algo correu mal."
+            "cannot_connect": "Falha ao ligar ao servidor Grocy.",
+            "invalid_auth": "Chave de API inválida ou falha na autenticação.",
+            "timeout": "Tempo limite de ligação excedido.",
+            "unknown": "Erro inesperado"
         },
         "step": {
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "Grocy chave da API"
+                },
+                "description": "Por favor, insira novamente a chave de API para {host}.",
+                "title": "Reautenticar Grocy"
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "Grocy chave da API",
+                    "port": "Número da Porta (9192)",
+                    "url": "URL da API do Grocy",
+                    "verify_ssl": "Verificar o certificado SSL Certificate"
+                },
+                "description": "Atualiza as definições de ligação do Grocy.",
+                "title": "Reconfigurar Grocy"
+            },
             "user": {
                 "data": {
                     "api_key": "Grocy chave da API",

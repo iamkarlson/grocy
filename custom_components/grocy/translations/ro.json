@@ -1,12 +1,34 @@
 {
     "config": {
         "abort": {
+            "reauth_successful": "Re-autentificarea a reușit.",
+            "reconfigure_successful": "Reconfigurarea a reușit.",
             "single_instance_allowed": "Este permisă doar o singură configurație a lui Grocy."
         },
         "error": {
-            "auth": "Ceva n-a mers bine."
+            "cannot_connect": "Nu s-a putut conecta la serverul Grocy.",
+            "invalid_auth": "Cheie API invalidă sau autentificare eșuată.",
+            "timeout": "Conexiunea a expirat.",
+            "unknown": "Eroare neașteptată"
         },
         "step": {
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "Cheie API Grocy"
+                },
+                "description": "Vă rugăm să introduceți din nou cheia API pentru {host}.",
+                "title": "Re-autentificare Grocy"
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "Cheie API Grocy",
+                    "port": "Număr port (9192)",
+                    "url": "Adresa URL a API-ului Grocy",
+                    "verify_ssl": "Verificați certificatul SSL"
+                },
+                "description": "Actualizați setările de conexiune Grocy.",
+                "title": "Reconfigurare Grocy"
+            },
             "user": {
                 "data": {
                     "api_key": "Cheie API Grocy",

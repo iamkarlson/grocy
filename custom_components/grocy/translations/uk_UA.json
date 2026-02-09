@@ -1,12 +1,34 @@
 {
     "config": {
         "abort": {
+            "reauth_successful": "Повторна автентифікація пройшла успішно.",
+            "reconfigure_successful": "Переналаштування пройшло успішно.",
             "single_instance_allowed": "Дозволена лише одна конфігурація Grocy."
         },
         "error": {
-            "auth": "Щось пішло не так."
+            "cannot_connect": "Не вдалося підключитися до сервера Grocy.",
+            "invalid_auth": "Недійсний ключ API або помилка автентифікації.",
+            "timeout": "Час очікування з'єднання вичерпано.",
+            "unknown": "Неочікувана помилка"
         },
         "step": {
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "Ключ Grocy API"
+                },
+                "description": "Будь ласка, введіть ключ API для {host} ще раз.",
+                "title": "Повторна автентифікація Grocy"
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "Ключ Grocy API",
+                    "port": "Номер порту (9192)",
+                    "url": "URL-адреса Grocy API",
+                    "verify_ssl": "Перевірте сертифікат SSL"
+                },
+                "description": "Оновіть налаштування підключення Grocy.",
+                "title": "Переналаштувати Grocy"
+            },
             "user": {
                 "data": {
                     "api_key": "Ключ Grocy API",

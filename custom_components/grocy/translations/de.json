@@ -1,12 +1,34 @@
 {
     "config": {
         "abort": {
+            "reauth_successful": "Die erneute Authentifizierung war erfolgreich.",
+            "reconfigure_successful": "Die Neukonfiguration war erfolgreich.",
             "single_instance_allowed": "Es ist nur eine einzige Konfiguration von Grocy zulässig."
         },
         "error": {
-            "auth": "Etwas ist schief gelaufen."
+            "cannot_connect": "Verbindung zum Grocy-Server fehlgeschlagen.",
+            "invalid_auth": "Ungültiger API-Schlüssel oder Authentifizierung fehlgeschlagen.",
+            "timeout": "Verbindungszeitüberschreitung.",
+            "unknown": "Unerwarteter Fehler"
         },
         "step": {
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "Grocy API Schlüssel"
+                },
+                "description": "Bitte gib den API-Schlüssel für {host} erneut ein.",
+                "title": "Grocy erneut authentifizieren"
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "Grocy API Schlüssel",
+                    "port": "Portnummer (9192)",
+                    "url": "Grocy API URL",
+                    "verify_ssl": "SSL-Zertifikat verifizieren"
+                },
+                "description": "Aktualisiere deine Grocy-Verbindungseinstellungen.",
+                "title": "Grocy neu konfigurieren"
+            },
             "user": {
                 "data": {
                     "api_key": "Grocy API Schlüssel",

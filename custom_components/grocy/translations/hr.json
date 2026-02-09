@@ -1,12 +1,34 @@
 {
     "config": {
         "abort": {
+            "reauth_successful": "Ponovna autentifikacija je bila uspješna.",
+            "reconfigure_successful": "Ponovna konfiguracija je bila uspješna.",
             "single_instance_allowed": "Dozvoljena je samo jedna Grocy konfiguracija"
         },
         "error": {
-            "auth": "Nešto je pošlo po zlu."
+            "cannot_connect": "Povezivanje s Grocy poslužiteljem nije uspjelo.",
+            "invalid_auth": "Nevažeći API ključ ili autentifikacija nije uspjela.",
+            "timeout": "Veza je istekla.",
+            "unknown": "Neočekivana greška"
         },
         "step": {
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "Grocy API ključ"
+                },
+                "description": "Molimo ponovno unesite API ključ za {host}.",
+                "title": "Ponovno autentificiraj Grocy"
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "Grocy API ključ",
+                    "port": "Broj port-a (9192)",
+                    "url": "Grocy API URL",
+                    "verify_ssl": "Provjerite SSL certifikat."
+                },
+                "description": "Ažurirajte postavke veze s Grocy-jem.",
+                "title": "Ponovno konfiguriraj Grocy"
+            },
             "user": {
                 "data": {
                     "api_key": "Grocy API ključ",
