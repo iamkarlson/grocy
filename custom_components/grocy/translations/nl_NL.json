@@ -22,6 +22,8 @@
             "reconfigure": {
                 "data": {
                     "api_key": "Grocy API-sleutel",
+                    "calendar_fix_timezone": "Tijdzone voor kalender corrigeren",
+                    "calendar_sync_interval": "Kalendersynchronisatie-interval (minuten)",
                     "port": "Poortnummer (9192)",
                     "url": "Grocy API-URL",
                     "verify_ssl": "SSL-certificaat verifiëren"
@@ -32,6 +34,8 @@
             "user": {
                 "data": {
                     "api_key": "Grocy API-sleutel",
+                    "calendar_fix_timezone": "Tijdzone voor kalender corrigeren",
+                    "calendar_sync_interval": "Kalendersynchronisatie-interval (minuten)",
                     "port": "Poortnummer (9192)",
                     "url": "Grocy API-URL",
                     "verify_ssl": "SSL-certificaat verifiëren"
@@ -41,5 +45,38 @@
             }
         },
         "title": "Grocy"
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Grocy API-sleutel",
+                    "calendar_fix_timezone": "Tijdzone voor kalender corrigeren",
+                    "calendar_sync_interval": "Kalendersynchronisatie-interval (minuten)",
+                    "port": "Poortnummer (9192)",
+                    "url": "Grocy API-URL (bijv. \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "SSL-certificaat verifiëren"
+                },
+                "description": "Configureer Grocy-integratieopties.",
+                "title": "Grocy-opties"
+            }
+        }
+    },
+    "reauth": {
+        "abort": {
+            "reauth_successful": "Herauthenticatie succesvol"
+        },
+        "step": {
+            "reauth": {
+                "data": {
+                    "api_key": "Grocy API-sleutel",
+                    "port": "Poortnummer (9192)",
+                    "url": "Grocy API-URL (bijv. \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "SSL-certificaat verifiëren"
+                },
+                "description": "Werk uw Grocy-verbindingsinstellingen bij.",
+                "title": "Grocy opnieuw authenticeren"
+            }
+        }
     }
 }

@@ -15,6 +15,8 @@
             "user": {
                 "data": {
                     "api_key": "Grocy API Key",
+                    "calendar_sync_interval": "Calendar Sync Interval (minutes)",
+                    "calendar_fix_timezone": "Fix timezone for calendar",
                     "port": "Port Number (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Verify SSL Certificate"
@@ -25,6 +27,8 @@
             "reconfigure": {
                 "data": {
                     "api_key": "Grocy API Key",
+                    "calendar_sync_interval": "Calendar Sync Interval (minutes)",
+                    "calendar_fix_timezone": "Fix timezone for calendar",
                     "port": "Port Number (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Verify SSL Certificate"
@@ -41,5 +45,38 @@
             }
         },
         "title": "Grocy"
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Grocy API Key",
+                    "calendar_sync_interval": "Calendar Sync Interval (minutes)",
+                    "calendar_fix_timezone": "Fix timezone for calendar",
+                    "port": "Port Number (9192)",
+                    "url": "Grocy API URL (e.g. \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Verify SSL Certificate"
+                },
+                "description": "Configure Grocy integration options.",
+                "title": "Grocy Options"
+            }
+        }
+    },
+    "reauth": {
+        "step": {
+            "reauth": {
+                "data": {
+                    "api_key": "Grocy API Key",
+                    "port": "Port Number (9192)",
+                    "url": "Grocy API URL (e.g. \"http:\/\/yourgrocyurl.com\")",
+                    "verify_ssl": "Verify SSL Certificate"
+                },
+                "description": "Update your Grocy connection settings.",
+                "title": "Reauthenticate Grocy"
+            }
+        },
+        "abort": {
+            "reauth_successful": "Re-authentication successful"
+        }
     }
 }
