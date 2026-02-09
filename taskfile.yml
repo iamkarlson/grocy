@@ -17,6 +17,12 @@ tasks:
     cmds:
       - uv run pytest
 
+  test:cov:
+    desc: Run pytest with coverage reporting
+    cmds:
+      - uv run pytest tests/ --cov=custom_components.grocy --cov-report=term-missing -v
+
+
   ha:restore:
     desc: |
       Restore Home Assistant backup into config without custom components.
@@ -57,6 +63,7 @@ tasks:
 
   ha:shell:
     desc: Access Home Assistant container shell
+    interactive: true
     cmds:
       - docker compose exec homeassistant bash
 
@@ -83,5 +90,6 @@ tasks:
 
   grocy:shell:
     desc: Access grocy container shell
+    interactive: true
     cmds:
       - docker compose exec grocy bash

@@ -44,8 +44,9 @@ This guide keeps development fast while preserving the context you need.
 ## Testing
 
 - **Manual**: Configure the integration against the dev containers, enable desired entities, and exercise automations/services.
-- **Automated**: Run `pytest tests/` when adding or updating test coverage (add tests if functionality warrants it).
-- **Static checks**: `uv run pre-commit run --all-files` keeps linting in sync with CI.
+- **Automated**: `task test` runs the pytest suite. Use `task test:cov` for a coverage report.
+- **Linting**: `task lint` auto-formats and fixes with ruff. `task lint:check` runs the same checks without modifying files.
+- **All checks**: `task validate` runs every pre-commit hook against all files.
 
 ## Pull Requests
 
