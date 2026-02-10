@@ -14,7 +14,6 @@ from homeassistant.helpers.http import HomeAssistantView
 from grocy import Grocy
 from grocy.data_models.battery import Battery
 from grocy.data_models.chore import Chore
-from grocy.grocy_api_client import CurrentStockResponse
 
 from .const import (
     ATTR_BATTERIES,
@@ -34,7 +33,7 @@ from .const import (
     CONF_PORT,
     CONF_URL,
 )
-from .helpers import MealPlanItemWrapper, ProductWrapper, extract_base_url_and_path
+from .helpers import MealPlanItemWrapper, extract_base_url_and_path
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -71,9 +70,7 @@ class GrocyData:
         """Update stock data."""
 
         def wrapper():
-            stock_client = self.api.stock._api
-            stock_entries: list[CurrentStockResponse] = stock_client.get_stock()
-            return [ProductWrapper(item, self.hass) for item in stock_entries]
+            return self.api.stock.current()
 
         return await self.hass.async_add_executor_job(wrapper)
 

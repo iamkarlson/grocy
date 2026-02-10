@@ -21,7 +21,7 @@ from custom_components.grocy.const import (
     ATTR_TASKS,
 )
 from custom_components.grocy.coordinator import GrocyCoordinatorData
-from custom_components.grocy.helpers import MealPlanItemWrapper, ProductWrapper
+from custom_components.grocy.helpers import MealPlanItemWrapper
 from custom_components.grocy.todo import (
     TODOS,
     GrocyTodoItem,
@@ -30,9 +30,7 @@ from custom_components.grocy.todo import (
     _calculate_item_status,
 )
 from tests.factories import (
-    DummyCurrentStockResponse,
     DummyMealPlanItem,
-    DummyProduct,
     DummyRecipe,
 )
 
@@ -189,25 +187,6 @@ def test_todo_item_from_product_zero_amount() -> None:
     item = GrocyTodoItem(product, ATTR_STOCK)
 
     assert item.status == TodoItemStatus.COMPLETED
-
-
-# ─── GrocyTodoItem from ProductWrapper ────────────────────────────────────────
-
-
-def test_todo_item_from_product_wrapper(monkeypatch) -> None:
-    response = DummyCurrentStockResponse(available_amount=3.0)
-    dummy_product = DummyProduct(id=30, name="Eggs", available_amount=3.0)
-    monkeypatch.setattr(
-        "custom_components.grocy.helpers.Product.from_stock_response",
-        lambda _resp: dummy_product,
-    )
-
-    wrapper = ProductWrapper(response, hass=SimpleNamespace())
-    item = GrocyTodoItem(wrapper, ATTR_STOCK)
-
-    assert item.uid == "30"
-    assert "3.00x Eggs" in item.summary
-    assert item.status == TodoItemStatus.NEEDS_ACTION
 
 
 # ─── GrocyTodoItem from ShoppingListProduct ──────────────────────────────────
@@ -490,24 +469,36 @@ async def test_async_update_todo_item_complete_meal_plan() -> None:
 
 @pytest.mark.asyncio
 async def test_async_update_todo_item_complete_shopping_list() -> None:
-    grocy_item = SimpleNamespace(product_id=15, amount=2.0)
-    entity = _build_todo(ATTR_SHOPPING_LIST, [grocy_item])
-    # Make _get_grocy_item work
-    entity.coordinator.data[ATTR_SHOPPING_LIST] = [grocy_item]
-    grocy_item.id = 77
-
+    entity = _build_todo(ATTR_SHOPPING_LIST, [])
     todo_item = SimpleNamespace(uid="77", status=TodoItemStatus.COMPLETED)
 
     with patch(
-        "custom_components.grocy.todo.async_remove_product_in_shopping_list",
+        "custom_components.grocy.todo.async_mark_shopping_list_item_done",
         new_callable=AsyncMock,
-    ) as mock_remove:
+    ) as mock_mark:
         await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
 
-    mock_remove.assert_awaited_once()
-    call_data = mock_remove.call_args[0][2]
-    assert call_data["product_id"] == 15
-    assert call_data["amount"] == 2.0
+    mock_mark.assert_awaited_once()
+    call_data = mock_mark.call_args[0][2]
+    assert call_data["object_id"] == 77
+    assert call_data["done"] is True
+
+
+@pytest.mark.asyncio
+async def test_async_update_todo_item_uncomplete_shopping_list() -> None:
+    entity = _build_todo(ATTR_SHOPPING_LIST, [])
+    todo_item = SimpleNamespace(uid="77", status=TodoItemStatus.NEEDS_ACTION)
+
+    with patch(
+        "custom_components.grocy.todo.async_mark_shopping_list_item_done",
+        new_callable=AsyncMock,
+    ) as mock_mark:
+        await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
+
+    mock_mark.assert_awaited_once()
+    call_data = mock_mark.call_args[0][2]
+    assert call_data["object_id"] == 77
+    assert call_data["done"] is False
 
 
 @pytest.mark.asyncio
@@ -603,14 +594,6 @@ async def test_async_update_todo_item_meal_plan_needs_action_raises() -> None:
     with pytest.raises(NotImplementedError):
         await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
 
-
-@pytest.mark.asyncio
-async def test_async_update_todo_item_shopping_list_needs_action_raises() -> None:
-    entity = _build_todo(ATTR_SHOPPING_LIST, [])
-    todo_item = SimpleNamespace(uid="1", status=TodoItemStatus.NEEDS_ACTION)
-
-    with pytest.raises(NotImplementedError):
-        await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
 
 
 @pytest.mark.asyncio

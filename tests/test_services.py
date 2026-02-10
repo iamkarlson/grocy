@@ -250,6 +250,32 @@ async def test_remove_product_in_shopping_list_service_prefers_payload(
 
 
 @pytest.mark.asyncio
+async def test_mark_shopping_list_item_done(hass, coordinator) -> None:
+    data = {
+        services.SERVICE_OBJECT_ID: 42,
+        "done": True,
+    }
+
+    await services.async_mark_shopping_list_item_done(hass, coordinator, data)
+
+    coordinator.grocy_api.shopping_list.mark_item_done.assert_called_once_with(42, True)
+
+
+@pytest.mark.asyncio
+async def test_mark_shopping_list_item_undone(hass, coordinator) -> None:
+    data = {
+        services.SERVICE_OBJECT_ID: 42,
+        "done": False,
+    }
+
+    await services.async_mark_shopping_list_item_done(hass, coordinator, data)
+
+    coordinator.grocy_api.shopping_list.mark_item_done.assert_called_once_with(
+        42, False
+    )
+
+
+@pytest.mark.asyncio
 async def test_async_force_update_entity_updates_matching_entity() -> None:
     entity = SimpleNamespace(
         entity_description=SimpleNamespace(key=services.ATTR_TASKS),

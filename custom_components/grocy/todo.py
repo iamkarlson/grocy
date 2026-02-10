@@ -36,7 +36,7 @@ from .const import (
 )
 from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
 from .entity import GrocyEntity
-from .helpers import MealPlanItemWrapper, ProductWrapper
+from .helpers import MealPlanItemWrapper
 from .services import (
     SERVICE_AMOUNT,
     SERVICE_BATTERY_ID,
@@ -47,7 +47,6 @@ from .services import (
     SERVICE_OBJECT_ID,
     SERVICE_PRODUCT_ID,
     SERVICE_RECIPE_ID,
-    SERVICE_SHOPPING_LIST_ID,
     SERVICE_SKIPPED,
     SERVICE_TASK_ID,
     async_add_generic_service,
@@ -56,7 +55,7 @@ from .services import (
     async_consume_recipe_service,
     async_delete_generic_service,
     async_execute_chore_service,
-    async_remove_product_in_shopping_list,
+    async_mark_shopping_list_item_done,
     async_track_battery_service,
 )
 
@@ -213,33 +212,17 @@ class GrocyTodoItem(TodoItem):
                 status=TodoItemStatus.NEEDS_ACTION
                 if (item.available_amount or 0) > 0
                 else TodoItemStatus.COMPLETED,
-                # TODO, the description attribute isn't pulled for products in grocy-py
-                description=None,
-            )
-        elif isinstance(item, ProductWrapper):
-            product = item.product
-            super().__init__(
-                uid=product.id.__str__(),
-                summary=f"{product.available_amount:.2f}x {product.name}",
-                status=TodoItemStatus.NEEDS_ACTION
-                if (product.available_amount or 0) > 0
-                else TodoItemStatus.COMPLETED,
                 description=None,
             )
         elif isinstance(item, ShoppingListProduct):
             amount = item.amount or 0
             product_name = item.product.name if item.product else "Unknown product"
-            done_flag = getattr(item, "done", getattr(item, "_done", None))
-            if isinstance(done_flag, str):
-                is_done = done_flag.strip().lower() in {"1", "true", "yes"}
-            else:
-                is_done = bool(done_flag)
             super().__init__(
                 uid=item.id.__str__(),
                 summary=f"{amount:.2f}x {product_name}",
                 due=None,
                 status=TodoItemStatus.COMPLETED
-                if is_done
+                if item.done
                 else TodoItemStatus.NEEDS_ACTION,
                 description=item.note or None,
             )
@@ -396,20 +379,14 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
                 # I Probably need to cache the chore completion, so that I can undo it...
                 raise NotImplementedError(self.entity_description.key)
         elif self.entity_description.key == ATTR_SHOPPING_LIST:
-            if item.status == TodoItemStatus.COMPLETED:
-                # TODO grocy-py doesn't track shopping lists, but they are needed here
-                grocy_item = self._get_grocy_item(item.uid)
-                await async_remove_product_in_shopping_list(
-                    self.hass,
-                    self.coordinator,
-                    {
-                        SERVICE_SHOPPING_LIST_ID: 1,
-                        SERVICE_PRODUCT_ID: grocy_item.product_id,
-                        SERVICE_AMOUNT: grocy_item.amount,
-                    },
-                )
-            else:
-                raise NotImplementedError(self.entity_description.key)
+            await async_mark_shopping_list_item_done(
+                self.hass,
+                self.coordinator,
+                {
+                    SERVICE_OBJECT_ID: int(item.uid),
+                    "done": item.status == TodoItemStatus.COMPLETED,
+                },
+            )
         elif self.entity_description.key == ATTR_STOCK:
             if item.status == TodoItemStatus.COMPLETED:
                 grocy_item = self._get_grocy_item(item.uid)
