@@ -441,6 +441,19 @@ async def async_remove_product_in_shopping_list(
     await hass.async_add_executor_job(wrapper)
 
 
+async def async_mark_shopping_list_item_done(
+    hass: HomeAssistant, coordinator: GrocyDataUpdateCoordinator, data
+):
+    """Mark a shopping list item as done or not done."""
+    item_id = data[SERVICE_OBJECT_ID]
+    done = data.get("done", True)
+
+    def wrapper():
+        coordinator.grocy_api.shopping_list.mark_item_done(item_id, done)
+
+    await hass.async_add_executor_job(wrapper)
+
+
 async def async_track_battery_service(
     hass: HomeAssistant, coordinator: GrocyDataUpdateCoordinator, data
 ):

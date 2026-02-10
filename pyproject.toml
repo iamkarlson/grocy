@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13.2"
 dependencies = [
     "homeassistant==2026.2.1",
-    "grocy-py==0.0.4",
+    "grocy-py==0.0.5",
     "icalendar>=6.0.0",
 ]
 

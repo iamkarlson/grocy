@@ -33,7 +33,6 @@ from custom_components.grocy.grocy_data import (
 from tests.factories import (
     DummyBattery,
     DummyChore,
-    DummyCurrentStockResponse,
     DummyMealPlanItem,
     DummyProduct,
     DummyShoppingListProduct,
@@ -72,24 +71,17 @@ async def test_async_update_data_returns_none_for_unknown_key(grocy_data) -> Non
 
 
 @pytest.mark.asyncio
-async def test_async_update_stock_wraps_items(grocy_data) -> None:
-    raw_response = DummyCurrentStockResponse()
-    grocy_data.api.stock._api.get_stock.return_value = [raw_response]
-
-    with patch(
-        "custom_components.grocy.grocy_data.ProductWrapper"
-    ) as mock_wrapper_cls:
-        mock_wrapper = MagicMock()
-        mock_wrapper_cls.return_value = mock_wrapper
-        result = await grocy_data.async_update_stock()
-
+async def test_async_update_stock_returns_products(grocy_data) -> None:
+    product = DummyProduct()
+    grocy_data.api.stock.current.return_value = [product]
+    result = await grocy_data.async_update_stock()
     assert len(result) == 1
-    mock_wrapper_cls.assert_called_once_with(raw_response, grocy_data.hass)
+    grocy_data.api.stock.current.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_async_update_stock_empty(grocy_data) -> None:
-    grocy_data.api.stock._api.get_stock.return_value = []
+    grocy_data.api.stock.current.return_value = []
     result = await grocy_data.async_update_stock()
     assert result == []
 

@@ -2,20 +2,14 @@ from __future__ import annotations
 
 import base64
 import datetime as dt
-from types import SimpleNamespace
-
-import pytest
 
 from custom_components.grocy.helpers import (
     MealPlanItemWrapper,
-    ProductWrapper,
     extract_base_url_and_path,
     model_to_dict,
 )
 from tests.factories import (
-    DummyCurrentStockResponse,
     DummyMealPlanItem,
-    DummyProduct,
     DummyRecipe,
 )
 
@@ -51,42 +45,6 @@ def test_meal_plan_item_wrapper_handles_missing_picture() -> None:
 
     assert wrapper.picture_url is None
 
-
-def test_product_wrapper_generates_picture_url(monkeypatch: pytest.MonkeyPatch) -> None:
-    response = DummyCurrentStockResponse()
-    dummy_product = DummyProduct(id=42, available_amount=response.available_amount)
-
-    monkeypatch.setattr(
-        "custom_components.grocy.helpers.Product.from_stock_response",
-        lambda _response: dummy_product,
-    )
-
-    wrapper = ProductWrapper(response, hass=SimpleNamespace())
-
-    encoded = base64.b64encode(
-        response.product.picture_file_name.encode("ascii")
-    ).decode("ascii")
-    assert wrapper.picture_url == f"/api/grocy/productpictures/{encoded}"
-
-    payload = wrapper.as_dict()
-    assert payload["picture_url"] == wrapper.picture_url
-    assert payload["id"] == dummy_product.id
-
-
-def test_product_wrapper_handles_missing_picture(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    response = DummyCurrentStockResponse()
-    response.product.picture_file_name = None
-
-    dummy_product = DummyProduct(id=99)
-    monkeypatch.setattr(
-        "custom_components.grocy.helpers.Product.from_stock_response",
-        lambda _response: dummy_product,
-    )
-
-    wrapper = ProductWrapper(response, hass=SimpleNamespace())
-    assert wrapper.picture_url is None
 
 
 class WithAsDict:

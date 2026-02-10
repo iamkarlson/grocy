@@ -1089,7 +1089,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "grocy-py", specifier = "==0.0.4" },
+    { name = "grocy-py", specifier = "==0.0.5" },
     { name = "homeassistant", specifier = "==2026.2.1" },
     { name = "icalendar", specifier = ">=6.0.0" },
 ]
@@ -1108,7 +1108,7 @@ dev = [
 
 [[package]]
 name = "grocy-py"
-version = "0.0.4"
+version = "0.0.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
@@ -1116,9 +1116,9 @@ dependencies = [
     { name = "tzdata" },
     { name = "tzlocal" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e5/9a/87ac7a6c5eb73e3162548970ea2d5c93a2e99295eafe9f9fefc9938dc335/grocy_py-0.0.4.tar.gz", hash = "sha256:fa9bc237a85961d1d001c2fd430e6c81485bdf91445e7a4227e013584e33a2f7", size = 163372, upload-time = "2026-02-09T14:25:25.797Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f9/ad/079476da5643e296b68eeda97eec8707f73e9c3a9ea9068e8515e8f48176/grocy_py-0.0.5.tar.gz", hash = "sha256:7b671427886dbfe8e6b2307ccb6937afe327d2386e82ce91bd35d379abfe5286", size = 164119, upload-time = "2026-02-09T22:38:24.005Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/44/02/e72ecfb5f477ee0f2cb628210d5ba5a6f9e431cf64a5390ee570b909ec42/grocy_py-0.0.4-py3-none-any.whl", hash = "sha256:92fac6b9bf5e8b7548985dcbc49bc537799231db970b7fb845ef2fb1f96b0483", size = 33742, upload-time = "2026-02-09T14:25:26.638Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/c9/051ea4b0e2853b69a1531921e151ccc968e321b1062dfcfcec263508e6e5/grocy_py-0.0.5-py3-none-any.whl", hash = "sha256:577573a9d7c2a48e4349679819ef2f52e94d0b1397f0f824b6863cf9d4aca8b5", size = 33946, upload-time = "2026-02-09T22:38:23.078Z" },
 ]
 
 [[package]]
