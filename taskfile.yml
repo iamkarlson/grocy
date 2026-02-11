@@ -22,6 +22,27 @@ tasks:
     cmds:
       - uv run pytest tests/ --cov=custom_components.grocy --cov-report=term-missing -v
 
+  check:features:
+    desc: Validate test-to-feature mapping consistency
+    cmds:
+      - uv run python docs/check_coverage.py
+
+  ci:
+    desc: Run all CI checks (tests + feature coverage)
+    cmds:
+      - task: test
+      - task: check:features
+
+  docs:serve:
+    desc: Serve documentation locally with live reload
+    cmds:
+      - uv run --group docs mkdocs serve
+
+  docs:build:
+    desc: Build documentation site
+    cmds:
+      - uv run --group docs mkdocs build --strict
+
 
   ha:restore:
     desc: |

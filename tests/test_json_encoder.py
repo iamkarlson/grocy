@@ -1,3 +1,9 @@
+"""JSON encoder tests for datetime types.
+
+Features: cross_cutting
+See: docs/FEATURES.md#cross-cutting-tests
+"""
+
 from __future__ import annotations
 
 import datetime as dt
@@ -6,6 +12,8 @@ import json
 import pytest
 
 from custom_components.grocy.json_encoder import CustomJSONEncoder
+
+pytestmark = pytest.mark.feature("cross_cutting")
 
 
 def test_encodes_date() -> None:

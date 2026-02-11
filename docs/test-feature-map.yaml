@@ -1,0 +1,339 @@
+# Test-to-Feature Mapping
+# Maps every test function to its feature group(s).
+# Used by docs/check_coverage.py to validate consistency.
+#
+# Feature groups correspond to sections in docs/FEATURES.md.
+# Run: uv run python docs/check_coverage.py
+
+features:
+  stock_management:
+    name: Stock Management
+    doc_section: "#1-stock-management"
+    tests:
+      - file: tests/test_entities.py
+        functions:
+          - test_sensor_native_value_counts_entities
+          - test_sensor_extra_state_attributes_are_json_safe
+          - test_sensor_native_value_defaults_to_zero
+          - test_sensor_extra_state_attributes_none_data
+          - test_binary_sensor_reports_on_state
+          - test_binary_sensor_reports_off_state
+          - test_binary_sensor_expired_products_on
+          - test_binary_sensor_expiring_products_off
+          - test_binary_sensor_missing_products
+          - test_binary_sensor_none_data
+      - file: tests/test_services.py
+        functions:
+          - test_add_product_service_converts_price
+          - test_add_product_service_defaults_price_zero
+          - test_add_product_service_no_price_key
+          - test_open_product_service_uses_defaults
+          - test_open_product_with_substitution
+          - test_consume_product_service_handles_transaction_type
+          - test_consume_product_defaults_transaction_type
+          - test_dispatcher_routes_add_product
+          - test_dispatcher_routes_open_product
+          - test_dispatcher_routes_consume_product
+      - file: tests/test_todo.py
+        functions:
+          - test_todo_item_from_product_with_stock
+          - test_todo_item_from_product_zero_amount
+          - test_async_update_todo_item_complete_stock
+          - test_async_update_todo_item_stock_needs_action_raises
+          - test_todo_list_entity_stock_no_create
+      - file: tests/test_grocy_data.py
+        functions:
+          - test_async_update_stock_returns_products
+          - test_async_update_stock_empty
+          - test_async_update_expiring_products
+          - test_async_update_expired_products
+          - test_async_update_overdue_products
+          - test_async_update_missing_products
+
+  shopping_list:
+    name: Shopping List
+    doc_section: "#2-shopping-list"
+    tests:
+      - file: tests/test_entities.py
+        functions:
+          - test_sensor_shopping_list_counts
+      - file: tests/test_services.py
+        functions:
+          - test_add_missing_products_to_shopping_list_defaults_list
+          - test_add_missing_products_explicit_list_id
+          - test_remove_product_in_shopping_list_defaults
+          - test_remove_product_in_shopping_list_service_prefers_payload
+          - test_remove_product_shopping_list_id_key
+          - test_mark_shopping_list_item_done
+          - test_mark_shopping_list_item_undone
+          - test_dispatcher_routes_add_missing_products
+          - test_dispatcher_routes_remove_product_in_shopping_list
+      - file: tests/test_todo.py
+        functions:
+          - test_todo_item_from_shopping_list_product
+          - test_todo_item_from_shopping_list_product_done
+          - test_todo_item_from_shopping_list_product_no_product
+          - test_todo_item_from_shopping_list_product_string_done_flag
+          - test_async_update_todo_item_complete_shopping_list
+          - test_async_update_todo_item_uncomplete_shopping_list
+      - file: tests/test_grocy_data.py
+        functions:
+          - test_async_update_shopping_list
+
+  chore_management:
+    name: Chore Management
+    doc_section: "#3-chore-management"
+    tests:
+      - file: tests/test_entities.py
+        functions:
+          - test_sensor_chores_counts
+          - test_binary_sensor_overdue_chores
+      - file: tests/test_services.py
+        functions:
+          - test_execute_chore_service_triggers_refresh
+          - test_execute_chore_empty_done_by
+          - test_dispatcher_routes_execute_chore
+      - file: tests/test_todo.py
+        functions:
+          - test_todo_item_from_chore
+          - test_todo_item_from_chore_date_only
+          - test_async_create_todo_item_chore
+          - test_async_update_todo_item_complete_chore
+          - test_async_update_todo_item_chore_needs_action_raises
+      - file: tests/test_grocy_data.py
+        functions:
+          - test_async_update_chores
+          - test_async_update_overdue_chores
+
+  task_management:
+    name: Task Management
+    doc_section: "#4-task-management"
+    tests:
+      - file: tests/test_entities.py
+        functions:
+          - test_sensor_tasks_counts
+          - test_binary_sensor_overdue_tasks
+          - test_todo_list_entity_exposes_items
+          - test_todo_list_entity_handles_empty_data
+      - file: tests/test_services.py
+        functions:
+          - test_complete_task_service_triggers_refresh
+          - test_dispatcher_routes_complete_task
+      - file: tests/test_todo.py
+        functions:
+          - test_todo_item_from_task
+          - test_todo_item_from_task_overdue
+          - test_async_create_todo_item_task
+          - test_async_update_todo_item_complete_task
+          - test_async_update_todo_item_task_needs_action_raises
+          - test_async_delete_todo_items_calls_delete_for_each_uid
+      - file: tests/test_grocy_data.py
+        functions:
+          - test_async_update_tasks
+          - test_async_update_overdue_tasks
+
+  battery_tracking:
+    name: Battery Tracking
+    doc_section: "#5-battery-tracking"
+    tests:
+      - file: tests/test_entities.py
+        functions:
+          - test_sensor_batteries_counts
+          - test_binary_sensor_overdue_batteries
+      - file: tests/test_services.py
+        functions:
+          - test_track_battery_service
+          - test_dispatcher_routes_track_battery
+      - file: tests/test_todo.py
+        functions:
+          - test_todo_item_from_battery
+          - test_todo_item_from_battery_overdue
+          - test_todo_list_entity_batteries_supports_create
+          - test_async_create_todo_item_battery
+          - test_async_update_todo_item_complete_battery
+          - test_async_update_todo_item_battery_needs_action_raises
+      - file: tests/test_grocy_data.py
+        functions:
+          - test_async_update_batteries
+          - test_async_update_overdue_batteries
+
+  meal_planning:
+    name: Meal Planning
+    doc_section: "#6-meal-planning"
+    tests:
+      - file: tests/test_entities.py
+        functions:
+          - test_sensor_meal_plan_counts
+      - file: tests/test_services.py
+        functions:
+          - test_consume_recipe_service
+          - test_dispatcher_routes_consume_recipe
+      - file: tests/test_todo.py
+        functions:
+          - test_todo_item_from_meal_plan_item
+          - test_todo_item_from_meal_plan_item_wrapper
+          - test_async_update_todo_item_complete_meal_plan
+          - test_async_update_todo_item_meal_plan_needs_action_raises
+      - file: tests/test_grocy_data.py
+        functions:
+          - test_async_update_meal_plan_sorts_by_day
+          - test_async_update_meal_plan_empty
+      - file: tests/test_helpers.py
+        functions:
+          - test_meal_plan_item_wrapper_generates_picture_url
+          - test_meal_plan_item_wrapper_handles_missing_picture
+
+  calendar:
+    name: Calendar
+    doc_section: "#7-calendar"
+    tests:
+      - file: tests/test_calendar.py
+        functions:
+          - test_utc_event_treated_as_local_time_when_fix_enabled
+          - test_naive_datetime_converted_from_utc
+          - test_utc_event_converted_to_local_when_fix_disabled
+          - test_all_day_event_single_day
+          - test_all_day_event_multi_day
+          - test_all_day_event_no_end_date
+          - test_event_without_end_time_defaults_to_one_hour
+          - test_multiple_events_sorted_by_start_time
+          - test_event_property_returns_next_event
+          - test_event_property_returns_none_when_no_events
+          - test_http_error_handling
+          - test_daylight_saving_time_transition
+          - test_different_timezone_pacific
+          - test_fix_timezone_defaults_to_true
+          - test_fix_timezone_can_be_disabled
+          - test_sync_interval_default
+          - test_sync_interval_custom
+      - file: tests/test_services.py
+        functions:
+          - test_sync_calendar_service_calls_calendar_update
+          - test_sync_calendar_service_handles_no_calendar_entity
+          - test_dispatcher_routes_sync_calendar
+
+  image_proxy:
+    name: Image Proxy
+    doc_section: "#8-image-proxy"
+    tests:
+      - file: tests/test_grocy_data.py
+        functions:
+          - test_async_setup_endpoint_registers_view
+          - test_async_setup_endpoint_with_path
+          - test_picture_view_get_proxies_request
+          - test_picture_view_uses_default_width
+          - test_picture_view_requires_no_auth
+          - test_picture_view_url_pattern
+
+  generic_crud:
+    name: Generic CRUD
+    doc_section: "#9-generic-crud"
+    tests:
+      - file: tests/test_services.py
+        functions:
+          - test_add_generic_service_refreshes_tasks
+          - test_update_generic_service_refreshes_entity
+          - test_delete_generic_service_defaults_to_tasks
+          - test_delete_generic_with_explicit_entity_type
+          - test_post_generic_refresh_updates_relevant_entities
+          - test_post_generic_refresh_for_chores
+          - test_dispatcher_routes_add_generic
+          - test_dispatcher_routes_update_generic
+          - test_dispatcher_routes_delete_generic
+
+  configuration_setup:
+    name: Configuration & Setup
+    doc_section: "#10-configuration--setup"
+    tests:
+      - file: tests/test_config_flow.py
+        functions:
+          - test_user_step_creates_entry
+          - test_user_step_handles_auth_failure
+          - test_user_step_handles_connection_error
+          - test_user_step_handles_timeout_error
+          - test_abort_when_configured
+          - test_credentials_use_full_payload
+          - test_reconfigure_step_shows_form
+          - test_reconfigure_step_updates_entry
+          - test_reconfigure_step_handles_error
+          - test_reauth_step_shows_confirm_form
+          - test_reauth_confirm_updates_entry
+          - test_reauth_confirm_handles_error
+      - file: tests/test_init.py
+        functions:
+          - test_async_setup_entry_initializes_integration
+          - test_async_setup_entry_raises_not_ready
+          - test_async_setup_entry_raises_not_ready_on_timeout
+          - test_async_setup_entry_raises_not_ready_on_os_error
+          - test_async_unload_entry_cleans_up
+          - test_async_unload_entry_platform_failure
+          - test_available_entities_all_features
+          - test_available_entities_stock_only
+          - test_available_entities_tasks_only
+          - test_available_entities_chores_only
+          - test_available_entities_shopping_list_only
+          - test_available_entities_recipes_only
+          - test_available_entities_batteries_only
+          - test_available_entities_no_features
+          - test_available_entities_none_config
+      - file: tests/test_coordinator.py
+        functions:
+          - test_async_update_data_skips_disabled_entities
+          - test_async_update_data_raises_update_failed
+
+# Cross-cutting tests that validate shared infrastructure.
+# These don't belong to a single feature but are essential.
+cross_cutting:
+  name: Cross-Cutting / Infrastructure
+  doc_section: "#cross-cutting-tests"
+  tests:
+    - file: tests/test_entities.py
+      functions:
+        - test_sensor_exists_fn
+        - test_binary_sensor_exists_fn
+        - test_coordinator_data_setitem_getitem
+        - test_coordinator_data_defaults_to_none
+    - file: tests/test_todo.py
+      functions:
+        - test_calculate_days_until_none_returns_zero
+        - test_calculate_days_until_date_only_future
+        - test_calculate_days_until_date_only_past
+        - test_calculate_days_until_datetime
+        - test_calculate_days_until_datetime_date_only
+        - test_calculate_item_status_overdue
+        - test_calculate_item_status_future
+        - test_todo_item_raises_for_unknown_type
+        - test_get_grocy_item_finds_by_id
+        - test_get_grocy_item_finds_meal_plan_wrapper
+        - test_todo_items_none_data
+        - test_todo_exists_fn_checks_available_entities
+        - test_async_create_todo_item_unsupported_raises
+    - file: tests/test_services.py
+      functions:
+        - test_async_setup_services_registers_all_services
+        - test_async_setup_services_skips_if_already_registered
+        - test_async_unload_services_removes_all
+        - test_async_unload_services_noop_if_not_registered
+        - test_async_force_update_entity_updates_matching_entity
+        - test_async_force_update_entity_ignores_missing
+    - file: tests/test_grocy_data.py
+      functions:
+        - test_async_update_data_dispatches_to_correct_method
+        - test_async_update_data_returns_none_for_unknown_key
+        - test_async_get_config
+        - test_all_entity_keys_have_update_methods
+    - file: tests/test_helpers.py
+      functions:
+        - test_extract_base_url_and_path_variants
+        - test_model_to_dict_prefers_as_dict
+        - test_model_to_dict_falls_back_to_model_dump
+        - test_model_to_dict_uses_dunder_dict
+        - test_model_to_dict_returns_empty_dict
+    - file: tests/test_json_encoder.py
+      functions:
+        - test_encodes_date
+        - test_encodes_time
+        - test_encodes_datetime_via_parent
+        - test_encodes_regular_types
+        - test_encodes_date_min
+        - test_encodes_time_with_microseconds

@@ -121,6 +121,9 @@ The calendar automatically syncs at the interval configured during setup (defaul
 
 **Note on Timezone Handling:** Grocy may send local times marked as UTC in the iCal feed. The "Fix timezone for calendar" option (enabled by default) addresses this by treating UTC times as local time. If your Grocy instance correctly sends UTC times, you can disable this option in the integration configuration.
 
+## Feature Reference
+
+For detailed documentation of all feature groups, entities, services, and their parameters, see [docs/FEATURES.md](docs/FEATURES.md).
 
 # Services
 

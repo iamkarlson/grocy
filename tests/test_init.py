@@ -1,3 +1,9 @@
+"""Integration setup and teardown tests.
+
+Features: configuration_setup
+See: docs/FEATURES.md#10-configuration--setup
+"""
+
 from __future__ import annotations
 
 from types import SimpleNamespace
@@ -5,6 +11,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.exceptions import ConfigEntryNotReady
+
+pytestmark = pytest.mark.feature("configuration_setup")
 
 from custom_components.grocy import (
     _async_get_available_entities,

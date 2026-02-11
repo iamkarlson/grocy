@@ -1,4 +1,8 @@
-"""Tests for the Grocy calendar platform with timezone handling."""
+"""Tests for the Grocy calendar platform with timezone handling.
+
+Features: calendar
+See: docs/FEATURES.md#7-calendar
+"""
 
 from __future__ import annotations
 
@@ -148,6 +152,7 @@ def _create_ical_calendar(events: list[icalendar.Event]) -> str:
     return cal.to_ical().decode("utf-8")
 
 
+@pytest.mark.feature("calendar")
 class TestCalendarEntityTimezoneFixEnabled:
     """Tests for calendar timezone fix when enabled (default)."""
 
@@ -251,6 +256,7 @@ class TestCalendarEntityTimezoneFixEnabled:
         assert event.end == expected_end
 
 
+@pytest.mark.feature("calendar")
 class TestCalendarEntityTimezoneFixDisabled:
     """Tests for calendar when timezone fix is disabled."""
 
@@ -321,6 +327,7 @@ class TestCalendarEntityTimezoneFixDisabled:
         assert event.end == expected_end
 
 
+@pytest.mark.feature("calendar")
 class TestCalendarEntityAllDayEvents:
     """Tests for all-day (date-only) events."""
 
@@ -457,6 +464,7 @@ class TestCalendarEntityAllDayEvents:
         assert event.end == expected_end
 
 
+@pytest.mark.feature("calendar")
 class TestCalendarEntityEdgeCases:
     """Tests for edge cases in calendar event handling."""
 
@@ -646,6 +654,7 @@ class TestCalendarEntityEdgeCases:
         assert entity._events == []
 
 
+@pytest.mark.feature("calendar")
 class TestCalendarEntityTimezoneEdgeCases:
     """Tests for timezone handling edge cases."""
 
@@ -758,6 +767,7 @@ class TestCalendarEntityTimezoneEdgeCases:
         assert event.end == expected_end
 
 
+@pytest.mark.feature("calendar")
 class TestCalendarEntityConfiguration:
     """Tests for calendar entity configuration."""
 
