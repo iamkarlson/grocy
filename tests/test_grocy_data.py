@@ -1,3 +1,10 @@
+"""GrocyData API interface tests.
+
+Features: stock_management, shopping_list, chore_management, task_management,
+          battery_tracking, meal_planning, image_proxy, cross_cutting
+See: docs/FEATURES.md
+"""
+
 from __future__ import annotations
 
 import datetime as dt
@@ -33,7 +40,6 @@ from custom_components.grocy.grocy_data import (
 from tests.factories import (
     DummyBattery,
     DummyChore,
-    DummyCurrentStockResponse,
     DummyMealPlanItem,
     DummyProduct,
     DummyShoppingListProduct,
@@ -53,8 +59,10 @@ def grocy_data(hass, mock_grocy) -> GrocyData:
 # ─── async_update_data dispatch ───────────────────────────────────────────────
 
 
+@pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
 async def test_async_update_data_dispatches_to_correct_method(grocy_data) -> None:
+    """Verify data dispatch routing."""
     mock_update = AsyncMock(return_value=["stock_item"])
     grocy_data.entity_update_method[ATTR_STOCK] = mock_update
     result = await grocy_data.async_update_data(ATTR_STOCK)
@@ -62,8 +70,10 @@ async def test_async_update_data_dispatches_to_correct_method(grocy_data) -> Non
     assert result == ["stock_item"]
 
 
+@pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
 async def test_async_update_data_returns_none_for_unknown_key(grocy_data) -> None:
+    """Verify unknown key returns None."""
     result = await grocy_data.async_update_data("unknown_key")
     assert result is None
 
@@ -71,25 +81,22 @@ async def test_async_update_data_returns_none_for_unknown_key(grocy_data) -> Non
 # ─── async_update_stock ───────────────────────────────────────────────────────
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
-async def test_async_update_stock_wraps_items(grocy_data) -> None:
-    raw_response = DummyCurrentStockResponse()
-    grocy_data.api.stock._api.get_stock.return_value = [raw_response]
-
-    with patch(
-        "custom_components.grocy.grocy_data.ProductWrapper"
-    ) as mock_wrapper_cls:
-        mock_wrapper = MagicMock()
-        mock_wrapper_cls.return_value = mock_wrapper
-        result = await grocy_data.async_update_stock()
-
+async def test_async_update_stock_returns_products(grocy_data) -> None:
+    """Verify stock data fetching returns products."""
+    product = DummyProduct()
+    grocy_data.api.stock.current.return_value = [product]
+    result = await grocy_data.async_update_stock()
     assert len(result) == 1
-    mock_wrapper_cls.assert_called_once_with(raw_response, grocy_data.hass)
+    grocy_data.api.stock.current.assert_called_once()
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_async_update_stock_empty(grocy_data) -> None:
-    grocy_data.api.stock._api.get_stock.return_value = []
+    """Verify stock data fetching handles empty list."""
+    grocy_data.api.stock.current.return_value = []
     result = await grocy_data.async_update_stock()
     assert result == []
 
@@ -97,8 +104,10 @@ async def test_async_update_stock_empty(grocy_data) -> None:
 # ─── async_update_chores ──────────────────────────────────────────────────────
 
 
+@pytest.mark.feature("chore_management")
 @pytest.mark.asyncio
 async def test_async_update_chores(grocy_data) -> None:
+    """Verify chores data fetching with details."""
     chore = DummyChore()
     grocy_data.api.chores.list.return_value = [chore]
     result = await grocy_data.async_update_chores()
@@ -109,8 +118,10 @@ async def test_async_update_chores(grocy_data) -> None:
 # ─── async_update_overdue_chores ──────────────────────────────────────────────
 
 
+@pytest.mark.feature("chore_management")
 @pytest.mark.asyncio
 async def test_async_update_overdue_chores(grocy_data) -> None:
+    """Verify overdue chores filtering with date query."""
     chore = DummyChore()
     grocy_data.api.chores.list.return_value = [chore]
     result = await grocy_data.async_update_overdue_chores()
@@ -126,8 +137,10 @@ async def test_async_update_overdue_chores(grocy_data) -> None:
 # ─── async_update_tasks ──────────────────────────────────────────────────────
 
 
+@pytest.mark.feature("task_management")
 @pytest.mark.asyncio
 async def test_async_update_tasks(grocy_data) -> None:
+    """Verify tasks data fetching."""
     task = DummyTask()
     grocy_data.api.tasks.list.return_value = [task]
     result = await grocy_data.async_update_tasks()
@@ -138,8 +151,10 @@ async def test_async_update_tasks(grocy_data) -> None:
 # ─── async_update_overdue_tasks ───────────────────────────────────────────────
 
 
+@pytest.mark.feature("task_management")
 @pytest.mark.asyncio
 async def test_async_update_overdue_tasks(grocy_data) -> None:
+    """Verify overdue tasks filtering with date query."""
     task = DummyTask()
     grocy_data.api.tasks.list.return_value = [task]
     result = await grocy_data.async_update_overdue_tasks()
@@ -154,8 +169,10 @@ async def test_async_update_overdue_tasks(grocy_data) -> None:
 # ─── async_update_shopping_list ───────────────────────────────────────────────
 
 
+@pytest.mark.feature("shopping_list")
 @pytest.mark.asyncio
 async def test_async_update_shopping_list(grocy_data) -> None:
+    """Verify shopping list data fetching."""
     item = DummyShoppingListProduct()
     grocy_data.api.shopping_list.items.return_value = [item]
     result = await grocy_data.async_update_shopping_list()
@@ -166,8 +183,10 @@ async def test_async_update_shopping_list(grocy_data) -> None:
 # ─── async_update_expiring_products ───────────────────────────────────────────
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_async_update_expiring_products(grocy_data) -> None:
+    """Verify expiring products data fetching."""
     product = DummyProduct()
     grocy_data.api.stock.due_products.return_value = [product]
     result = await grocy_data.async_update_expiring_products()
@@ -178,8 +197,10 @@ async def test_async_update_expiring_products(grocy_data) -> None:
 # ─── async_update_expired_products ────────────────────────────────────────────
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_async_update_expired_products(grocy_data) -> None:
+    """Verify expired products data fetching."""
     product = DummyProduct()
     grocy_data.api.stock.expired_products.return_value = [product]
     result = await grocy_data.async_update_expired_products()
@@ -190,8 +211,10 @@ async def test_async_update_expired_products(grocy_data) -> None:
 # ─── async_update_overdue_products ────────────────────────────────────────────
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_async_update_overdue_products(grocy_data) -> None:
+    """Verify overdue products data fetching."""
     product = DummyProduct()
     grocy_data.api.stock.overdue_products.return_value = [product]
     result = await grocy_data.async_update_overdue_products()
@@ -202,8 +225,10 @@ async def test_async_update_overdue_products(grocy_data) -> None:
 # ─── async_update_missing_products ────────────────────────────────────────────
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_async_update_missing_products(grocy_data) -> None:
+    """Verify missing products data fetching."""
     product = DummyProduct()
     grocy_data.api.stock.missing_products.return_value = [product]
     result = await grocy_data.async_update_missing_products()
@@ -214,8 +239,10 @@ async def test_async_update_missing_products(grocy_data) -> None:
 # ─── async_update_meal_plan ───────────────────────────────────────────────────
 
 
+@pytest.mark.feature("meal_planning")
 @pytest.mark.asyncio
 async def test_async_update_meal_plan_sorts_by_day(grocy_data) -> None:
+    """Verify meal plan sorted by date, filters from yesterday."""
     day1 = DummyMealPlanItem(id=2, day=dt.date.today() + dt.timedelta(days=3))
     day2 = DummyMealPlanItem(id=1, day=dt.date.today() + dt.timedelta(days=1))
     grocy_data.api.meal_plan.items.return_value = [day1, day2]
@@ -242,8 +269,10 @@ async def test_async_update_meal_plan_sorts_by_day(grocy_data) -> None:
     assert "query_filters" in call_args.kwargs
 
 
+@pytest.mark.feature("meal_planning")
 @pytest.mark.asyncio
 async def test_async_update_meal_plan_empty(grocy_data) -> None:
+    """Verify empty meal plan handled."""
     grocy_data.api.meal_plan.items.return_value = []
     result = await grocy_data.async_update_meal_plan()
     assert result == []
@@ -252,8 +281,10 @@ async def test_async_update_meal_plan_empty(grocy_data) -> None:
 # ─── async_update_batteries ───────────────────────────────────────────────────
 
 
+@pytest.mark.feature("battery_tracking")
 @pytest.mark.asyncio
 async def test_async_update_batteries(grocy_data) -> None:
+    """Verify batteries data fetching with details."""
     battery = DummyBattery()
     grocy_data.api.batteries.list.return_value = [battery]
     result = await grocy_data.async_update_batteries()
@@ -264,8 +295,10 @@ async def test_async_update_batteries(grocy_data) -> None:
 # ─── async_update_overdue_batteries ───────────────────────────────────────────
 
 
+@pytest.mark.feature("battery_tracking")
 @pytest.mark.asyncio
 async def test_async_update_overdue_batteries(grocy_data) -> None:
+    """Verify overdue batteries data fetching."""
     battery = DummyBattery()
     grocy_data.api.batteries.list.return_value = [battery]
     result = await grocy_data.async_update_overdue_batteries()
@@ -277,8 +310,10 @@ async def test_async_update_overdue_batteries(grocy_data) -> None:
 # ─── async_get_config ─────────────────────────────────────────────────────────
 
 
+@pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
 async def test_async_get_config(grocy_data) -> None:
+    """Verify config retrieval from Grocy API."""
     mock_config = MagicMock()
     grocy_data.api.system.config.return_value = mock_config
     result = await grocy_data.async_get_config()
@@ -289,8 +324,10 @@ async def test_async_get_config(grocy_data) -> None:
 # ─── async_setup_endpoint_for_image_proxy ─────────────────────────────────────
 
 
+@pytest.mark.feature("image_proxy")
 @pytest.mark.asyncio
 async def test_async_setup_endpoint_registers_view(hass) -> None:
+    """Verify endpoint registration."""
     config_data = {
         CONF_URL: "https://demo.grocy.info",
         CONF_API_KEY: "test-key",
@@ -309,8 +346,10 @@ async def test_async_setup_endpoint_registers_view(hass) -> None:
     assert isinstance(view, GrocyPictureView)
 
 
+@pytest.mark.feature("image_proxy")
 @pytest.mark.asyncio
 async def test_async_setup_endpoint_with_path(hass) -> None:
+    """Verify URL path handling for subpath installations."""
     config_data = {
         CONF_URL: "https://demo.grocy.info/grocy",
         CONF_API_KEY: "test-key",
@@ -331,8 +370,10 @@ async def test_async_setup_endpoint_with_path(hass) -> None:
 # ─── GrocyPictureView ────────────────────────────────────────────────────────
 
 
+@pytest.mark.feature("image_proxy")
 @pytest.mark.asyncio
 async def test_picture_view_get_proxies_request() -> None:
+    """Verify image proxying with correct headers."""
     mock_session = MagicMock()
     response_body = b"\x89PNG\r\n"
     mock_resp = MagicMock()
@@ -369,8 +410,10 @@ async def test_picture_view_get_proxies_request() -> None:
     assert "X-Custom-Header" not in response.headers
 
 
+@pytest.mark.feature("image_proxy")
 @pytest.mark.asyncio
 async def test_picture_view_uses_default_width() -> None:
+    """Verify default width=400."""
     mock_session = MagicMock()
     mock_resp = MagicMock()
     mock_resp.headers = {}
@@ -393,11 +436,15 @@ async def test_picture_view_uses_default_width() -> None:
     assert "best_fit_width=400" in call_url
 
 
+@pytest.mark.feature("image_proxy")
 def test_picture_view_requires_no_auth() -> None:
+    """Verify no authentication required."""
     assert GrocyPictureView.requires_auth is False
 
 
+@pytest.mark.feature("image_proxy")
 def test_picture_view_url_pattern() -> None:
+    """Verify URL pattern contains expected placeholders."""
     assert "{picture_type}" in GrocyPictureView.url
     assert "{filename}" in GrocyPictureView.url
 
@@ -405,7 +452,9 @@ def test_picture_view_url_pattern() -> None:
 # ─── All entity keys are mapped ──────────────────────────────────────────────
 
 
+@pytest.mark.feature("cross_cutting")
 def test_all_entity_keys_have_update_methods(hass, mock_grocy) -> None:
+    """Verify all 13 entity keys mapped to update methods."""
     hass.async_add_executor_job = AsyncMock()
     data = GrocyData(hass, mock_grocy)
     expected_keys = {

@@ -1,3 +1,9 @@
+"""Coordinator tests for the data update loop.
+
+Features: configuration_setup
+See: docs/FEATURES.md#10-configuration--setup
+"""
+
 from __future__ import annotations
 
 from types import SimpleNamespace
@@ -7,6 +13,8 @@ import pytest
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.grocy.coordinator import GrocyDataUpdateCoordinator
+
+pytestmark = pytest.mark.feature("configuration_setup")
 
 
 class DummyEntity:

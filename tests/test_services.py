@@ -1,3 +1,10 @@
+"""Service handler tests.
+
+Features: stock_management, shopping_list, chore_management, task_management,
+          battery_tracking, meal_planning, generic_crud, calendar
+See: docs/FEATURES.md
+"""
+
 from __future__ import annotations
 
 from types import SimpleNamespace
@@ -21,8 +28,13 @@ async def stub_executor(hass):
     hass.async_add_executor_job = AsyncMock(side_effect=lambda func, *args: func(*args))
 
 
+# ─── Stock services ─────────────────────────────────────────────────────────
+
+
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_add_product_service_converts_price(hass, coordinator) -> None:
+    """Verify price string is converted to float when adding product."""
     data = {
         services.SERVICE_PRODUCT_ID: 5,
         services.SERVICE_AMOUNT: 2.0,
@@ -34,8 +46,10 @@ async def test_add_product_service_converts_price(hass, coordinator) -> None:
     coordinator.grocy_api.stock.add.assert_called_once_with(5, 2.0, 1.25)
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_add_product_service_defaults_price_zero(hass, coordinator) -> None:
+    """Verify empty price defaults to 0.0."""
     data = {
         services.SERVICE_PRODUCT_ID: 8,
         services.SERVICE_AMOUNT: 1.0,
@@ -47,8 +61,10 @@ async def test_add_product_service_defaults_price_zero(hass, coordinator) -> Non
     coordinator.grocy_api.stock.add.assert_called_once_with(8, 1.0, 0.0)
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_open_product_service_uses_defaults(hass, coordinator) -> None:
+    """Verify open product uses default parameter values."""
     data = {
         services.SERVICE_PRODUCT_ID: 4,
         services.SERVICE_AMOUNT: 3.0,
@@ -59,10 +75,12 @@ async def test_open_product_service_uses_defaults(hass, coordinator) -> None:
     coordinator.grocy_api.stock.open.assert_called_once_with(4, 3.0, False)
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_consume_product_service_handles_transaction_type(
     hass, coordinator
 ) -> None:
+    """Verify consume product converts transaction type string to enum."""
     data = {
         services.SERVICE_PRODUCT_ID: 2,
         services.SERVICE_AMOUNT: 1.0,
@@ -81,8 +99,13 @@ async def test_consume_product_service_handles_transaction_type(
     assert kwargs["transaction_type"] == TransactionType.INVENTORY_CORRECTION
 
 
+# ─── Chore / Task / Battery services ────────────────────────────────────────
+
+
+@pytest.mark.feature("chore_management")
 @pytest.mark.asyncio
 async def test_execute_chore_service_triggers_refresh(hass, coordinator) -> None:
+    """Verify execute chore calls API and refreshes entity."""
     data = {
         services.SERVICE_CHORE_ID: 3,
         services.SERVICE_DONE_BY: "1",
@@ -99,8 +122,10 @@ async def test_execute_chore_service_triggers_refresh(hass, coordinator) -> None
     mock_refresh.assert_awaited_once_with(coordinator, services.ATTR_CHORES)
 
 
+@pytest.mark.feature("task_management")
 @pytest.mark.asyncio
 async def test_complete_task_service_triggers_refresh(hass, coordinator) -> None:
+    """Verify complete task calls API and refreshes entity."""
     data = {
         services.SERVICE_TASK_ID: 11,
     }
@@ -115,8 +140,13 @@ async def test_complete_task_service_triggers_refresh(hass, coordinator) -> None
     mock_refresh.assert_awaited_once_with(coordinator, services.ATTR_TASKS)
 
 
+# ─── Generic CRUD services ──────────────────────────────────────────────────
+
+
+@pytest.mark.feature("generic_crud")
 @pytest.mark.asyncio
 async def test_add_generic_service_refreshes_tasks(hass, coordinator) -> None:
+    """Verify add_generic creates entity and refreshes tasks."""
     data = {
         services.SERVICE_ENTITY_TYPE: "tasks",
         services.SERVICE_DATA: {"name": "Task"},
@@ -134,8 +164,10 @@ async def test_add_generic_service_refreshes_tasks(hass, coordinator) -> None:
     mock_post.assert_awaited_once_with(coordinator, EntityType.TASKS)
 
 
+@pytest.mark.feature("generic_crud")
 @pytest.mark.asyncio
 async def test_update_generic_service_refreshes_entity(hass, coordinator) -> None:
+    """Verify update_generic updates entity and refreshes."""
     data = {
         services.SERVICE_ENTITY_TYPE: "chores",
         services.SERVICE_OBJECT_ID: 12,
@@ -154,8 +186,10 @@ async def test_update_generic_service_refreshes_entity(hass, coordinator) -> Non
     mock_post.assert_awaited_once_with(coordinator, EntityType.CHORES)
 
 
+@pytest.mark.feature("generic_crud")
 @pytest.mark.asyncio
 async def test_delete_generic_service_defaults_to_tasks(hass, coordinator) -> None:
+    """Verify delete_generic defaults entity_type to tasks."""
     data = {
         services.SERVICE_OBJECT_ID: 9,
     }
@@ -170,8 +204,10 @@ async def test_delete_generic_service_defaults_to_tasks(hass, coordinator) -> No
     mock_post.assert_awaited_once_with(coordinator, EntityType.TASKS)
 
 
+@pytest.mark.feature("generic_crud")
 @pytest.mark.asyncio
 async def test_post_generic_refresh_updates_relevant_entities(coordinator) -> None:
+    """Verify refresh only updates tasks/chores entities."""
     with patch(
         "custom_components.grocy.services._async_force_update_entity",
         new_callable=AsyncMock,
@@ -187,8 +223,13 @@ async def test_post_generic_refresh_updates_relevant_entities(coordinator) -> No
         mock_refresh.assert_not_awaited()
 
 
+# ─── Recipe / Battery services ──────────────────────────────────────────────
+
+
+@pytest.mark.feature("meal_planning")
 @pytest.mark.asyncio
 async def test_consume_recipe_service(hass, coordinator) -> None:
+    """Verify consume recipe calls API."""
     data = {services.SERVICE_RECIPE_ID: 21}
 
     await services.async_consume_recipe_service(hass, coordinator, data)
@@ -196,8 +237,10 @@ async def test_consume_recipe_service(hass, coordinator) -> None:
     coordinator.grocy_api.recipes.consume.assert_called_once_with(21)
 
 
+@pytest.mark.feature("battery_tracking")
 @pytest.mark.asyncio
 async def test_track_battery_service(hass, coordinator) -> None:
+    """Verify track battery calls charge API."""
     data = {services.SERVICE_BATTERY_ID: 6}
 
     await services.async_track_battery_service(hass, coordinator, data)
@@ -205,10 +248,15 @@ async def test_track_battery_service(hass, coordinator) -> None:
     coordinator.grocy_api.batteries.charge.assert_called_once_with(6)
 
 
+# ─── Shopping list services ─────────────────────────────────────────────────
+
+
+@pytest.mark.feature("shopping_list")
 @pytest.mark.asyncio
 async def test_add_missing_products_to_shopping_list_defaults_list(
     hass, coordinator
 ) -> None:
+    """Verify defaults to list ID 1."""
     data: dict[str, int] = {}
 
     await services.async_add_missing_products_to_shopping_list(hass, coordinator, data)
@@ -216,8 +264,10 @@ async def test_add_missing_products_to_shopping_list_defaults_list(
     coordinator.grocy_api.shopping_list.add_missing_products.assert_called_once_with(1)
 
 
+@pytest.mark.feature("shopping_list")
 @pytest.mark.asyncio
 async def test_remove_product_in_shopping_list_defaults(hass, coordinator) -> None:
+    """Verify remove product defaults to list 1."""
     data = {
         services.SERVICE_PRODUCT_ID: 4,
         services.SERVICE_AMOUNT: 2.0,
@@ -230,10 +280,12 @@ async def test_remove_product_in_shopping_list_defaults(hass, coordinator) -> No
     )
 
 
+@pytest.mark.feature("shopping_list")
 @pytest.mark.asyncio
 async def test_remove_product_in_shopping_list_service_prefers_payload(
     hass, coordinator
 ) -> None:
+    """Verify prefers payload list_id over default."""
     data = {
         services.SERVICE_PRODUCT_ID: 3,
         services.SERVICE_AMOUNT: 1.0,
@@ -249,8 +301,43 @@ async def test_remove_product_in_shopping_list_service_prefers_payload(
     )
 
 
+@pytest.mark.feature("shopping_list")
+@pytest.mark.asyncio
+async def test_mark_shopping_list_item_done(hass, coordinator) -> None:
+    """Verify mark item as done."""
+    data = {
+        services.SERVICE_OBJECT_ID: 42,
+        "done": True,
+    }
+
+    await services.async_mark_shopping_list_item_done(hass, coordinator, data)
+
+    coordinator.grocy_api.shopping_list.mark_item_done.assert_called_once_with(42, True)
+
+
+@pytest.mark.feature("shopping_list")
+@pytest.mark.asyncio
+async def test_mark_shopping_list_item_undone(hass, coordinator) -> None:
+    """Verify mark item as not done."""
+    data = {
+        services.SERVICE_OBJECT_ID: 42,
+        "done": False,
+    }
+
+    await services.async_mark_shopping_list_item_done(hass, coordinator, data)
+
+    coordinator.grocy_api.shopping_list.mark_item_done.assert_called_once_with(
+        42, False
+    )
+
+
+# ─── Force update ───────────────────────────────────────────────────────────
+
+
+@pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
 async def test_async_force_update_entity_updates_matching_entity() -> None:
+    """Verify force update targets correct entity."""
     entity = SimpleNamespace(
         entity_description=SimpleNamespace(key=services.ATTR_TASKS),
         async_update_ha_state=AsyncMock(),
@@ -262,8 +349,10 @@ async def test_async_force_update_entity_updates_matching_entity() -> None:
     entity.async_update_ha_state.assert_awaited_once_with(force_refresh=True)
 
 
+@pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
 async def test_async_force_update_entity_ignores_missing() -> None:
+    """Verify force update handles missing entity."""
     coordinator = SimpleNamespace(entities=[])
 
     await services._async_force_update_entity(coordinator, services.ATTR_TASKS)
@@ -272,10 +361,12 @@ async def test_async_force_update_entity_ignores_missing() -> None:
 # ─── async_setup_services ────────────────────────────────────────────────────
 
 
+@pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
 async def test_async_setup_services_registers_all_services(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify all 13 services are registered."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
 
     await services.async_setup_services(hass, mock_config_entry)
@@ -285,10 +376,12 @@ async def test_async_setup_services_registers_all_services(
         assert service_name in registered, f"Service {service_name} not registered"
 
 
+@pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
 async def test_async_setup_services_skips_if_already_registered(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify no duplicate registration."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
 
     await services.async_setup_services(hass, mock_config_entry)
@@ -303,10 +396,12 @@ async def test_async_setup_services_skips_if_already_registered(
 # ─── async_unload_services ───────────────────────────────────────────────────
 
 
+@pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
 async def test_async_unload_services_removes_all(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify all services removed on unload."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
 
     await services.async_setup_services(hass, mock_config_entry)
@@ -317,8 +412,10 @@ async def test_async_unload_services_removes_all(
     assert not hass.services.async_services().get(DOMAIN)
 
 
+@pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
 async def test_async_unload_services_noop_if_not_registered(hass) -> None:
+    """Verify graceful no-op if not registered."""
     # Should not raise
     await services.async_unload_services(hass)
 
@@ -326,8 +423,10 @@ async def test_async_unload_services_noop_if_not_registered(hass) -> None:
 # ─── consume_product defaults to CONSUME transaction_type ─────────────────────
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_consume_product_defaults_transaction_type(hass, coordinator) -> None:
+    """Verify consume product defaults to CONSUME type."""
     data = {
         services.SERVICE_PRODUCT_ID: 1,
         services.SERVICE_AMOUNT: 1.0,
@@ -342,8 +441,10 @@ async def test_consume_product_defaults_transaction_type(hass, coordinator) -> N
 # ─── add_product with no price key ───────────────────────────────────────────
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_add_product_service_no_price_key(hass, coordinator) -> None:
+    """Verify missing price key defaults to 0.0."""
     data = {
         services.SERVICE_PRODUCT_ID: 10,
         services.SERVICE_AMOUNT: 5.0,
@@ -357,8 +458,10 @@ async def test_add_product_service_no_price_key(hass, coordinator) -> None:
 # ─── execute_chore with empty done_by ────────────────────────────────────────
 
 
+@pytest.mark.feature("chore_management")
 @pytest.mark.asyncio
 async def test_execute_chore_empty_done_by(hass, coordinator) -> None:
+    """Verify empty done_by is converted to None."""
     data = {
         services.SERVICE_CHORE_ID: 7,
         services.SERVICE_DONE_BY: "",
@@ -378,8 +481,10 @@ async def test_execute_chore_empty_done_by(hass, coordinator) -> None:
 # ─── open_product with substitution enabled ──────────────────────────────────
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_open_product_with_substitution(hass, coordinator) -> None:
+    """Verify open product handles substitution flag."""
     data = {
         services.SERVICE_PRODUCT_ID: 6,
         services.SERVICE_AMOUNT: 1.0,
@@ -394,8 +499,10 @@ async def test_open_product_with_substitution(hass, coordinator) -> None:
 # ─── remove_product_in_shopping_list with shopping_list_id key ────────────────
 
 
+@pytest.mark.feature("shopping_list")
 @pytest.mark.asyncio
 async def test_remove_product_shopping_list_id_key(hass, coordinator) -> None:
+    """Verify accepts shopping_list_id key."""
     data = {
         services.SERVICE_PRODUCT_ID: 5,
         services.SERVICE_AMOUNT: 1.0,
@@ -410,8 +517,10 @@ async def test_remove_product_shopping_list_id_key(hass, coordinator) -> None:
 # ─── add_missing_products with explicit list_id ──────────────────────────────
 
 
+@pytest.mark.feature("shopping_list")
 @pytest.mark.asyncio
 async def test_add_missing_products_explicit_list_id(hass, coordinator) -> None:
+    """Verify accepts explicit list ID."""
     data = {services.SERVICE_LIST_ID: 7}
 
     await services.async_add_missing_products_to_shopping_list(
@@ -424,8 +533,10 @@ async def test_add_missing_products_explicit_list_id(hass, coordinator) -> None:
 # ─── delete_generic with explicit entity_type ────────────────────────────────
 
 
+@pytest.mark.feature("generic_crud")
 @pytest.mark.asyncio
 async def test_delete_generic_with_explicit_entity_type(hass, coordinator) -> None:
+    """Verify delete_generic accepts explicit entity_type."""
     data = {
         services.SERVICE_ENTITY_TYPE: "chores",
         services.SERVICE_OBJECT_ID: 5,
@@ -444,8 +555,10 @@ async def test_delete_generic_with_explicit_entity_type(hass, coordinator) -> No
 # ─── _post_generic_refresh for chores ────────────────────────────────────────
 
 
+@pytest.mark.feature("generic_crud")
 @pytest.mark.asyncio
 async def test_post_generic_refresh_for_chores(coordinator) -> None:
+    """Verify refresh works for chores entity type."""
     with patch(
         "custom_components.grocy.services._async_force_update_entity",
         new_callable=AsyncMock,
@@ -457,10 +570,12 @@ async def test_post_generic_refresh_for_chores(coordinator) -> None:
 # ─── async_call_grocy_service dispatcher ─────────────────────────────────────
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_dispatcher_routes_add_product(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify dispatcher routes add_product correctly."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
     await services.async_setup_services(hass, mock_config_entry)
 
@@ -474,10 +589,12 @@ async def test_dispatcher_routes_add_product(
     mock_grocy.stock.add.assert_called_once()
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_dispatcher_routes_open_product(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify dispatcher routes open_product correctly."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
     await services.async_setup_services(hass, mock_config_entry)
 
@@ -491,10 +608,12 @@ async def test_dispatcher_routes_open_product(
     mock_grocy.stock.open.assert_called_once()
 
 
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_dispatcher_routes_consume_product(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify dispatcher routes consume_product correctly."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
     await services.async_setup_services(hass, mock_config_entry)
 
@@ -508,10 +627,12 @@ async def test_dispatcher_routes_consume_product(
     mock_grocy.stock.consume.assert_called_once()
 
 
+@pytest.mark.feature("chore_management")
 @pytest.mark.asyncio
 async def test_dispatcher_routes_execute_chore(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify dispatcher routes execute_chore correctly."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
     await services.async_setup_services(hass, mock_config_entry)
 
@@ -525,10 +646,12 @@ async def test_dispatcher_routes_execute_chore(
     mock_grocy.chores.execute.assert_called_once()
 
 
+@pytest.mark.feature("task_management")
 @pytest.mark.asyncio
 async def test_dispatcher_routes_complete_task(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify dispatcher routes complete_task."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
     await services.async_setup_services(hass, mock_config_entry)
 
@@ -542,10 +665,12 @@ async def test_dispatcher_routes_complete_task(
     mock_grocy.tasks.complete.assert_called_once()
 
 
+@pytest.mark.feature("meal_planning")
 @pytest.mark.asyncio
 async def test_dispatcher_routes_consume_recipe(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify dispatcher routes consume_recipe."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
     await services.async_setup_services(hass, mock_config_entry)
 
@@ -559,10 +684,12 @@ async def test_dispatcher_routes_consume_recipe(
     mock_grocy.recipes.consume.assert_called_once()
 
 
+@pytest.mark.feature("battery_tracking")
 @pytest.mark.asyncio
 async def test_dispatcher_routes_track_battery(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify dispatcher routes track_battery."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
     await services.async_setup_services(hass, mock_config_entry)
 
@@ -576,10 +703,12 @@ async def test_dispatcher_routes_track_battery(
     mock_grocy.batteries.charge.assert_called_once()
 
 
+@pytest.mark.feature("generic_crud")
 @pytest.mark.asyncio
 async def test_dispatcher_routes_add_generic(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify dispatcher routes add_generic."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
     await services.async_setup_services(hass, mock_config_entry)
 
@@ -593,10 +722,12 @@ async def test_dispatcher_routes_add_generic(
     mock_grocy.generic.create.assert_called_once()
 
 
+@pytest.mark.feature("generic_crud")
 @pytest.mark.asyncio
 async def test_dispatcher_routes_update_generic(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify dispatcher routes update_generic."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
     await services.async_setup_services(hass, mock_config_entry)
 
@@ -614,10 +745,12 @@ async def test_dispatcher_routes_update_generic(
     mock_grocy.generic.update.assert_called_once()
 
 
+@pytest.mark.feature("generic_crud")
 @pytest.mark.asyncio
 async def test_dispatcher_routes_delete_generic(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify dispatcher routes delete_generic."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
     await services.async_setup_services(hass, mock_config_entry)
 
@@ -631,10 +764,12 @@ async def test_dispatcher_routes_delete_generic(
     mock_grocy.generic.delete.assert_called_once()
 
 
+@pytest.mark.feature("shopping_list")
 @pytest.mark.asyncio
 async def test_dispatcher_routes_add_missing_products(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify dispatcher routes add_missing_products."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
     await services.async_setup_services(hass, mock_config_entry)
 
@@ -648,10 +783,12 @@ async def test_dispatcher_routes_add_missing_products(
     mock_grocy.shopping_list.add_missing_products.assert_called_once()
 
 
+@pytest.mark.feature("shopping_list")
 @pytest.mark.asyncio
 async def test_dispatcher_routes_remove_product_in_shopping_list(
     hass, mock_config_entry, mock_grocy
 ) -> None:
+    """Verify dispatcher routes remove_product."""
     hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
     await services.async_setup_services(hass, mock_config_entry)
 
@@ -665,15 +802,17 @@ async def test_dispatcher_routes_remove_product_in_shopping_list(
     mock_grocy.shopping_list.remove_product.assert_called_once()
 
 
+# ─── Calendar service ────────────────────────────────────────────────────────
+
+
+@pytest.mark.feature("calendar")
 @pytest.mark.asyncio
 async def test_sync_calendar_service_calls_calendar_update(hass, coordinator) -> None:
-    """Test that sync_calendar service triggers calendar update."""
-    # Create a mock calendar entity
+    """Verify sync_calendar service triggers calendar update."""
     mock_calendar_entity = MagicMock()
     mock_calendar_entity.entity_description = SimpleNamespace(key="calendar")
     mock_calendar_entity._async_update_calendar = AsyncMock()
 
-    # Add mock entity to coordinator
     coordinator.entities = [mock_calendar_entity]
 
     await services.async_sync_calendar_service(coordinator)
@@ -681,23 +820,24 @@ async def test_sync_calendar_service_calls_calendar_update(hass, coordinator) ->
     mock_calendar_entity._async_update_calendar.assert_awaited_once()
 
 
+@pytest.mark.feature("calendar")
 @pytest.mark.asyncio
 async def test_sync_calendar_service_handles_no_calendar_entity(
     hass, coordinator
 ) -> None:
-    """Test that sync_calendar service handles missing calendar entity gracefully."""
-    # No calendar entity in coordinator
+    """Verify sync_calendar handles missing calendar entity gracefully."""
     coordinator.entities = []
 
     # Should not raise an error
     await services.async_sync_calendar_service(coordinator)
 
 
+@pytest.mark.feature("calendar")
 @pytest.mark.asyncio
 async def test_dispatcher_routes_sync_calendar(
     hass, mock_config_entry, mock_grocy
 ) -> None:
-    """Test that the dispatcher routes sync_calendar service calls."""
+    """Verify dispatcher routes sync_calendar service calls."""
     mock_calendar_entity = MagicMock()
     mock_calendar_entity.entity_description = SimpleNamespace(key="calendar")
     mock_calendar_entity._async_update_calendar = AsyncMock()

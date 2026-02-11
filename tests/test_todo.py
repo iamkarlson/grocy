@@ -1,3 +1,10 @@
+"""Todo list platform tests.
+
+Features: stock_management, shopping_list, chore_management, task_management,
+          battery_tracking, meal_planning, cross_cutting
+See: docs/FEATURES.md
+"""
+
 from __future__ import annotations
 
 import datetime as dt
@@ -21,7 +28,7 @@ from custom_components.grocy.const import (
     ATTR_TASKS,
 )
 from custom_components.grocy.coordinator import GrocyCoordinatorData
-from custom_components.grocy.helpers import MealPlanItemWrapper, ProductWrapper
+from custom_components.grocy.helpers import MealPlanItemWrapper
 from custom_components.grocy.todo import (
     TODOS,
     GrocyTodoItem,
@@ -30,9 +37,7 @@ from custom_components.grocy.todo import (
     _calculate_item_status,
 )
 from tests.factories import (
-    DummyCurrentStockResponse,
     DummyMealPlanItem,
-    DummyProduct,
     DummyRecipe,
 )
 
@@ -40,29 +45,39 @@ from tests.factories import (
 # ─── _calculate_days_until ────────────────────────────────────────────────────
 
 
+@pytest.mark.feature("cross_cutting")
 def test_calculate_days_until_none_returns_zero() -> None:
+    """Verify days calculation handles None."""
     assert _calculate_days_until(None) == 0
 
 
+@pytest.mark.feature("cross_cutting")
 def test_calculate_days_until_date_only_future() -> None:
+    """Verify future date calculation."""
     future = dt.date.today() + dt.timedelta(days=5)
     result = _calculate_days_until(future, date_only=True)
     assert result == 5
 
 
+@pytest.mark.feature("cross_cutting")
 def test_calculate_days_until_date_only_past() -> None:
+    """Verify past date calculation."""
     past = dt.date.today() - dt.timedelta(days=3)
     result = _calculate_days_until(past, date_only=True)
     assert result == -3
 
 
+@pytest.mark.feature("cross_cutting")
 def test_calculate_days_until_datetime() -> None:
+    """Verify datetime calculation."""
     future = dt.datetime.now() + dt.timedelta(days=2, hours=12)
     result = _calculate_days_until(future, date_only=False)
     assert result >= 2
 
 
+@pytest.mark.feature("cross_cutting")
 def test_calculate_days_until_datetime_date_only() -> None:
+    """Verify datetime as date calculation."""
     future_dt = dt.datetime.now() + dt.timedelta(days=4)
     result = _calculate_days_until(future_dt, date_only=True)
     assert result == 4
@@ -71,12 +86,16 @@ def test_calculate_days_until_datetime_date_only() -> None:
 # ─── _calculate_item_status ───────────────────────────────────────────────────
 
 
+@pytest.mark.feature("cross_cutting")
 def test_calculate_item_status_overdue() -> None:
+    """Verify overdue status mapping."""
     assert _calculate_item_status(0) == TodoItemStatus.NEEDS_ACTION
     assert _calculate_item_status(-1) == TodoItemStatus.NEEDS_ACTION
 
 
+@pytest.mark.feature("cross_cutting")
 def test_calculate_item_status_future() -> None:
+    """Verify future status mapping."""
     assert _calculate_item_status(1) == TodoItemStatus.COMPLETED
     assert _calculate_item_status(10) == TodoItemStatus.COMPLETED
 
@@ -84,7 +103,9 @@ def test_calculate_item_status_future() -> None:
 # ─── GrocyTodoItem from Task ─────────────────────────────────────────────────
 
 
+@pytest.mark.feature("task_management")
 def test_todo_item_from_task() -> None:
+    """Verify task converts to todo item with correct fields."""
     due = dt.datetime.combine(
         dt.date.today() + dt.timedelta(days=2), dt.time.min
     )
@@ -97,7 +118,9 @@ def test_todo_item_from_task() -> None:
     assert item.status == TodoItemStatus.COMPLETED
 
 
+@pytest.mark.feature("task_management")
 def test_todo_item_from_task_overdue() -> None:
+    """Verify overdue task shows NEEDS_ACTION status."""
     due = dt.datetime.combine(
         dt.date.today() - dt.timedelta(days=1), dt.time.min
     )
@@ -111,7 +134,9 @@ def test_todo_item_from_task_overdue() -> None:
 # ─── GrocyTodoItem from Chore ────────────────────────────────────────────────
 
 
+@pytest.mark.feature("chore_management")
 def test_todo_item_from_chore() -> None:
+    """Verify chore converts to todo item."""
     chore = Chore(
         id=5,
         name="Clean kitchen",
@@ -127,7 +152,9 @@ def test_todo_item_from_chore() -> None:
     assert item.status == TodoItemStatus.COMPLETED
 
 
+@pytest.mark.feature("chore_management")
 def test_todo_item_from_chore_date_only() -> None:
+    """Verify date-only chore handled correctly."""
     chore = Chore(
         id=6,
         name="Water plants",
@@ -144,7 +171,9 @@ def test_todo_item_from_chore_date_only() -> None:
 # ─── GrocyTodoItem from Battery ──────────────────────────────────────────────
 
 
+@pytest.mark.feature("battery_tracking")
 def test_todo_item_from_battery() -> None:
+    """Verify battery converts to todo item."""
     battery = Battery(
         id=10,
         name="Remote battery",
@@ -159,7 +188,9 @@ def test_todo_item_from_battery() -> None:
     assert item.status == TodoItemStatus.COMPLETED
 
 
+@pytest.mark.feature("battery_tracking")
 def test_todo_item_from_battery_overdue() -> None:
+    """Verify overdue battery shows NEEDS_ACTION."""
     battery = Battery(
         id=11,
         name="Old battery",
@@ -174,7 +205,9 @@ def test_todo_item_from_battery_overdue() -> None:
 # ─── GrocyTodoItem from Product ──────────────────────────────────────────────
 
 
+@pytest.mark.feature("stock_management")
 def test_todo_item_from_product_with_stock() -> None:
+    """Verify product converts to todo item with amount in summary."""
     product = Product(id=20, name="Milk", available_amount=2.5)
     item = GrocyTodoItem(product, ATTR_STOCK)
 
@@ -184,30 +217,13 @@ def test_todo_item_from_product_with_stock() -> None:
     assert item.description is None
 
 
+@pytest.mark.feature("stock_management")
 def test_todo_item_from_product_zero_amount() -> None:
+    """Verify zero-stock product shows as COMPLETED."""
     product = Product(id=21, name="Empty product", available_amount=0.0)
     item = GrocyTodoItem(product, ATTR_STOCK)
 
     assert item.status == TodoItemStatus.COMPLETED
-
-
-# ─── GrocyTodoItem from ProductWrapper ────────────────────────────────────────
-
-
-def test_todo_item_from_product_wrapper(monkeypatch) -> None:
-    response = DummyCurrentStockResponse(available_amount=3.0)
-    dummy_product = DummyProduct(id=30, name="Eggs", available_amount=3.0)
-    monkeypatch.setattr(
-        "custom_components.grocy.helpers.Product.from_stock_response",
-        lambda _resp: dummy_product,
-    )
-
-    wrapper = ProductWrapper(response, hass=SimpleNamespace())
-    item = GrocyTodoItem(wrapper, ATTR_STOCK)
-
-    assert item.uid == "30"
-    assert "3.00x Eggs" in item.summary
-    assert item.status == TodoItemStatus.NEEDS_ACTION
 
 
 # ─── GrocyTodoItem from ShoppingListProduct ──────────────────────────────────
@@ -217,7 +233,9 @@ def _make_product(name: str = "Bread") -> Product:
     return Product(id=1, name=name, available_amount=1.0)
 
 
+@pytest.mark.feature("shopping_list")
 def test_todo_item_from_shopping_list_product() -> None:
+    """Verify shopping list item converts to todo."""
     slp = ShoppingListProduct(
         id=40, amount=1.0, note="Sourdough", product=_make_product("Bread"), done=False
     )
@@ -229,7 +247,9 @@ def test_todo_item_from_shopping_list_product() -> None:
     assert item.description == "Sourdough"
 
 
+@pytest.mark.feature("shopping_list")
 def test_todo_item_from_shopping_list_product_done() -> None:
+    """Verify done item shows COMPLETED status."""
     slp = ShoppingListProduct(
         id=41, amount=2.0, note=None, product=_make_product("Butter"), done=True
     )
@@ -239,14 +259,18 @@ def test_todo_item_from_shopping_list_product_done() -> None:
     assert item.description is None
 
 
+@pytest.mark.feature("shopping_list")
 def test_todo_item_from_shopping_list_product_no_product() -> None:
+    """Verify missing product shows 'Unknown product'."""
     slp = ShoppingListProduct(id=42, amount=1.0, note=None, product=None, done=False)
     item = GrocyTodoItem(slp, ATTR_SHOPPING_LIST)
 
     assert "Unknown product" in item.summary
 
 
+@pytest.mark.feature("shopping_list")
 def test_todo_item_from_shopping_list_product_string_done_flag() -> None:
+    """Verify pydantic coerces string done flag."""
     # ShoppingListProduct.done is typed bool, so pydantic coerces "1" -> True
     slp = ShoppingListProduct(
         id=43, amount=1.0, note=None, product=_make_product("Cheese"), done=True
@@ -259,7 +283,9 @@ def test_todo_item_from_shopping_list_product_string_done_flag() -> None:
 # ─── GrocyTodoItem from MealPlanItem ─────────────────────────────────────────
 
 
+@pytest.mark.feature("meal_planning")
 def test_todo_item_from_meal_plan_item() -> None:
+    """Verify meal plan item converts to todo."""
     recipe = RecipeItem(
         id=1,
         name="Pasta",
@@ -285,7 +311,9 @@ def test_todo_item_from_meal_plan_item() -> None:
 # ─── GrocyTodoItem from MealPlanItemWrapper ───────────────────────────────────
 
 
+@pytest.mark.feature("meal_planning")
 def test_todo_item_from_meal_plan_item_wrapper() -> None:
+    """Verify MealPlanItemWrapper converts to todo."""
     recipe = DummyRecipe(name="Soup", description="Chicken soup")
     mpi = DummyMealPlanItem(
         id=60, day=dt.date.today() + dt.timedelta(days=2), recipe=recipe
@@ -301,7 +329,9 @@ def test_todo_item_from_meal_plan_item_wrapper() -> None:
 # ─── GrocyTodoItem raises for unknown type ───────────────────────────────────
 
 
+@pytest.mark.feature("cross_cutting")
 def test_todo_item_raises_for_unknown_type() -> None:
+    """Verify unknown type raises NotImplementedError."""
     with pytest.raises(NotImplementedError):
         GrocyTodoItem("some_string", "unknown_key")
 
@@ -323,7 +353,9 @@ def _build_todo(key: str, data) -> GrocyTodoListEntity:
     return entity
 
 
+@pytest.mark.feature("battery_tracking")
 def test_todo_list_entity_batteries_supports_create() -> None:
+    """Verify battery todo supports CREATE."""
     desc = next(d for d in TODOS if d.key == ATTR_BATTERIES)
     entity = GrocyTodoListEntity.__new__(GrocyTodoListEntity)
     entity._attr_supported_features = (
@@ -334,7 +366,9 @@ def test_todo_list_entity_batteries_supports_create() -> None:
     assert entity._attr_supported_features & TodoListEntityFeature.CREATE_TODO_ITEM
 
 
+@pytest.mark.feature("stock_management")
 def test_todo_list_entity_stock_no_create() -> None:
+    """Verify stock todo does not support CREATE."""
     desc = next(d for d in TODOS if d.key == ATTR_STOCK)
     assert ATTR_STOCK not in [ATTR_BATTERIES, ATTR_CHORES, ATTR_TASKS]
 
@@ -342,8 +376,10 @@ def test_todo_list_entity_stock_no_create() -> None:
 # ─── async_create_todo_item ──────────────────────────────────────────────────
 
 
+@pytest.mark.feature("battery_tracking")
 @pytest.mark.asyncio
 async def test_async_create_todo_item_battery() -> None:
+    """Verify creating battery todo calls add_generic."""
     entity = _build_todo(ATTR_BATTERIES, [])
     todo_item = SimpleNamespace(summary="New battery", description="test desc")
 
@@ -359,8 +395,10 @@ async def test_async_create_todo_item_battery() -> None:
     assert call_data["data"]["name"] == "New battery"
 
 
+@pytest.mark.feature("chore_management")
 @pytest.mark.asyncio
 async def test_async_create_todo_item_chore() -> None:
+    """Verify creating chore todo sets period_type=manually."""
     entity = _build_todo(ATTR_CHORES, [])
     todo_item = SimpleNamespace(summary="New chore", description="details")
 
@@ -375,8 +413,10 @@ async def test_async_create_todo_item_chore() -> None:
     assert call_data["data"]["period_type"] == "manually"
 
 
+@pytest.mark.feature("task_management")
 @pytest.mark.asyncio
 async def test_async_create_todo_item_task() -> None:
+    """Verify creating task todo calls add_generic."""
     entity = _build_todo(ATTR_TASKS, [])
     todo_item = SimpleNamespace(summary="New task", description="desc", due=None)
 
@@ -391,8 +431,10 @@ async def test_async_create_todo_item_task() -> None:
     assert call_data["data"]["name"] == "New task"
 
 
+@pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
 async def test_async_create_todo_item_unsupported_raises() -> None:
+    """Verify unsupported create raises error."""
     entity = _build_todo(ATTR_STOCK, [])
     todo_item = SimpleNamespace(summary="Item", description=None)
 
@@ -403,8 +445,10 @@ async def test_async_create_todo_item_unsupported_raises() -> None:
 # ─── async_update_todo_item ──────────────────────────────────────────────────
 
 
+@pytest.mark.feature("battery_tracking")
 @pytest.mark.asyncio
 async def test_async_update_todo_item_complete_battery() -> None:
+    """Verify completing battery todo tracks charge."""
     entity = _build_todo(ATTR_BATTERIES, [])
     todo_item = SimpleNamespace(uid="1", status=TodoItemStatus.COMPLETED)
 
@@ -418,8 +462,10 @@ async def test_async_update_todo_item_complete_battery() -> None:
     assert mock_track.call_args[0][2]["battery_id"] == "1"
 
 
+@pytest.mark.feature("battery_tracking")
 @pytest.mark.asyncio
 async def test_async_update_todo_item_battery_needs_action_raises() -> None:
+    """Verify uncompleting battery raises NotImplementedError."""
     entity = _build_todo(ATTR_BATTERIES, [])
     todo_item = SimpleNamespace(uid="1", status=TodoItemStatus.NEEDS_ACTION)
 
@@ -427,8 +473,10 @@ async def test_async_update_todo_item_battery_needs_action_raises() -> None:
         await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
 
 
+@pytest.mark.feature("chore_management")
 @pytest.mark.asyncio
 async def test_async_update_todo_item_complete_chore() -> None:
+    """Verify completing chore todo executes chore."""
     entity = _build_todo(ATTR_CHORES, [])
     todo_item = SimpleNamespace(uid="5", status=TodoItemStatus.COMPLETED)
 
@@ -444,8 +492,10 @@ async def test_async_update_todo_item_complete_chore() -> None:
     assert call_data["done_by"] == 1
 
 
+@pytest.mark.feature("task_management")
 @pytest.mark.asyncio
 async def test_async_update_todo_item_complete_task() -> None:
+    """Verify completing task todo calls complete_task."""
     entity = _build_todo(ATTR_TASKS, [])
     todo_item = SimpleNamespace(uid="11", status=TodoItemStatus.COMPLETED)
 
@@ -459,8 +509,10 @@ async def test_async_update_todo_item_complete_task() -> None:
     assert mock_complete.call_args[0][2]["task_id"] == "11"
 
 
+@pytest.mark.feature("meal_planning")
 @pytest.mark.asyncio
 async def test_async_update_todo_item_complete_meal_plan() -> None:
+    """Verify completing meal plan consumes recipe and deletes entry."""
     recipe = SimpleNamespace(id=99, name="Pasta", description=None)
     mpi_inner = SimpleNamespace(id=60, day=dt.date.today(), recipe=recipe)
     # _get_grocy_item checks hasattr(item, "id") -- MealPlanItemWrapper
@@ -488,30 +540,48 @@ async def test_async_update_todo_item_complete_meal_plan() -> None:
     mock_delete.assert_awaited_once()
 
 
+@pytest.mark.feature("shopping_list")
 @pytest.mark.asyncio
 async def test_async_update_todo_item_complete_shopping_list() -> None:
-    grocy_item = SimpleNamespace(product_id=15, amount=2.0)
-    entity = _build_todo(ATTR_SHOPPING_LIST, [grocy_item])
-    # Make _get_grocy_item work
-    entity.coordinator.data[ATTR_SHOPPING_LIST] = [grocy_item]
-    grocy_item.id = 77
-
+    """Verify completing marks item done."""
+    entity = _build_todo(ATTR_SHOPPING_LIST, [])
     todo_item = SimpleNamespace(uid="77", status=TodoItemStatus.COMPLETED)
 
     with patch(
-        "custom_components.grocy.todo.async_remove_product_in_shopping_list",
+        "custom_components.grocy.todo.async_mark_shopping_list_item_done",
         new_callable=AsyncMock,
-    ) as mock_remove:
+    ) as mock_mark:
         await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
 
-    mock_remove.assert_awaited_once()
-    call_data = mock_remove.call_args[0][2]
-    assert call_data["product_id"] == 15
-    assert call_data["amount"] == 2.0
+    mock_mark.assert_awaited_once()
+    call_data = mock_mark.call_args[0][2]
+    assert call_data["object_id"] == 77
+    assert call_data["done"] is True
 
 
+@pytest.mark.feature("shopping_list")
+@pytest.mark.asyncio
+async def test_async_update_todo_item_uncomplete_shopping_list() -> None:
+    """Verify uncompleting marks item undone."""
+    entity = _build_todo(ATTR_SHOPPING_LIST, [])
+    todo_item = SimpleNamespace(uid="77", status=TodoItemStatus.NEEDS_ACTION)
+
+    with patch(
+        "custom_components.grocy.todo.async_mark_shopping_list_item_done",
+        new_callable=AsyncMock,
+    ) as mock_mark:
+        await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
+
+    mock_mark.assert_awaited_once()
+    call_data = mock_mark.call_args[0][2]
+    assert call_data["object_id"] == 77
+    assert call_data["done"] is False
+
+
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_async_update_todo_item_complete_stock() -> None:
+    """Verify completing stock todo consumes product."""
     grocy_item = SimpleNamespace(id=25, available_amount=5.0)
     entity = _build_todo(ATTR_STOCK, [grocy_item])
 
@@ -532,8 +602,10 @@ async def test_async_update_todo_item_complete_stock() -> None:
 # ─── async_delete_todo_items ─────────────────────────────────────────────────
 
 
+@pytest.mark.feature("task_management")
 @pytest.mark.asyncio
 async def test_async_delete_todo_items_calls_delete_for_each_uid() -> None:
+    """Verify delete calls delete_generic per item."""
     entity = _build_todo(ATTR_TASKS, [])
 
     with patch(
@@ -548,7 +620,9 @@ async def test_async_delete_todo_items_calls_delete_for_each_uid() -> None:
 # ─── _get_grocy_item ─────────────────────────────────────────────────────────
 
 
+@pytest.mark.feature("cross_cutting")
 def test_get_grocy_item_finds_by_id() -> None:
+    """Verify item lookup by ID."""
     item1 = SimpleNamespace(id=1)
     item2 = SimpleNamespace(id=2)
     entity = _build_todo(ATTR_TASKS, [item1, item2])
@@ -557,7 +631,9 @@ def test_get_grocy_item_finds_by_id() -> None:
     assert result.id == 2
 
 
+@pytest.mark.feature("cross_cutting")
 def test_get_grocy_item_finds_meal_plan_wrapper() -> None:
+    """Verify MealPlanItemWrapper lookup."""
     inner = SimpleNamespace(id=55)
     wrapper = SimpleNamespace(meal_plan=inner)
     entity = _build_todo(ATTR_MEAL_PLAN, [wrapper])
@@ -569,7 +645,9 @@ def test_get_grocy_item_finds_meal_plan_wrapper() -> None:
 # ─── todo_items property ─────────────────────────────────────────────────────
 
 
+@pytest.mark.feature("cross_cutting")
 def test_todo_items_none_data() -> None:
+    """Verify None data returns empty list."""
     entity = _build_todo(ATTR_TASKS, None)
     assert entity.todo_items == []
 
@@ -577,7 +655,9 @@ def test_todo_items_none_data() -> None:
 # ─── exists_fn coverage ──────────────────────────────────────────────────────
 
 
+@pytest.mark.feature("cross_cutting")
 def test_todo_exists_fn_checks_available_entities() -> None:
+    """Verify todo exists_fn validation."""
     for desc in TODOS:
         assert desc.exists_fn([desc.key]) is True
         assert desc.exists_fn([]) is False
@@ -586,8 +666,10 @@ def test_todo_exists_fn_checks_available_entities() -> None:
 # ─── NEEDS_ACTION (undo) raises NotImplementedError ───────────────────────────
 
 
+@pytest.mark.feature("chore_management")
 @pytest.mark.asyncio
 async def test_async_update_todo_item_chore_needs_action_raises() -> None:
+    """Verify uncompleting chore raises NotImplementedError."""
     entity = _build_todo(ATTR_CHORES, [])
     todo_item = SimpleNamespace(uid="1", status=TodoItemStatus.NEEDS_ACTION)
 
@@ -595,8 +677,10 @@ async def test_async_update_todo_item_chore_needs_action_raises() -> None:
         await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
 
 
+@pytest.mark.feature("meal_planning")
 @pytest.mark.asyncio
 async def test_async_update_todo_item_meal_plan_needs_action_raises() -> None:
+    """Verify uncompleting meal plan raises NotImplementedError."""
     entity = _build_todo(ATTR_MEAL_PLAN, [])
     todo_item = SimpleNamespace(uid="1", status=TodoItemStatus.NEEDS_ACTION)
 
@@ -604,17 +688,10 @@ async def test_async_update_todo_item_meal_plan_needs_action_raises() -> None:
         await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
 
 
-@pytest.mark.asyncio
-async def test_async_update_todo_item_shopping_list_needs_action_raises() -> None:
-    entity = _build_todo(ATTR_SHOPPING_LIST, [])
-    todo_item = SimpleNamespace(uid="1", status=TodoItemStatus.NEEDS_ACTION)
-
-    with pytest.raises(NotImplementedError):
-        await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
-
-
+@pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_async_update_todo_item_stock_needs_action_raises() -> None:
+    """Verify uncompleting stock todo raises NotImplementedError."""
     entity = _build_todo(ATTR_STOCK, [])
     todo_item = SimpleNamespace(uid="1", status=TodoItemStatus.NEEDS_ACTION)
 
@@ -622,8 +699,10 @@ async def test_async_update_todo_item_stock_needs_action_raises() -> None:
         await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
 
 
+@pytest.mark.feature("task_management")
 @pytest.mark.asyncio
 async def test_async_update_todo_item_task_needs_action_raises() -> None:
+    """Verify uncompleting task raises NotImplementedError."""
     entity = _build_todo(ATTR_TASKS, [])
     todo_item = SimpleNamespace(uid="1", status=TodoItemStatus.NEEDS_ACTION)
 
