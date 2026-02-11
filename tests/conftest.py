@@ -17,6 +17,43 @@ from custom_components.grocy.const import (
 pytest_plugins = "pytest_homeassistant_custom_component"
 
 
+def pytest_addoption(parser):
+    """Add --feature CLI option for filtering tests by feature group."""
+    parser.addoption(
+        "--feature",
+        action="store",
+        default=None,
+        help="Only run tests marked with @pytest.mark.feature(NAME)",
+    )
+
+
+def pytest_configure(config):
+    """Register custom markers."""
+    config.addinivalue_line(
+        "markers", "feature(name): mark test with feature group (see docs/FEATURES.md)"
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    """Filter tests by --feature option."""
+    feature_name = config.getoption("--feature")
+    if feature_name is None:
+        return
+    selected = []
+    deselected = []
+    for item in items:
+        dominated = False  # noqa: F841
+        for marker in item.iter_markers("feature"):
+            if feature_name in marker.args:
+                selected.append(item)
+                dominated = True  # noqa: F841
+                break
+        else:
+            deselected.append(item)
+    config.hook.pytest_deselected(items=deselected)
+    items[:] = selected
+
+
 @pytest.fixture(name="config_entry_data")
 def config_entry_data_fixture() -> dict[str, object]:
     return {

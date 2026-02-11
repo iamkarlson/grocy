@@ -25,6 +25,9 @@ dev = [
     "pytest-homeassistant-custom-component>=0.13.120",
     "freezegun>=1.4.0",
 ]
+docs = [
+    "mkdocs-material>=9.5.0",
+]
 
 [tool.ruff]
 target-version = "py313"
@@ -33,6 +36,8 @@ extend-exclude = [
     "config/",
     "tests/",
     "__pycache__",
+    "docs/",
+    "hooks/",
 ]
 
 [tool.ruff.lint]
@@ -124,3 +129,6 @@ max-complexity = 25
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+markers = [
+    "feature(name): mark test with feature group name (see docs/FEATURES.md)",
+]

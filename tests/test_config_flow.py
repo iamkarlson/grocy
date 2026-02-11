@@ -1,3 +1,9 @@
+"""Configuration flow tests.
+
+Features: configuration_setup
+See: docs/FEATURES.md#10-configuration--setup
+"""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -13,6 +19,8 @@ from custom_components.grocy.const import (
     CONF_URL,
     CONF_VERIFY_SSL,
 )
+
+pytestmark = pytest.mark.feature("configuration_setup")
 
 
 async def test_user_step_creates_entry(hass, config_entry_data) -> None:

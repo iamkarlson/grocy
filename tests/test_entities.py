@@ -1,9 +1,17 @@
+"""Entity tests for sensors, binary sensors, todo lists, and coordinator data.
+
+Features: stock_management, shopping_list, chore_management, task_management,
+          battery_tracking, meal_planning
+See: docs/FEATURES.md
+"""
+
 from __future__ import annotations
 
 import datetime as dt
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import pytest
 from grocy.data_models.task import Task
 from homeassistant.components.todo import TodoItemStatus
 
@@ -71,36 +79,48 @@ def _build_todo(key: str, data) -> GrocyTodoListEntity:
     return entity
 
 
+@pytest.mark.feature("stock_management")
 def test_sensor_native_value_counts_entities() -> None:
+    """Verify stock sensor counts the number of products."""
     entity = _build_sensor(ATTR_STOCK, [DummyProduct(), DummyProduct(id=2)])
     assert entity.native_value == 2
 
 
+@pytest.mark.feature("stock_management")
 def test_sensor_extra_state_attributes_are_json_safe() -> None:
+    """Verify stock sensor attributes are JSON-serializable."""
     entity = _build_sensor(ATTR_STOCK, [DummyProduct(id=99)])
     attributes = entity.extra_state_attributes
     assert attributes["count"] == 1
     assert attributes["products"][0]["id"] == 99
 
 
+@pytest.mark.feature("stock_management")
 def test_sensor_native_value_defaults_to_zero() -> None:
+    """Verify stock sensor returns 0 when data is None."""
     entity = _build_sensor(ATTR_STOCK, None)
     assert entity.native_value == 0
 
 
+@pytest.mark.feature("stock_management")
 def test_binary_sensor_reports_on_state() -> None:
+    """Verify binary sensor reports ON when overdue products exist."""
     entity = _build_binary_sensor(ATTR_OVERDUE_PRODUCTS, [DummyProduct()])
     assert entity.is_on is True
     attributes = entity.extra_state_attributes
     assert attributes["count"] == 1
 
 
+@pytest.mark.feature("stock_management")
 def test_binary_sensor_reports_off_state() -> None:
+    """Verify binary sensor reports OFF when no overdue products."""
     entity = _build_binary_sensor(ATTR_OVERDUE_PRODUCTS, [])
     assert entity.is_on is False
 
 
+@pytest.mark.feature("task_management")
 def test_todo_list_entity_exposes_items() -> None:
+    """Verify task todo items are exposed with correct fields."""
     due_date = dt.date.today() + dt.timedelta(days=1)
     tasks = [
         Task(
@@ -120,7 +140,9 @@ def test_todo_list_entity_exposes_items() -> None:
     assert item.status == TodoItemStatus.COMPLETED
 
 
+@pytest.mark.feature("task_management")
 def test_todo_list_entity_handles_empty_data() -> None:
+    """Verify empty task list returns empty todo items."""
     entity = _build_todo(ATTR_CHORES, [])
     assert entity.todo_items == []
 
@@ -128,7 +150,9 @@ def test_todo_list_entity_handles_empty_data() -> None:
 # ─── Sensor coverage for each entity type ─────────────────────────────────────
 
 
+@pytest.mark.feature("chore_management")
 def test_sensor_chores_counts() -> None:
+    """Verify chores sensor counts correctly."""
     entity = _build_sensor(ATTR_CHORES, [DummyChore(), DummyChore(id=2)])
     assert entity.native_value == 2
     attrs = entity.extra_state_attributes
@@ -136,7 +160,9 @@ def test_sensor_chores_counts() -> None:
     assert "chores" in attrs
 
 
+@pytest.mark.feature("task_management")
 def test_sensor_tasks_counts() -> None:
+    """Verify tasks sensor counts correctly."""
     entity = _build_sensor(ATTR_TASKS, [DummyTask()])
     assert entity.native_value == 1
     attrs = entity.extra_state_attributes
@@ -144,21 +170,27 @@ def test_sensor_tasks_counts() -> None:
     assert "tasks" in attrs
 
 
+@pytest.mark.feature("battery_tracking")
 def test_sensor_batteries_counts() -> None:
+    """Verify batteries sensor counts correctly."""
     entity = _build_sensor(ATTR_BATTERIES, [DummyBattery()])
     assert entity.native_value == 1
     attrs = entity.extra_state_attributes
     assert "batteries" in attrs
 
 
+@pytest.mark.feature("meal_planning")
 def test_sensor_meal_plan_counts() -> None:
+    """Verify meal plan sensor counts correctly."""
     entity = _build_sensor(ATTR_MEAL_PLAN, [DummyMealPlanItem()])
     assert entity.native_value == 1
     attrs = entity.extra_state_attributes
     assert "meals" in attrs
 
 
+@pytest.mark.feature("shopping_list")
 def test_sensor_shopping_list_counts() -> None:
+    """Verify shopping list sensor counts items."""
     entity = _build_sensor(ATTR_SHOPPING_LIST, [DummyShoppingListProduct()])
     assert entity.native_value == 1
     attrs = entity.extra_state_attributes
@@ -168,39 +200,53 @@ def test_sensor_shopping_list_counts() -> None:
 # ─── Binary sensor for each entity type ───────────────────────────────────────
 
 
+@pytest.mark.feature("stock_management")
 def test_binary_sensor_expired_products_on() -> None:
+    """Verify expired products binary sensor detects expiry."""
     entity = _build_binary_sensor(ATTR_EXPIRED_PRODUCTS, [DummyProduct()])
     assert entity.is_on is True
     assert entity.extra_state_attributes["count"] == 1
 
 
+@pytest.mark.feature("stock_management")
 def test_binary_sensor_expiring_products_off() -> None:
+    """Verify expiring products binary sensor OFF when empty."""
     entity = _build_binary_sensor(ATTR_EXPIRING_PRODUCTS, [])
     assert entity.is_on is False
 
 
+@pytest.mark.feature("stock_management")
 def test_binary_sensor_missing_products() -> None:
+    """Verify missing products binary sensor detects low stock."""
     entity = _build_binary_sensor(ATTR_MISSING_PRODUCTS, [DummyProduct()])
     assert entity.is_on is True
 
 
+@pytest.mark.feature("chore_management")
 def test_binary_sensor_overdue_chores() -> None:
+    """Verify overdue chores binary sensor detects overdue."""
     entity = _build_binary_sensor(ATTR_OVERDUE_CHORES, [DummyChore()])
     assert entity.is_on is True
     assert entity.extra_state_attributes["count"] == 1
 
 
+@pytest.mark.feature("task_management")
 def test_binary_sensor_overdue_tasks() -> None:
+    """Verify overdue tasks binary sensor."""
     entity = _build_binary_sensor(ATTR_OVERDUE_TASKS, [DummyTask()])
     assert entity.is_on is True
 
 
+@pytest.mark.feature("battery_tracking")
 def test_binary_sensor_overdue_batteries() -> None:
+    """Verify overdue batteries binary sensor."""
     entity = _build_binary_sensor(ATTR_OVERDUE_BATTERIES, [DummyBattery()])
     assert entity.is_on is True
 
 
+@pytest.mark.feature("stock_management")
 def test_binary_sensor_none_data() -> None:
+    """Verify binary sensor handles None data gracefully."""
     entity = _build_binary_sensor(ATTR_OVERDUE_PRODUCTS, None)
     assert entity.is_on is False
 
@@ -208,7 +254,9 @@ def test_binary_sensor_none_data() -> None:
 # ─── Sensor / binary_sensor extra_state_attributes when data is None ──────────
 
 
+@pytest.mark.feature("stock_management")
 def test_sensor_extra_state_attributes_none_data() -> None:
+    """Verify sensor attributes return None when data is None."""
     entity = _build_sensor(ATTR_STOCK, None)
     assert entity.extra_state_attributes is None
 
@@ -216,13 +264,17 @@ def test_sensor_extra_state_attributes_none_data() -> None:
 # ─── exists_fn coverage for sensor and binary sensor descriptions ─────────────
 
 
+@pytest.mark.feature("cross_cutting")
 def test_sensor_exists_fn() -> None:
+    """Verify all sensor descriptions have correct exists_fn."""
     for desc in SENSORS:
         assert desc.exists_fn([desc.key]) is True
         assert desc.exists_fn([]) is False
 
 
+@pytest.mark.feature("cross_cutting")
 def test_binary_sensor_exists_fn() -> None:
+    """Verify all binary sensor descriptions have correct exists_fn."""
     for desc in BINARY_SENSORS:
         assert desc.exists_fn([desc.key]) is True
         assert desc.exists_fn([]) is False
@@ -231,14 +283,18 @@ def test_binary_sensor_exists_fn() -> None:
 # ─── GrocyCoordinatorData dict-like access ────────────────────────────────────
 
 
+@pytest.mark.feature("cross_cutting")
 def test_coordinator_data_setitem_getitem() -> None:
+    """Verify CoordinatorData supports dict-like access."""
     data = GrocyCoordinatorData()
     data["stock"] = ["item1", "item2"]
     assert data["stock"] == ["item1", "item2"]
     assert data.stock == ["item1", "item2"]
 
 
+@pytest.mark.feature("cross_cutting")
 def test_coordinator_data_defaults_to_none() -> None:
+    """Verify CoordinatorData defaults all fields to None."""
     data = GrocyCoordinatorData()
     assert data.stock is None
     assert data.tasks is None

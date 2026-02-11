@@ -1,7 +1,15 @@
+"""Helper function tests.
+
+Features: meal_planning, cross_cutting
+See: docs/FEATURES.md
+"""
+
 from __future__ import annotations
 
 import base64
 import datetime as dt
+
+import pytest
 
 from custom_components.grocy.helpers import (
     MealPlanItemWrapper,
@@ -14,7 +22,9 @@ from tests.factories import (
 )
 
 
+@pytest.mark.feature("cross_cutting")
 def test_extract_base_url_and_path_variants() -> None:
+    """Verify URL parsing for simple and complex URLs."""
     base, path = extract_base_url_and_path("https://demo.grocy.info")
     assert base == "https://demo.grocy.info"
     assert path == ""
@@ -24,7 +34,9 @@ def test_extract_base_url_and_path_variants() -> None:
     assert path == "grocy/api"
 
 
+@pytest.mark.feature("meal_planning")
 def test_meal_plan_item_wrapper_generates_picture_url() -> None:
+    """Verify wrapper generates correct picture URL."""
     item = DummyMealPlanItem(day=dt.date.today() + dt.timedelta(days=2))
     wrapper = MealPlanItemWrapper(item)
 
@@ -38,13 +50,14 @@ def test_meal_plan_item_wrapper_generates_picture_url() -> None:
     assert payload["recipe"]["picture_file_name"] == item.recipe.picture_file_name
 
 
+@pytest.mark.feature("meal_planning")
 def test_meal_plan_item_wrapper_handles_missing_picture() -> None:
+    """Verify wrapper handles None picture."""
     recipe = DummyRecipe(picture_file_name=None)
     item = DummyMealPlanItem(recipe=recipe)
     wrapper = MealPlanItemWrapper(item)
 
     assert wrapper.picture_url is None
-
 
 
 class WithAsDict:
@@ -68,17 +81,25 @@ class Empty:
     pass
 
 
+@pytest.mark.feature("cross_cutting")
 def test_model_to_dict_prefers_as_dict() -> None:
+    """Verify serialization prefers as_dict()."""
     assert model_to_dict(WithAsDict()) == {"a": 1}
 
 
+@pytest.mark.feature("cross_cutting")
 def test_model_to_dict_falls_back_to_model_dump() -> None:
+    """Verify serialization falls back to model_dump()."""
     assert model_to_dict(WithModelDump()) == {"b": 2}
 
 
+@pytest.mark.feature("cross_cutting")
 def test_model_to_dict_uses_dunder_dict() -> None:
+    """Verify serialization falls back to __dict__."""
     assert model_to_dict(WithDictAttrs()) == {"c": 3}
 
 
+@pytest.mark.feature("cross_cutting")
 def test_model_to_dict_returns_empty_dict() -> None:
+    """Verify empty object returns {}."""
     assert model_to_dict(Empty()) == {}
