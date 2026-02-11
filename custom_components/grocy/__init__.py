@@ -14,6 +14,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
+from .config_flow import async_migrate_entry
 from .const import (
     ATTR_BATTERIES,
     ATTR_CHORES,
@@ -35,6 +36,8 @@ from .const import (
 from .coordinator import GrocyDataUpdateCoordinator
 from .grocy_data import GrocyData, async_setup_endpoint_for_image_proxy
 from .services import async_setup_services, async_unload_services
+
+__all__ = ["async_migrate_entry"]
 
 _LOGGER = logging.getLogger(__name__)
 
