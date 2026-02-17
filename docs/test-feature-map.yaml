@@ -329,6 +329,7 @@ cross_cutting:
         - test_model_to_dict_falls_back_to_model_dump
         - test_model_to_dict_uses_dunder_dict
         - test_model_to_dict_returns_empty_dict
+        - test_model_to_dict_suppresses_userfields_warning
     - file: tests/test_json_encoder.py
       functions:
         - test_encodes_date
