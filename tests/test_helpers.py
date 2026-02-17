@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import base64
 import datetime as dt
+import warnings
 
 import pytest
+from pydantic import BaseModel
 
 from custom_components.grocy.helpers import (
     MealPlanItemWrapper,
@@ -66,7 +68,7 @@ class WithAsDict:
 
 
 class WithModelDump:
-    def model_dump(self, mode: str = "json") -> dict[str, int]:
+    def model_dump(self, mode: str = "json", **kwargs: object) -> dict[str, int]:
         assert mode == "json"
         return {"b": 2}
 
@@ -103,3 +105,31 @@ def test_model_to_dict_uses_dunder_dict() -> None:
 def test_model_to_dict_returns_empty_dict() -> None:
     """Verify empty object returns {}."""
     assert model_to_dict(Empty()) == {}
+
+
+class _UserfieldModel(BaseModel):
+    """Mimics a grocy-py model with a userfields field."""
+
+    name: str
+    userfields: dict | None = None
+
+
+@pytest.mark.feature("cross_cutting")
+def test_model_to_dict_suppresses_userfields_warning() -> None:
+    """Verify model_to_dict does not emit PydanticSerializationUnexpectedValue.
+
+    The Grocy API returns [] for empty userfields. grocy-py assigns this
+    directly to the Pydantic model attribute, bypassing validation.
+    model_to_dict must not emit warnings when serializing such models.
+    See: https://github.com/iamkarlson/grocy/issues/33
+    """
+    model = _UserfieldModel(name="test")
+    # Simulate grocy-py assigning [] directly (bypasses Pydantic validation)
+    model.userfields = []  # type: ignore[assignment]
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = model_to_dict(model)
+
+    assert result["name"] == "test"
+    assert result["userfields"] == []
