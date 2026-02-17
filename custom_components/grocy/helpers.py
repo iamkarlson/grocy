@@ -48,7 +48,7 @@ def model_to_dict(model: Any) -> dict[str, Any]:
     if hasattr(model, "as_dict"):
         return model.as_dict()
     if hasattr(model, "model_dump"):
-        return model.model_dump(mode="json")
+        return model.model_dump(mode="json", warnings=False)
     if hasattr(model, "__dict__"):
         return {
             key: value
