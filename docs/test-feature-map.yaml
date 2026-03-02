@@ -46,9 +46,14 @@ features:
           - test_async_update_stock_returns_products
           - test_async_update_stock_empty
           - test_async_update_expiring_products
+          - test_async_update_expiring_products_uses_due_soon_days
+          - test_async_update_expiring_products_due_soon_days_none_response
           - test_async_update_expired_products
           - test_async_update_overdue_products
           - test_async_update_missing_products
+          - test_async_get_config_stores_due_soon_days
+          - test_async_get_config_due_soon_days_defaults_to_none
+          - test_async_get_config_due_soon_days_handles_invalid_value
 
   shopping_list:
     name: Shopping List
