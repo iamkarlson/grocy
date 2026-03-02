@@ -14,6 +14,8 @@ from homeassistant.helpers.http import HomeAssistantView
 from grocy import Grocy
 from grocy.data_models.battery import Battery
 from grocy.data_models.chore import Chore
+from grocy.data_models.product import Product
+from grocy.grocy_api_client import CurrentVolatileStockResponse
 
 from .const import (
     ATTR_BATTERIES,
@@ -45,6 +47,7 @@ class GrocyData:
         """Initialize Grocy data."""
         self.hass = hass
         self.api = api
+        self.due_soon_days: int | None = None
         self.entity_update_method = {
             ATTR_STOCK: self.async_update_stock,
             ATTR_CHORES: self.async_update_chores,
@@ -95,7 +98,16 @@ class GrocyData:
         """Get the configuration from Grocy."""
 
         def wrapper():
-            return self.api.system.config()
+            config = self.api.system.config()
+            try:
+                raw = self.api.system._api.get_system_config()
+                if raw:
+                    val = raw.model_extra.get("STOCK_DUE_SOON_DAYS")
+                    if val is not None and isinstance(val, (int, str)):
+                        self.due_soon_days = int(val)
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.debug("Could not read STOCK_DUE_SOON_DAYS from Grocy config")
+            return config
 
         return await self.hass.async_add_executor_job(wrapper)
 
@@ -130,6 +142,24 @@ class GrocyData:
         """Update expiring products data."""
 
         def wrapper():
+            if self.due_soon_days is not None:
+                # Pass the Grocy-configured due_soon_days to the API.
+                # Without this, the API defaults to 5 days regardless of the
+                # STOCK_DUE_SOON_DAYS system setting.
+                api_client = self.api._api_client
+                raw = api_client._do_get_request(
+                    f"stock/volatile?due_days={self.due_soon_days}"
+                )
+                if not raw:
+                    return []
+                volatile = CurrentVolatileStockResponse(**raw)
+                products = [
+                    Product.from_stock_response(r)
+                    for r in (volatile.due_products or [])
+                ]
+                for item in products:
+                    item.get_details(api_client)
+                return products
             return self.api.stock.due_products(get_details=True)
 
         return await self.hass.async_add_executor_job(wrapper)
