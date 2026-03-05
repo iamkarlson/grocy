@@ -56,7 +56,11 @@ If you use the [official Grocy add-on](https://github.com/hassio-addons/addon-gr
 1. Install Grocy from the add-on store if you haven't already
 2. In the add-on 'Configuration', set the Network port to `9192` ([see screenshot](#screenshot-addon-config))
 3. Save changes and restart the add-on
-4. Use port `9192` when configuring the integration
+4. Configure the integration with your local Home Assistant address:
+   - **URL**: `http://192.168.1.135` (use your HA machine's local IP)
+   - **Port**: `9192`
+
+   For example, if your Home Assistant is at `192.168.1.135`, Grocy will be accessible at `http://192.168.1.135:9192`
 
 #### Configuration Parameters
 
