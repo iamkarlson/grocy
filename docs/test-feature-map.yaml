@@ -20,6 +20,8 @@ features:
           - test_binary_sensor_reports_off_state
           - test_binary_sensor_expired_products_on
           - test_binary_sensor_expiring_products_off
+          - test_binary_sensor_expiring_products_shows_due_soon_days
+          - test_binary_sensor_expiring_products_due_soon_days_none
           - test_binary_sensor_missing_products
           - test_binary_sensor_none_data
       - file: tests/test_services.py
