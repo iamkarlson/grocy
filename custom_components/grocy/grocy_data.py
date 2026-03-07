@@ -100,13 +100,11 @@ class GrocyData:
         def wrapper():
             config = self.api.system.config()
             try:
-                raw = self.api.system._api.get_system_config()
-                if raw:
-                    val = raw.model_extra.get("STOCK_DUE_SOON_DAYS")
-                    if val is not None and isinstance(val, (int, str)):
-                        self.due_soon_days = int(val)
+                val = self.api.users.get_setting("STOCK_DUE_SOON_DAYS")
+                if val is not None and isinstance(val, (int, str)):
+                    self.due_soon_days = int(val)
             except Exception:  # pylint: disable=broad-except
-                _LOGGER.debug("Could not read STOCK_DUE_SOON_DAYS from Grocy config")
+                _LOGGER.debug("Could not read STOCK_DUE_SOON_DAYS from Grocy")
             return config
 
         return await self.hass.async_add_executor_job(wrapper)

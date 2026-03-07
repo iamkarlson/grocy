@@ -354,15 +354,14 @@ async def test_async_get_config(grocy_data) -> None:
 @pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_async_get_config_stores_due_soon_days(grocy_data) -> None:
-    """Verify STOCK_DUE_SOON_DAYS is extracted from Grocy system config."""
+    """Verify STOCK_DUE_SOON_DAYS is read from Grocy user settings."""
     grocy_data.api.system.config.return_value = MagicMock()
-    mock_raw = MagicMock()
-    mock_raw.model_extra = {"STOCK_DUE_SOON_DAYS": "7"}
-    grocy_data.api.system._api.get_system_config.return_value = mock_raw
+    grocy_data.api.users.get_setting.return_value = "7"
 
     await grocy_data.async_get_config()
 
     assert grocy_data.due_soon_days == 7
+    grocy_data.api.users.get_setting.assert_called_once_with("STOCK_DUE_SOON_DAYS")
 
 
 @pytest.mark.feature("stock_management")
@@ -370,9 +369,7 @@ async def test_async_get_config_stores_due_soon_days(grocy_data) -> None:
 async def test_async_get_config_due_soon_days_defaults_to_none(grocy_data) -> None:
     """Verify due_soon_days is None when STOCK_DUE_SOON_DAYS is absent."""
     grocy_data.api.system.config.return_value = MagicMock()
-    mock_raw = MagicMock()
-    mock_raw.model_extra = {}
-    grocy_data.api.system._api.get_system_config.return_value = mock_raw
+    grocy_data.api.users.get_setting.return_value = None
 
     await grocy_data.async_get_config()
 
@@ -386,9 +383,7 @@ async def test_async_get_config_due_soon_days_handles_invalid_value(
 ) -> None:
     """Verify due_soon_days is None when STOCK_DUE_SOON_DAYS is non-numeric."""
     grocy_data.api.system.config.return_value = MagicMock()
-    mock_raw = MagicMock()
-    mock_raw.model_extra = {"STOCK_DUE_SOON_DAYS": "not-a-number"}
-    grocy_data.api.system._api.get_system_config.return_value = mock_raw
+    grocy_data.api.users.get_setting.return_value = "not-a-number"
 
     await grocy_data.async_get_config()
 
