@@ -146,3 +146,13 @@ class GrocyBinarySensorEntity(GrocyEntity, BinarySensorEntity):
         entity_data = self.coordinator.data[self.entity_description.key]
 
         return len(entity_data) > 0 if entity_data else False
+
+    @property
+    def extra_state_attributes(self) -> dict | None:
+        """Return the extra state attributes."""
+        attrs = super().extra_state_attributes
+        if self.entity_description.key == ATTR_EXPIRING_PRODUCTS:
+            if attrs is None:
+                attrs = {}
+            attrs["due_soon_days"] = self.coordinator.grocy_data.due_soon_days
+        return attrs

@@ -57,13 +57,18 @@ def _build_sensor(key: str, data) -> GrocySensorEntity:
     return entity
 
 
-def _build_binary_sensor(key: str, data) -> GrocyBinarySensorEntity:
+def _build_binary_sensor(
+    key: str, data, *, due_soon_days: int | None = None
+) -> GrocyBinarySensorEntity:
     description = next(
         description for description in BINARY_SENSORS if description.key == key
     )
     entity = GrocyBinarySensorEntity.__new__(GrocyBinarySensorEntity)
     entity.entity_description = description
-    entity.coordinator = SimpleNamespace(data=GrocyCoordinatorData())
+    grocy_data = SimpleNamespace(due_soon_days=due_soon_days)
+    entity.coordinator = SimpleNamespace(
+        data=GrocyCoordinatorData(), grocy_data=grocy_data
+    )
     entity.coordinator.data[key] = data
     return entity
 
@@ -213,6 +218,24 @@ def test_binary_sensor_expiring_products_off() -> None:
     """Verify expiring products binary sensor OFF when empty."""
     entity = _build_binary_sensor(ATTR_EXPIRING_PRODUCTS, [])
     assert entity.is_on is False
+
+
+@pytest.mark.feature("stock_management")
+def test_binary_sensor_expiring_products_shows_due_soon_days() -> None:
+    """Verify expiring products sensor exposes due_soon_days attribute."""
+    entity = _build_binary_sensor(
+        ATTR_EXPIRING_PRODUCTS, [DummyProduct()], due_soon_days=7
+    )
+    attrs = entity.extra_state_attributes
+    assert attrs["due_soon_days"] == 7
+
+
+@pytest.mark.feature("stock_management")
+def test_binary_sensor_expiring_products_due_soon_days_none() -> None:
+    """Verify due_soon_days is None when not configured."""
+    entity = _build_binary_sensor(ATTR_EXPIRING_PRODUCTS, [DummyProduct()])
+    attrs = entity.extra_state_attributes
+    assert attrs["due_soon_days"] is None
 
 
 @pytest.mark.feature("stock_management")
