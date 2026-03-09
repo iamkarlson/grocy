@@ -1,0 +1,20 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "packageRules": [
+    {
+      "matchManagers": ["pep621", "pip_requirements"],
+      "groupName": "python dependencies"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["custom_components/.+/manifest\\.json$"],
+      "matchStrings": [
+        "\"(?<depName>[a-zA-Z0-9_-]+)==(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "pypi"
+    }
+  ]
+}
