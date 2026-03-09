@@ -89,6 +89,8 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
     async def _async_update_data(self) -> GrocyCoordinatorData:
         """Fetch data."""
         data = GrocyCoordinatorData()
+        errors: dict[str, Exception] = {}
+
         for entity in self.entities:
             if not entity.enabled:
                 _LOGGER.debug("Entity %s is disabled", entity.entity_id)
@@ -101,13 +103,17 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
             ):
                 continue
 
+            key = entity.entity_description.key
             try:
-                data[
-                    entity.entity_description.key
-                ] = await self.grocy_data.async_update_data(
-                    entity.entity_description.key
-                )
+                data[key] = await self.grocy_data.async_update_data(key)
             except Exception as error:  # pylint: disable=broad-except
-                raise UpdateFailed(f"Update failed: {error}") from error
+                _LOGGER.error("Failed to update %s: %s", key, error)
+                errors[key] = error
+
+        # Only raise UpdateFailed if no entity type succeeded
+        if errors and not any(
+            data[field] is not None for field in vars(data) if not field.startswith("_")
+        ):
+            raise UpdateFailed(f"All updates failed. Errors: {errors}")
 
         return data

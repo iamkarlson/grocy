@@ -29,6 +29,7 @@ theme:
 nav:
   - Home: index.md
   - Features: FEATURES.md
+  - Troubleshooting: troubleshooting.md
 
 hooks:
   - hooks/resolve_test_links.py

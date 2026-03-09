@@ -1,0 +1,106 @@
+name: Bug Report
+description: Report a bug with the Grocy custom component
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill in all required fields so we can investigate.
+
+  - type: input
+    id: ha-version
+    attributes:
+      label: Home Assistant version
+      placeholder: "2025.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: grocy-version
+    attributes:
+      label: Grocy version
+      placeholder: "4.3.0"
+    validations:
+      required: true
+
+  - type: input
+    id: integration-version
+    attributes:
+      label: Integration version
+      placeholder: "4.6.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: grocy-install
+    attributes:
+      label: Grocy installation method
+      options:
+        - Home Assistant add-on
+        - External (Docker, bare metal, etc.)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce this issue?
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: entities
+    attributes:
+      label: Entity states
+      description: |
+        Which entities do you have enabled? What state are they in?
+        Go to **Settings → Devices & services → Grocy** and list the entities.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Debug logs
+      description: |
+        Enable debug logging by adding this to `configuration.yaml` and restarting:
+        ```yaml
+        logger:
+          default: warning
+          logs:
+            custom_components.grocy: debug
+        ```
+        Then go to **Settings → System → Logs**, filter by "grocy", and paste the output here.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any other information (screenshots, JSON service data, etc.)
+    validations:
+      required: false
