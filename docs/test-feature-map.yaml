@@ -286,7 +286,8 @@ features:
       - file: tests/test_coordinator.py
         functions:
           - test_async_update_data_skips_disabled_entities
-          - test_async_update_data_raises_update_failed
+          - test_async_update_data_raises_update_failed_when_all_fail
+          - test_async_update_data_partial_failure_does_not_raise
 
 # Cross-cutting tests that validate shared infrastructure.
 # These don't belong to a single feature but are essential.
