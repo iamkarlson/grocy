@@ -96,6 +96,7 @@ class DummyProduct:
     name: str = "Product"
     available_amount: float = 1.0
     description: str | None = "Product description"
+    best_before_date: dt.datetime | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -103,7 +104,11 @@ class DummyProduct:
             "name": self.name,
             "available_amount": self.available_amount,
             "description": self.description,
+            "best_before_date": self.best_before_date,
         }
+
+    def get_details(self, api_client) -> None:
+        """No-op for tests; real Product.get_details fetches from API."""
 
 
 @dataclass
