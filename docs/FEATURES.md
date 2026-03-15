@@ -19,7 +19,7 @@ If you enable a todo entity (like `todo.grocy_stock`), you should also enable th
 7. [Calendar](#7-calendar)
 8. [Image Proxy](#8-image-proxy)
 9. [Generic CRUD](#9-generic-crud)
-10. [Configuration & Setup](#10-configuration--setup)
+10. [Configuration & Setup](#10-configuration-setup)
 
 ---
 
@@ -608,7 +608,7 @@ All entities (except calendar) are updated every 30 seconds via the data coordin
 | tests/test_init.py | `test_available_entities_no_features` | No features creates no entities |
 | tests/test_init.py | `test_available_entities_none_config` | None config returns empty list |
 | tests/test_coordinator.py | `test_async_update_data_skips_disabled_entities` | Disabled entities are not updated |
-| tests/test_coordinator.py | `test_async_update_data_raises_update_failed` | Errors propagated as UpdateFailed |
+| tests/test_coordinator.py | `test_async_update_data_raises_update_failed_when_all_fail` | Errors propagated as UpdateFailed |
 
 ---
 

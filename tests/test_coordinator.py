@@ -1,7 +1,7 @@
 """Coordinator tests for the data update loop.
 
 Features: configuration_setup
-See: docs/FEATURES.md#10-configuration--setup
+See: docs/FEATURES.md#10-configuration-setup
 """
 
 from __future__ import annotations
