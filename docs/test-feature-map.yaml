@@ -250,7 +250,7 @@ features:
 
   configuration_setup:
     name: Configuration & Setup
-    doc_section: "#10-configuration--setup"
+    doc_section: "#10-configuration-setup"
     tests:
       - file: tests/test_config_flow.py
         functions:
