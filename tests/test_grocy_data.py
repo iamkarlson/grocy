@@ -197,7 +197,7 @@ async def test_async_update_expiring_products(grocy_data) -> None:
 @pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_async_update_expiring_products_uses_due_soon_days(grocy_data) -> None:
-    """Verify due_soon_days is passed as due_days to the API when configured."""
+    """Verify due_soon_days is passed to the API when configured."""
     grocy_data.due_soon_days = 7
     grocy_data.api._api_client._do_get_request.return_value = {"due_products": []}
 
@@ -205,7 +205,7 @@ async def test_async_update_expiring_products_uses_due_soon_days(grocy_data) -> 
 
     assert result == []
     grocy_data.api._api_client._do_get_request.assert_called_once_with(
-        "stock/volatile?due_days=7"
+        "stock/volatile?due_soon_days=7"
     )
     grocy_data.api.stock.due_products.assert_not_called()
 
@@ -366,10 +366,41 @@ async def test_async_get_config_stores_due_soon_days(grocy_data) -> None:
 
 @pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
+async def test_async_get_config_stores_due_soon_days_lowercase_fallback(
+    grocy_data,
+) -> None:
+    """Verify lowercase stock_due_soon_days is used when uppercase is absent."""
+    grocy_data.api.system.config.return_value = MagicMock()
+    grocy_data.api.users.get_setting.side_effect = [None, "7"]
+
+    await grocy_data.async_get_config()
+
+    assert grocy_data.due_soon_days == 7
+    assert grocy_data.api.users.get_setting.call_count == 2
+    grocy_data.api.users.get_setting.assert_any_call("STOCK_DUE_SOON_DAYS")
+    grocy_data.api.users.get_setting.assert_any_call("stock_due_soon_days")
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_async_get_config_stores_due_soon_days_from_dict_payload(
+    grocy_data,
+) -> None:
+    """Verify dict payloads from API/client are parsed correctly."""
+    grocy_data.api.system.config.return_value = MagicMock()
+    grocy_data.api.users.get_setting.side_effect = [None, {"value": "7"}]
+
+    await grocy_data.async_get_config()
+
+    assert grocy_data.due_soon_days == 7
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
 async def test_async_get_config_due_soon_days_defaults_to_none(grocy_data) -> None:
     """Verify due_soon_days is None when STOCK_DUE_SOON_DAYS is absent."""
     grocy_data.api.system.config.return_value = MagicMock()
-    grocy_data.api.users.get_setting.return_value = None
+    grocy_data.api.users.get_setting.side_effect = [None, None]
 
     await grocy_data.async_get_config()
 
