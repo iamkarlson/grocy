@@ -100,9 +100,36 @@ class GrocyData:
         def wrapper():
             config = self.api.system.config()
             try:
-                val = self.api.users.get_setting("STOCK_DUE_SOON_DAYS")
-                if val is not None and isinstance(val, (int, str)):
-                    self.due_soon_days = int(val)
+                # Some Grocy setups expose this key in lowercase only.
+                for key in ("STOCK_DUE_SOON_DAYS", "stock_due_soon_days"):
+                    raw_val = self.api.users.get_setting(key)
+                    _LOGGER.debug("Read user setting %s from Grocy: %r", key, raw_val)
+
+                    val = raw_val
+                    if isinstance(raw_val, dict):
+                        # Handle alternative payload shapes returned by library/API.
+                        for field in ("value", "setting_value"):
+                            if field in raw_val:
+                                val = raw_val[field]
+                                break
+
+                    if val is None:
+                        continue
+
+                    try:
+                        self.due_soon_days = int(val)
+                        _LOGGER.debug(
+                            "Using due_soon_days=%s from key %s",
+                            self.due_soon_days,
+                            key,
+                        )
+                        break
+                    except (TypeError, ValueError):
+                        _LOGGER.debug(
+                            "Ignoring invalid due soon setting value for key %s: %r",
+                            key,
+                            val,
+                        )
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.debug("Could not read STOCK_DUE_SOON_DAYS from Grocy")
             return config
@@ -145,12 +172,21 @@ class GrocyData:
                 # Without this, the API defaults to 5 days regardless of the
                 # STOCK_DUE_SOON_DAYS system setting.
                 api_client = self.api._api_client
+                _LOGGER.debug(
+                    "Fetching expiring products from stock/volatile with due_soon_days=%s",
+                    self.due_soon_days,
+                )
                 raw = api_client._do_get_request(
-                    f"stock/volatile?due_days={self.due_soon_days}"
+                    f"stock/volatile?due_soon_days={self.due_soon_days}"
                 )
                 if not raw:
+                    _LOGGER.debug("stock/volatile returned empty payload")
                     return []
                 volatile = CurrentVolatileStockResponse(**raw)
+                _LOGGER.debug(
+                    "stock/volatile due_products count=%s",
+                    len(volatile.due_products or []),
+                )
                 products = [
                     Product.from_stock_response(r)
                     for r in (volatile.due_products or [])
