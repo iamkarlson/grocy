@@ -47,6 +47,27 @@ async def test_async_update_data_skips_disabled_entities() -> None:
 async def test_async_update_data_raises_update_failed_when_all_fail() -> None:
     coordinator = GrocyDataUpdateCoordinator.__new__(GrocyDataUpdateCoordinator)
     coordinator.entities = [DummyEntity("stock", enabled=True)]
+    coordinator.data = None
+    coordinator.grocy_data = SimpleNamespace(
+        async_update_data=AsyncMock(side_effect=RuntimeError("boom"))
+    )
+
+    with pytest.raises(UpdateFailed) as captured:
+        await GrocyDataUpdateCoordinator._async_update_data(coordinator)
+
+    assert "boom" in str(captured.value)
+
+
+@pytest.mark.asyncio
+async def test_async_update_data_raises_update_failed_when_all_fail_with_previous_data() -> None:
+    """UpdateFailed must still fire on total failure even when previous data exists."""
+    from custom_components.grocy.coordinator import GrocyCoordinatorData
+
+    coordinator = GrocyDataUpdateCoordinator.__new__(GrocyDataUpdateCoordinator)
+    coordinator.entities = [DummyEntity("stock", enabled=True)]
+    previous_data = GrocyCoordinatorData()
+    previous_data["stock"] = ["old_item"]
+    coordinator.data = previous_data
     coordinator.grocy_data = SimpleNamespace(
         async_update_data=AsyncMock(side_effect=RuntimeError("boom"))
     )
@@ -71,6 +92,7 @@ async def test_async_update_data_partial_failure_does_not_raise() -> None:
             raise RuntimeError("validation error")
         return ["task1"]
 
+    coordinator.data = None
     coordinator.grocy_data = SimpleNamespace(
         async_update_data=AsyncMock(side_effect=mock_update)
     )
@@ -78,4 +100,33 @@ async def test_async_update_data_partial_failure_does_not_raise() -> None:
     result = await GrocyDataUpdateCoordinator._async_update_data(coordinator)
 
     assert result.stock is None
+    assert result.tasks == ["task1"]
+
+
+@pytest.mark.asyncio
+async def test_async_update_data_partial_failure_keeps_previous_data() -> None:
+    """On transient failure, retain the last known value instead of going unknown."""
+    from custom_components.grocy.coordinator import GrocyCoordinatorData
+
+    coordinator = GrocyDataUpdateCoordinator.__new__(GrocyDataUpdateCoordinator)
+    coordinator.entities = [
+        DummyEntity("stock", enabled=True),
+        DummyEntity("tasks", enabled=True),
+    ]
+    previous_data = GrocyCoordinatorData()
+    previous_data["stock"] = ["old_item"]
+    coordinator.data = previous_data
+
+    async def mock_update(key: str):
+        if key == "stock":
+            raise RuntimeError("transient error")
+        return ["task1"]
+
+    coordinator.grocy_data = SimpleNamespace(
+        async_update_data=AsyncMock(side_effect=mock_update)
+    )
+
+    result = await GrocyDataUpdateCoordinator._async_update_data(coordinator)
+
+    assert result.stock == ["old_item"]
     assert result.tasks == ["task1"]
