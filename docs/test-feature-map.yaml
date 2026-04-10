@@ -54,6 +54,8 @@ features:
           - test_async_update_overdue_products
           - test_async_update_missing_products
           - test_async_get_config_stores_due_soon_days
+          - test_async_get_config_stores_due_soon_days_lowercase_fallback
+          - test_async_get_config_stores_due_soon_days_from_dict_payload
           - test_async_get_config_due_soon_days_defaults_to_none
           - test_async_get_config_due_soon_days_handles_invalid_value
 
