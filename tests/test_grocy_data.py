@@ -205,7 +205,7 @@ async def test_async_update_expiring_products_uses_due_soon_days(grocy_data) -> 
 
     assert result == []
     grocy_data.api._api_client._do_get_request.assert_called_once_with(
-        "stock/volatile?due_soon_days=7"
+        f"stock/volatile?due_soon_days={grocy_data.due_soon_days}"
     )
     grocy_data.api.stock.due_products.assert_not_called()
 
