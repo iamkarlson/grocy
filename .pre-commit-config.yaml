@@ -22,14 +22,14 @@ repos:
     hooks:
       - id: validate-hacs
         name: Validate HACS configuration
-        entry: python3 -c "import json; json.load(open('hacs.json'))"
+        entry: python -c "import json; json.load(open('hacs.json'))"
         language: system
         files: ^hacs\.json$
         pass_filenames: false
 
       - id: validate-manifest
         name: Validate Home Assistant manifest
-        entry: python3 -c "import json; json.load(open('custom_components/grocy/manifest.json'))"
+        entry: python -c "import json; json.load(open('custom_components/grocy/manifest.json'))"
         language: system
         files: ^custom_components/.*/manifest\.json$
         pass_filenames: false
