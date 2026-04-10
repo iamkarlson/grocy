@@ -40,3 +40,10 @@ repos:
         language: system
         files: ^custom_components/.*/translations/.*\.json$
         pass_filenames: false
+
+      - id: check-feature-coverage
+        name: Check test feature coverage
+        entry: uv run python docs/check_coverage.py
+        language: system
+        files: ^(tests/.*\.py|docs/test-feature-map\.yaml|docs/check_coverage\.py)$
+        pass_filenames: false
