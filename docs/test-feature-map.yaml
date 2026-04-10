@@ -290,6 +290,8 @@ features:
           - test_async_update_data_skips_disabled_entities
           - test_async_update_data_raises_update_failed_when_all_fail
           - test_async_update_data_partial_failure_does_not_raise
+          - test_async_update_data_raises_update_failed_when_all_fail_with_previous_data
+          - test_async_update_data_partial_failure_keeps_previous_data
 
 # Cross-cutting tests that validate shared infrastructure.
 # These don't belong to a single feature but are essential.
