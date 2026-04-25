@@ -7,12 +7,12 @@ from collections.abc import Callable
 from datetime import UTC, date, datetime, timedelta
 
 import icalendar
-from homeassistant.components.calendar import CalendarEntity, CalendarEvent
+from homeassistant.components.calendar import CalendarEntity, CalendarEntityDescription, CalendarEvent
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import DeviceEntryType
-from homeassistant.helpers.entity import DeviceInfo, EntityDescription
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.util import dt as dt_util
@@ -80,7 +80,7 @@ class GrocyCalendarEntity(CalendarEntity):
 
         # Add entity_description for coordinator compatibility
         # (even though calendar doesn't use coordinator data)
-        self.entity_description = EntityDescription(
+        self.entity_description = CalendarEntityDescription(
             key="calendar",
             name="Grocy calendar",
         )
