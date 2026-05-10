@@ -14,6 +14,7 @@ from homeassistant.helpers.http import HomeAssistantView
 from grocy import Grocy
 from grocy.data_models.battery import Battery
 from grocy.data_models.chore import Chore
+from grocy.data_models.generic import EntityType
 from grocy.data_models.product import Product
 from grocy.grocy_api_client import CurrentVolatileStockResponse
 
@@ -28,6 +29,7 @@ from .const import (
     ATTR_OVERDUE_CHORES,
     ATTR_OVERDUE_PRODUCTS,
     ATTR_OVERDUE_TASKS,
+    ATTR_RECIPES,
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
@@ -35,7 +37,7 @@ from .const import (
     CONF_PORT,
     CONF_URL,
 )
-from .helpers import MealPlanItemWrapper, extract_base_url_and_path
+from .helpers import MealPlanItemWrapper, RecipeWrapper, extract_base_url_and_path
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,6 +64,7 @@ class GrocyData:
             ATTR_OVERDUE_TASKS: self.async_update_overdue_tasks,
             ATTR_BATTERIES: self.async_update_batteries,
             ATTR_OVERDUE_BATTERIES: self.async_update_overdue_batteries,
+            ATTR_RECIPES: self.async_update_recipes,
         }
 
     async def async_update_data(self, entity_key):
@@ -252,6 +255,24 @@ class GrocyData:
         def wrapper():
             filter_query = [f"next_estimated_charge_time<{datetime.now()}"]
             return self.api.batteries.list(filter_query, get_details=True)
+
+        return await self.hass.async_add_executor_job(wrapper)
+
+    async def async_update_recipes(self) -> list[RecipeWrapper]:
+        """Update recipes data."""
+
+        def wrapper() -> list[RecipeWrapper]:
+            recipes = self.api.generic.list(EntityType.RECIPES) or []
+            fulfillment = self.api.recipes.all_fulfillment() or []
+
+            fulfillment_map = {f.recipe_id: f.need_fulfilled for f in fulfillment}
+
+            wrapped_recipes = []
+            for r in recipes:
+                recipe_id = r.get("id")
+                need_fulfilled = fulfillment_map.get(recipe_id, False)
+                wrapped_recipes.append(RecipeWrapper(r, need_fulfilled))
+            return wrapped_recipes
 
         return await self.hass.async_add_executor_job(wrapper)
 

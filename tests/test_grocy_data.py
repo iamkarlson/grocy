@@ -28,6 +28,7 @@ from custom_components.grocy.const import (
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
+    ATTR_RECIPES,
     CONF_API_KEY,
     CONF_PORT,
     CONF_URL,
@@ -552,9 +553,54 @@ def test_picture_view_url_pattern() -> None:
 # ─── All entity keys are mapped ──────────────────────────────────────────────
 
 
+# ─── async_update_recipes ───────────────────────────────────────────────
+
+
+@pytest.mark.feature("meal_planning")
+@pytest.mark.asyncio
+async def test_async_update_recipes(grocy_data) -> None:
+    """Verify recipe data fetching and wrapping."""
+    from grocy.grocy_api_client import RecipeFulfillmentResponse
+    from grocy.data_models.generic import EntityType
+
+    recipe_dict = {
+        "id": 1,
+        "name": "Pizza",
+        "description": "Tasty",
+        "picture_file_name": "pizza.jpg",
+    }
+    grocy_data.api.generic.list.return_value = [recipe_dict]
+
+    fulfillment_response = RecipeFulfillmentResponse(
+        recipe_id=1,
+        need_fulfilled=True,
+        need_fulfilled_with_shopping_list=False,
+    )
+    grocy_data.api.recipes.all_fulfillment.return_value = [fulfillment_response]
+
+    result = await grocy_data.async_update_recipes()
+
+    assert len(result) == 1
+    wrapped = result[0]
+    assert wrapped.recipe == recipe_dict
+    assert wrapped.all_ingredients_in_stock is True
+    assert wrapped.picture_url == "/api/grocy/recipepictures/cGl6emEuanBn"
+    assert wrapped.as_dict() == {
+        "id": 1,
+        "name": "Pizza",
+        "description": "Tasty",
+        "picture_file_name": "pizza.jpg",
+        "all_ingredients_in_stock": True,
+        "picture_url": "/api/grocy/recipepictures/cGl6emEuanBn",
+    }
+
+    grocy_data.api.generic.list.assert_called_once_with(EntityType.RECIPES)
+    grocy_data.api.recipes.all_fulfillment.assert_called_once()
+
+
 @pytest.mark.feature("cross_cutting")
 def test_all_entity_keys_have_update_methods(hass, mock_grocy) -> None:
-    """Verify all 13 entity keys mapped to update methods."""
+    """Verify all 14 entity keys mapped to update methods."""
     hass.async_add_executor_job = AsyncMock()
     data = GrocyData(hass, mock_grocy)
     expected_keys = {
@@ -571,5 +617,6 @@ def test_all_entity_keys_have_update_methods(hass, mock_grocy) -> None:
         ATTR_OVERDUE_TASKS,
         ATTR_BATTERIES,
         ATTR_OVERDUE_BATTERIES,
+        ATTR_RECIPES,
     }
     assert set(data.entity_update_method.keys()) == expected_keys

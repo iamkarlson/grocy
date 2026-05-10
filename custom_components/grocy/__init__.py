@@ -26,6 +26,7 @@ from .const import (
     ATTR_OVERDUE_CHORES,
     ATTR_OVERDUE_PRODUCTS,
     ATTR_OVERDUE_TASKS,
+    ATTR_RECIPES,
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
@@ -110,6 +111,7 @@ async def _async_get_available_entities(grocy_data: GrocyData) -> list[str]:
 
         if "FEATURE_FLAG_RECIPES" in grocy_config.enabled_features:
             available_entities.append(ATTR_MEAL_PLAN)
+            available_entities.append(ATTR_RECIPES)
 
         if "FEATURE_FLAG_BATTERIES" in grocy_config.enabled_features:
             available_entities.append(ATTR_BATTERIES)

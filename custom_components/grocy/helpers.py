@@ -16,6 +16,40 @@ def extract_base_url_and_path(url: str) -> tuple[str, str]:
     return (f"{parsed_url.scheme}://{parsed_url.netloc}", parsed_url.path.strip("/"))
 
 
+class RecipeWrapper:
+    """Wrapper around a grocy Recipe dictionary with fulfillment information."""
+
+    def __init__(self, recipe: dict[str, Any], need_fulfilled: bool) -> None:
+        self._recipe = recipe
+        self._need_fulfilled = need_fulfilled
+
+    @property
+    def recipe(self) -> dict[str, Any]:
+        """Return the wrapped recipe dict."""
+        return self._recipe
+
+    @property
+    def all_ingredients_in_stock(self) -> bool:
+        """Return whether all ingredients are in stock."""
+        return self._need_fulfilled
+
+    @property
+    def picture_url(self) -> str | None:
+        """Proxy URL to the picture."""
+        picture_file_name = self._recipe.get("picture_file_name")
+        if picture_file_name:
+            b64name = base64.b64encode(picture_file_name.encode("ascii"))
+            return f"/api/grocy/recipepictures/{str(b64name, 'utf-8')}"
+        return None
+
+    def as_dict(self) -> dict[str, Any]:
+        """Return serialized attributes including the proxy picture URL and in stock status."""
+        props = dict(self._recipe)
+        props["all_ingredients_in_stock"] = self.all_ingredients_in_stock
+        props["picture_url"] = self.picture_url
+        return props
+
+
 class MealPlanItemWrapper:
     """Wrapper around a grocy MealPlanItem."""
 
