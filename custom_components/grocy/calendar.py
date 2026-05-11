@@ -7,7 +7,11 @@ from collections.abc import Callable
 from datetime import UTC, date, datetime, timedelta
 
 import icalendar
-from homeassistant.components.calendar import CalendarEntity, CalendarEntityDescription, CalendarEvent
+from homeassistant.components.calendar import (
+    CalendarEntity,
+    CalendarEntityDescription,
+    CalendarEvent,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
