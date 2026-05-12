@@ -1,12 +1,12 @@
 [project]
 name = "grocy-custom-component"
-version = "1.9.3"
+version = "1.10.0"
 description = "Grocy custom component for Home Assistant"
 readme = "README.md"
 requires-python = ">=3.13.2"
 dependencies = [
     "homeassistant==2026.2.1",
-    "grocy-py==0.0.8",
+    "grocy-py==0.1.0",
     "icalendar>=6.0.0",
 ]
 

@@ -219,7 +219,7 @@ async def test_post_generic_refresh_updates_relevant_entities(coordinator) -> No
         "custom_components.grocy.services._async_force_update_entity",
         new_callable=AsyncMock,
     ) as mock_refresh:
-        await services._post_generic_refresh(coordinator, EntityType.USER_FIELDS)
+        await services._post_generic_refresh(coordinator, EntityType.USERFIELDS)
         mock_refresh.assert_not_awaited()
 
 
