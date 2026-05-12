@@ -1114,7 +1114,7 @@ wheels = [
 
 [[package]]
 name = "grocy-custom-component"
-version = "1.10.0"
+version = "1.15.0"
 source = { virtual = "." }
 dependencies = [
     { name = "grocy-py" },
