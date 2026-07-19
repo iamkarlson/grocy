@@ -82,7 +82,7 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
         self.grocy_api = Grocy(
             base_url, api_key, path=path, port=port, verify_ssl=verify_ssl
         )
-        self.grocy_data = GrocyData(hass, self.grocy_api)
+        self.grocy_data = GrocyData(hass, self.grocy_api, url)
 
         self.available_entities: list[str] = []
         self.entities: list[Entity] = []

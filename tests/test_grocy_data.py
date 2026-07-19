@@ -54,7 +54,7 @@ def grocy_data(hass, mock_grocy) -> GrocyData:
         return func(*args)
 
     hass.async_add_executor_job = AsyncMock(side_effect=immediate_executor)
-    return GrocyData(hass, mock_grocy)
+    return GrocyData(hass, mock_grocy, "https://exemple.com")
 
 
 # ─── async_update_data dispatch ───────────────────────────────────────────────
@@ -568,6 +568,7 @@ async def test_async_update_recipes(grocy_data) -> None:
         "name": "Pizza",
         "description": "Tasty",
         "picture_file_name": "pizza.jpg",
+        "type": "normal"
     }
     grocy_data.api.generic.list.return_value = [recipe_dict]
 
@@ -592,6 +593,8 @@ async def test_async_update_recipes(grocy_data) -> None:
         "picture_file_name": "pizza.jpg",
         "all_ingredients_in_stock": True,
         "picture_url": "/api/grocy/recipepictures/cGl6emEuanBn",
+        "type": "normal",
+        "url": "https://exemple.com/recipes?recipe=1#fullscreen",
     }
 
     grocy_data.api.generic.list.assert_called_once_with(EntityType.RECIPES)
@@ -602,7 +605,7 @@ async def test_async_update_recipes(grocy_data) -> None:
 def test_all_entity_keys_have_update_methods(hass, mock_grocy) -> None:
     """Verify all 14 entity keys mapped to update methods."""
     hass.async_add_executor_job = AsyncMock()
-    data = GrocyData(hass, mock_grocy)
+    data = GrocyData(hass, mock_grocy, "https://exemple.com")
     expected_keys = {
         ATTR_STOCK,
         ATTR_CHORES,

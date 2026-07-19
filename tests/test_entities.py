@@ -198,7 +198,7 @@ def test_sensor_meal_plan_counts() -> None:
 def test_sensor_recipes_counts() -> None:
     """Verify recipes sensor counts correctly."""
     from custom_components.grocy.helpers import RecipeWrapper
-    recipe_wrap = RecipeWrapper({"id": 1, "name": "Pizza", "picture_file_name": "pizza.jpg"}, True)
+    recipe_wrap = RecipeWrapper({"id": 1, "name": "Pizza", "picture_file_name": "pizza.jpg"}, True, "http://example.com/")
     entity = _build_sensor(ATTR_RECIPES, [recipe_wrap])
     assert entity.native_value == 1
     attrs = entity.extra_state_attributes

@@ -45,7 +45,7 @@ _LOGGER = logging.getLogger(__name__)
 class GrocyData:
     """Handles communication and gets the data."""
 
-    def __init__(self, hass: HomeAssistant, api: Grocy) -> None:
+    def __init__(self, hass: HomeAssistant, api: Grocy, grocy_url: str) -> None:
         """Initialize Grocy data."""
         self.hass = hass
         self.api = api
@@ -66,6 +66,7 @@ class GrocyData:
             ATTR_OVERDUE_BATTERIES: self.async_update_overdue_batteries,
             ATTR_RECIPES: self.async_update_recipes,
         }
+        self._grocy_url = grocy_url
 
     async def async_update_data(self, entity_key):
         """Update data."""
@@ -271,7 +272,9 @@ class GrocyData:
             for r in recipes:
                 recipe_id = r.get("id")
                 need_fulfilled = fulfillment_map.get(recipe_id, False)
-                wrapped_recipes.append(RecipeWrapper(r, need_fulfilled))
+                recipe_wrapper = RecipeWrapper(r, need_fulfilled, self._grocy_url)
+                if recipe_wrapper.recipe["type"] == "normal":
+                    wrapped_recipes.append(recipe_wrapper)
             return wrapped_recipes
 
         return await self.hass.async_add_executor_job(wrapper)
