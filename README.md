@@ -38,7 +38,7 @@ Future updates will appear automatically within Home Assistant via HACS.
 
 #### Manual Installation
 
-1. Update Home Assistant to version 2026.02 or newer
+1. Update Home Assistant to version 2026.07.4 or newer
 2. Download this repository
 3. Copy the `custom_components/grocy` folder into your Home Assistant's `custom_components` folder
 4. Restart Home Assistant
