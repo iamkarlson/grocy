@@ -43,7 +43,6 @@ async def async_setup_entry(
     for description in BINARY_SENSORS:
         if description.exists_fn(coordinator.available_entities):
             entity = GrocyBinarySensorEntity(coordinator, description, config_entry)
-            coordinator.entities.append(entity)
             entities.append(entity)
         else:
             _LOGGER.debug(
@@ -52,6 +51,7 @@ async def async_setup_entry(
             )
 
     async_add_entities(entities, True)
+    coordinator.entities.extend(entities)
 
 
 @dataclass
