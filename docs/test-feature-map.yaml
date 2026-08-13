@@ -49,7 +49,7 @@ features:
           - test_async_update_stock_empty
           - test_async_update_expiring_products
           - test_async_update_expiring_products_uses_due_soon_days
-          - test_async_update_expiring_products_due_soon_days_none_response
+          - test_async_update_expiring_products_due_soon_days_zero
           - test_async_update_expired_products
           - test_async_update_overdue_products
           - test_async_update_missing_products
