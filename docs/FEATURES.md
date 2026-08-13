@@ -379,6 +379,7 @@ Requires Grocy feature flag: `FEATURE_FLAG_RECIPES`
 | Entity ID | State | Attributes | Icon |
 |-----------|-------|------------|------|
 | `sensor.grocy_meal_plan` | Number of upcoming meals | `count`, `meals` (list) | mdi:silverware-variant |
+| `sensor.grocy_recipes` | Number of available recipes | `count`, `recipes` (list) | mdi:book-open-variant |
 
 #### Todo Lists
 
@@ -409,8 +410,10 @@ Consume a recipe (deduct all ingredients from stock).
 | tests/test_todo.py | `test_todo_item_from_meal_plan_item_wrapper` | MealPlanItemWrapper converts to todo |
 | tests/test_todo.py | `test_async_update_todo_item_complete_meal_plan` | Completing meal plan consumes recipe and deletes entry |
 | tests/test_todo.py | `test_async_update_todo_item_meal_plan_needs_action_raises` | Uncompleting meal plan raises NotImplementedError |
+| tests/test_entities.py | `test_sensor_recipes_counts` | Recipes sensor counts correctly |
 | tests/test_grocy_data.py | `test_async_update_meal_plan_sorts_by_day` | Meal plan sorted by date, filters from yesterday |
 | tests/test_grocy_data.py | `test_async_update_meal_plan_empty` | Empty meal plan handled |
+| tests/test_grocy_data.py | `test_async_update_recipes` | Recipes data fetching and wrapping with fulfillment |
 | tests/test_helpers.py | `test_meal_plan_item_wrapper_generates_picture_url` | Wrapper generates correct picture URL |
 | tests/test_helpers.py | `test_meal_plan_item_wrapper_handles_missing_picture` | Wrapper handles None picture |
 

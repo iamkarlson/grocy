@@ -20,6 +20,7 @@ from .const import (
     ATTR_BATTERIES,
     ATTR_CHORES,
     ATTR_MEAL_PLAN,
+    ATTR_RECIPES,
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
@@ -28,6 +29,7 @@ from .const import (
     ITEMS,
     MEAL_PLANS,
     PRODUCTS,
+    RECIPES,
     TASKS,
 )
 from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
@@ -138,6 +140,18 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
         exists_fn=lambda entities: ATTR_BATTERIES in entities,
         attributes_fn=lambda data: {
             "batteries": [model_to_dict(x) for x in data],
+            "count": len(data),
+        },
+    ),
+    GrocySensorEntityDescription(
+        key=ATTR_RECIPES,
+        name="Grocy recipes",
+        native_unit_of_measurement=RECIPES,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:book-open-variant",
+        exists_fn=lambda entities: ATTR_RECIPES in entities,
+        attributes_fn=lambda data: {
+            "recipes": [model_to_dict(x) for x in data],
             "count": len(data),
         },
     ),

@@ -173,6 +173,7 @@ features:
       - file: tests/test_entities.py
         functions:
           - test_sensor_meal_plan_counts
+          - test_sensor_recipes_counts
       - file: tests/test_services.py
         functions:
           - test_consume_recipe_service
@@ -188,6 +189,7 @@ features:
         functions:
           - test_async_update_meal_plan_sorts_by_day
           - test_async_update_meal_plan_empty
+          - test_async_update_recipes
       - file: tests/test_helpers.py
         functions:
           - test_meal_plan_item_wrapper_generates_picture_url

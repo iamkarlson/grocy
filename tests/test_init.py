@@ -33,6 +33,7 @@ from custom_components.grocy.const import (
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
+    ATTR_RECIPES,
     DOMAIN,
     PLATFORMS,
 )
@@ -190,6 +191,7 @@ async def test_available_entities_all_features() -> None:
         ATTR_CHORES,
         ATTR_OVERDUE_CHORES,
         ATTR_MEAL_PLAN,
+        ATTR_RECIPES,
         ATTR_BATTERIES,
         ATTR_OVERDUE_BATTERIES,
     }
@@ -239,7 +241,7 @@ async def test_available_entities_recipes_only() -> None:
     grocy_data = _make_grocy_data({"FEATURE_FLAG_RECIPES"})
     result = await _async_get_available_entities(grocy_data)
 
-    assert result == [ATTR_MEAL_PLAN]
+    assert set(result) == {ATTR_MEAL_PLAN, ATTR_RECIPES}
 
 
 @pytest.mark.asyncio
