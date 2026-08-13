@@ -255,16 +255,10 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
         )
         if description.key in [ATTR_BATTERIES, ATTR_CHORES, ATTR_TASKS]:
             self._attr_supported_features |= TodoListEntityFeature.CREATE_TODO_ITEM
-        if description.key in []:
-            self._attr_supported_features |= (
-                TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
-            )
-        if description.key in []:
-            self._attr_supported_features |= TodoListEntityFeature.SET_DUE_DATE_ON_ITEM
-        if description.key in []:
-            self._attr_supported_features |= (
-                TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM
-            )
+        # SET_DESCRIPTION_ON_ITEM, SET_DUE_DATE_ON_ITEM and
+        # SET_DUE_DATETIME_ON_ITEM are deliberately not advertised:
+        # async_update_todo_item only handles status changes, so offering the
+        # edit affordances in the UI would surface fields we cannot write back.
         super().__init__(coordinator, description, config_entry)
 
     def _get_grocy_item(self, item_id: str):

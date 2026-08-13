@@ -124,7 +124,7 @@ class GrocyData:
                             key,
                         )
                         break
-                    except (TypeError, ValueError):
+                    except TypeError, ValueError:
                         _LOGGER.debug(
                             "Ignoring invalid due soon setting value for key %s: %r",
                             key,

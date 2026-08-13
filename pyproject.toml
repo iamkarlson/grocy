@@ -114,6 +114,10 @@ ignore = [
     # Line length - will be handled by formatter where possible, ignore the rest
     "E501",     # Line too long
 
+    # Per-file copyright headers are not the Home Assistant custom-component
+    # convention; licensing lives in LICENSE.md
+    "CPY001",   # Missing copyright notice at top of file
+
     # Import issues that need to be fixed manually
     # "F821",   # Undefined name - these should be fixed
 ]
@@ -129,6 +133,7 @@ max-complexity = 25
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 markers = [
     "feature(name): mark test with feature group name (see docs/FEATURES.md)",
 ]
