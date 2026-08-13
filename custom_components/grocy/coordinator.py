@@ -65,11 +65,10 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=config_entry,
             name=DOMAIN,
             update_interval=SCAN_INTERVAL,
         )
-
-        self.config_entry = config_entry
 
         url = self.config_entry.data[CONF_URL]
         api_key = self.config_entry.data[CONF_API_KEY]

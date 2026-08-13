@@ -17,7 +17,7 @@ from homeassistant.components.todo import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from grocy.data_models.battery import Battery
 from grocy.data_models.chore import Chore
@@ -65,7 +65,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ):
     """Do setup todo platform."""
     coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]

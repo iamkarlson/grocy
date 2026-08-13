@@ -268,6 +268,8 @@ features:
           - test_reauth_step_shows_confirm_form
           - test_reauth_confirm_updates_entry
           - test_reauth_confirm_handles_error
+          - test_migrate_entry_v1_adds_calendar_defaults
+          - test_migrate_entry_v2_is_left_alone
       - file: tests/test_init.py
         functions:
           - test_async_setup_entry_initializes_integration
