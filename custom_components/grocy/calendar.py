@@ -49,8 +49,8 @@ async def async_setup_entry(
     coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
 
     entity = GrocyCalendarEntity(coordinator, config_entry)
-    coordinator.entities.append(entity)
     async_add_entities([entity], True)
+    coordinator.entities.append(entity)
 
 
 class GrocyCalendarEntity(CalendarEntity):
