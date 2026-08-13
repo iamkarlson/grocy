@@ -181,6 +181,7 @@ features:
         functions:
           - test_todo_item_from_meal_plan_item
           - test_todo_item_from_meal_plan_item_wrapper
+          - test_todo_item_from_meal_plan_item_missing_recipe
           - test_async_update_todo_item_complete_meal_plan
           - test_async_update_todo_item_meal_plan_needs_action_raises
       - file: tests/test_grocy_data.py
@@ -330,6 +331,7 @@ cross_cutting:
         - test_async_unload_services_noop_if_not_registered
         - test_async_force_update_entity_updates_matching_entity
         - test_async_force_update_entity_ignores_missing
+        - test_async_force_update_entity_skips_entity_without_hass
     - file: tests/test_grocy_data.py
       functions:
         - test_async_update_data_dispatches_to_correct_method

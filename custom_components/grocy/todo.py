@@ -73,7 +73,6 @@ async def async_setup_entry(
     for description in TODOS:
         if description.exists_fn(coordinator.available_entities):
             entity = GrocyTodoListEntity(coordinator, description, config_entry)
-            coordinator.entities.append(entity)
             entities.append(entity)
         else:
             _LOGGER.debug(
@@ -82,6 +81,7 @@ async def async_setup_entry(
             )
 
     async_add_entities(entities, True)
+    coordinator.entities.extend(entities)
 
 
 @dataclass
@@ -188,22 +188,45 @@ class GrocyTodoItem(TodoItem):
         elif isinstance(item, MealPlanItem):
             due = item.day
             days_until = _calculate_days_until(due, True)
+            recipe = getattr(item, "recipe", None)
+            summary = (
+                recipe.name
+                if (recipe and getattr(recipe, "name", None))
+                else "Unknown recipe"
+            )
+            description = (
+                recipe.description
+                if (recipe and getattr(recipe, "description", None))
+                else None
+            )
             super().__init__(
                 uid=item.id.__str__(),
-                summary=item.recipe.name,
+                summary=summary,
                 due=due,
                 status=_calculate_item_status(days_until),
-                description=item.recipe.description or None,
+                description=description,
             )
         elif isinstance(item, MealPlanItemWrapper):
             due = item.meal_plan.day
             days_until = _calculate_days_until(due, True)
+            mp = item.meal_plan
+            recipe = getattr(mp, "recipe", None)
+            summary = (
+                recipe.name
+                if (recipe and getattr(recipe, "name", None))
+                else "Unknown recipe"
+            )
+            description = (
+                recipe.description
+                if (recipe and getattr(recipe, "description", None))
+                else None
+            )
             super().__init__(
-                uid=item.meal_plan.id.__str__(),
-                summary=item.meal_plan.recipe.name,
+                uid=mp.id.__str__(),
+                summary=summary,
                 due=due,
                 status=_calculate_item_status(days_until),
-                description=item.meal_plan.recipe.description or None,
+                description=description,
             )
         elif isinstance(item, Product):
             super().__init__(
