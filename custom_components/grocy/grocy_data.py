@@ -15,8 +15,6 @@ from grocy import Grocy
 from grocy.data_models.battery import Battery
 from grocy.data_models.chore import Chore
 from grocy.data_models.generic import EntityType
-from grocy.data_models.product import Product
-from grocy.grocy_api_client import CurrentVolatileStockResponse
 
 from .const import (
     ATTR_BATTERIES,
@@ -171,34 +169,16 @@ class GrocyData:
         """Update expiring products data."""
 
         def wrapper():
-            if self.due_soon_days is not None:
-                # Pass the Grocy-configured due_soon_days to the API.
-                # Without this, the API defaults to 5 days regardless of the
-                # STOCK_DUE_SOON_DAYS system setting.
-                api_client = self.api._api_client
-                _LOGGER.debug(
-                    "Fetching expiring products from stock/volatile with due_soon_days=%s",
-                    self.due_soon_days,
-                )
-                raw = api_client._do_get_request(
-                    f"stock/volatile?due_soon_days={self.due_soon_days}"
-                )
-                if not raw:
-                    _LOGGER.debug("stock/volatile returned empty payload")
-                    return []
-                volatile = CurrentVolatileStockResponse(**raw)
-                _LOGGER.debug(
-                    "stock/volatile due_products count=%s",
-                    len(volatile.due_products or []),
-                )
-                products = [
-                    Product.from_stock_response(r)
-                    for r in (volatile.due_products or [])
-                ]
-                for item in products:
-                    item.get_details(api_client)
-                return products
-            return self.api.stock.due_products(get_details=True)
+            # Pass the Grocy-configured due_soon_days through. Without it the
+            # API defaults to 5 days regardless of the STOCK_DUE_SOON_DAYS
+            # system setting.
+            _LOGGER.debug(
+                "Fetching expiring products with due_soon_days=%s",
+                self.due_soon_days,
+            )
+            return self.api.stock.due_products(
+                get_details=True, due_soon_days=self.due_soon_days
+            )
 
         return await self.hass.async_add_executor_job(wrapper)
 

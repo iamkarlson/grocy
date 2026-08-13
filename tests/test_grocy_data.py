@@ -187,12 +187,14 @@ async def test_async_update_shopping_list(grocy_data) -> None:
 @pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_async_update_expiring_products(grocy_data) -> None:
-    """Verify expiring products falls back to default when due_soon_days is unset."""
+    """Verify Grocy's own default window is used when due_soon_days is unset."""
     product = DummyProduct()
     grocy_data.api.stock.due_products.return_value = [product]
     result = await grocy_data.async_update_expiring_products()
     assert result == [product]
-    grocy_data.api.stock.due_products.assert_called_once_with(get_details=True)
+    grocy_data.api.stock.due_products.assert_called_once_with(
+        get_details=True, due_soon_days=None
+    )
 
 
 @pytest.mark.feature("stock_management")
@@ -200,29 +202,29 @@ async def test_async_update_expiring_products(grocy_data) -> None:
 async def test_async_update_expiring_products_uses_due_soon_days(grocy_data) -> None:
     """Verify due_soon_days is passed to the API when configured."""
     grocy_data.due_soon_days = 7
-    grocy_data.api._api_client._do_get_request.return_value = {"due_products": []}
+    grocy_data.api.stock.due_products.return_value = []
 
     result = await grocy_data.async_update_expiring_products()
 
     assert result == []
-    grocy_data.api._api_client._do_get_request.assert_called_once_with(
-        f"stock/volatile?due_soon_days={grocy_data.due_soon_days}"
+    grocy_data.api.stock.due_products.assert_called_once_with(
+        get_details=True, due_soon_days=7
     )
-    grocy_data.api.stock.due_products.assert_not_called()
 
 
 @pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
-async def test_async_update_expiring_products_due_soon_days_none_response(
-    grocy_data,
-) -> None:
-    """Verify empty list returned when API returns None for due_soon_days path."""
-    grocy_data.due_soon_days = 5
-    grocy_data.api._api_client._do_get_request.return_value = None
+async def test_async_update_expiring_products_due_soon_days_zero(grocy_data) -> None:
+    """Zero is a real window, not an "unset" sentinel, and must be forwarded."""
+    grocy_data.due_soon_days = 0
+    grocy_data.api.stock.due_products.return_value = []
 
     result = await grocy_data.async_update_expiring_products()
 
     assert result == []
+    grocy_data.api.stock.due_products.assert_called_once_with(
+        get_details=True, due_soon_days=0
+    )
 
 
 # ─── async_update_expired_products ────────────────────────────────────────────
