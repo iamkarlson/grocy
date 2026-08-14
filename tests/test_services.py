@@ -351,6 +351,22 @@ async def test_async_force_update_entity_updates_matching_entity() -> None:
 
 @pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
+async def test_async_force_update_entity_skips_entity_without_hass() -> None:
+    """Verify force update skips entities that are not attached to hass."""
+    entity = SimpleNamespace(
+        entity_description=SimpleNamespace(key=services.ATTR_TASKS),
+        hass=None,
+        async_update_ha_state=AsyncMock(),
+    )
+    coordinator = SimpleNamespace(entities=[entity])
+
+    await services._async_force_update_entity(coordinator, services.ATTR_TASKS)
+
+    entity.async_update_ha_state.assert_not_awaited()
+
+
+@pytest.mark.feature("cross_cutting")
+@pytest.mark.asyncio
 async def test_async_force_update_entity_ignores_missing() -> None:
     """Verify force update handles missing entity."""
     coordinator = SimpleNamespace(entities=[])

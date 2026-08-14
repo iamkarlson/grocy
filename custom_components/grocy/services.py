@@ -500,8 +500,12 @@ async def _async_force_update_entity(
         ),
         None,
     )
-    if entity:
-        await entity.async_update_ha_state(force_refresh=True)
+    if entity is None:
+        return
+    if hasattr(entity, "hass") and entity.hass is None:
+        return
+
+    await entity.async_update_ha_state(force_refresh=True)
 
 
 async def async_sync_calendar_service(

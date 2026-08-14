@@ -1,19 +1,36 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": ["config:recommended", ":dependencyDashboard"],
   "packageRules": [
     {
-      "matchManagers": ["pep621", "pip_requirements"],
+      "matchManagers": ["pep621"],
       "groupName": "python dependencies"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions"
+    },
+    {
+      "description": "manifest.json is what Home Assistant actually installs, so keep it in the same PR as pyproject.toml",
+      "matchManagers": ["pep621", "custom.regex"],
+      "matchPackageNames": ["grocy-py", "icalendar"],
+      "groupName": "grocy integration requirements"
     }
   ],
   "customManagers": [
     {
+      "description": "Runtime requirements pinned in the Home Assistant manifest",
       "customType": "regex",
-      "fileMatch": ["custom_components/.+/manifest\\.json$"],
-      "matchStrings": [
-        "\"(?<depName>[a-zA-Z0-9_-]+)==(?<currentValue>[^\"]+)\""
-      ],
+      "managerFilePatterns": ["/custom_components/.+/manifest\\.json$/"],
+      "matchStrings": ["\"(?<depName>[a-zA-Z0-9_-]+)==(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "pypi"
+    },
+    {
+      "description": "Minimum Home Assistant version advertised to HACS",
+      "customType": "regex",
+      "managerFilePatterns": ["/^hacs\\.json$/"],
+      "matchStrings": ["\"homeassistant\"\\s*:\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "homeassistant",
       "datasourceTemplate": "pypi"
     }
   ]

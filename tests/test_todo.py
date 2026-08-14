@@ -308,6 +308,22 @@ def test_todo_item_from_meal_plan_item() -> None:
     assert item.status == TodoItemStatus.COMPLETED
 
 
+@pytest.mark.feature("meal_planning")
+def test_todo_item_from_meal_plan_item_missing_recipe() -> None:
+    """Verify meal plan item with missing recipe does not raise and uses fallback."""
+    mpi = MealPlanItem(
+        id=51,
+        day=dt.date.today() + dt.timedelta(days=1),
+        recipe=None,
+        type=MealPlanItemType.RECIPE,
+    )
+    item = GrocyTodoItem(mpi, ATTR_MEAL_PLAN)
+
+    assert item.uid == "51"
+    assert item.summary == "Unknown recipe"
+    assert item.description is None
+
+
 # ─── GrocyTodoItem from MealPlanItemWrapper ───────────────────────────────────
 
 
