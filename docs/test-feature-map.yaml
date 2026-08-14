@@ -49,7 +49,7 @@ features:
           - test_async_update_stock_empty
           - test_async_update_expiring_products
           - test_async_update_expiring_products_uses_due_soon_days
-          - test_async_update_expiring_products_due_soon_days_none_response
+          - test_async_update_expiring_products_due_soon_days_zero
           - test_async_update_expired_products
           - test_async_update_overdue_products
           - test_async_update_missing_products
@@ -173,6 +173,7 @@ features:
       - file: tests/test_entities.py
         functions:
           - test_sensor_meal_plan_counts
+          - test_sensor_recipes_counts
       - file: tests/test_services.py
         functions:
           - test_consume_recipe_service
@@ -181,12 +182,14 @@ features:
         functions:
           - test_todo_item_from_meal_plan_item
           - test_todo_item_from_meal_plan_item_wrapper
+          - test_todo_item_from_meal_plan_item_missing_recipe
           - test_async_update_todo_item_complete_meal_plan
           - test_async_update_todo_item_meal_plan_needs_action_raises
       - file: tests/test_grocy_data.py
         functions:
           - test_async_update_meal_plan_sorts_by_day
           - test_async_update_meal_plan_empty
+          - test_async_update_recipes
       - file: tests/test_helpers.py
         functions:
           - test_meal_plan_item_wrapper_generates_picture_url
@@ -268,6 +271,8 @@ features:
           - test_reauth_step_shows_confirm_form
           - test_reauth_confirm_updates_entry
           - test_reauth_confirm_handles_error
+          - test_migrate_entry_v1_adds_calendar_defaults
+          - test_migrate_entry_v2_is_left_alone
       - file: tests/test_init.py
         functions:
           - test_async_setup_entry_initializes_integration
@@ -328,6 +333,7 @@ cross_cutting:
         - test_async_unload_services_noop_if_not_registered
         - test_async_force_update_entity_updates_matching_entity
         - test_async_force_update_entity_ignores_missing
+        - test_async_force_update_entity_skips_entity_without_hass
     - file: tests/test_grocy_data.py
       functions:
         - test_async_update_data_dispatches_to_correct_method

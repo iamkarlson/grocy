@@ -17,7 +17,7 @@ from homeassistant.components.todo import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from grocy.data_models.battery import Battery
 from grocy.data_models.chore import Chore
@@ -65,7 +65,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ):
     """Do setup todo platform."""
     coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
@@ -73,7 +73,6 @@ async def async_setup_entry(
     for description in TODOS:
         if description.exists_fn(coordinator.available_entities):
             entity = GrocyTodoListEntity(coordinator, description, config_entry)
-            coordinator.entities.append(entity)
             entities.append(entity)
         else:
             _LOGGER.debug(
@@ -82,6 +81,7 @@ async def async_setup_entry(
             )
 
     async_add_entities(entities, True)
+    coordinator.entities.extend(entities)
 
 
 @dataclass
@@ -188,22 +188,45 @@ class GrocyTodoItem(TodoItem):
         elif isinstance(item, MealPlanItem):
             due = item.day
             days_until = _calculate_days_until(due, True)
+            recipe = getattr(item, "recipe", None)
+            summary = (
+                recipe.name
+                if (recipe and getattr(recipe, "name", None))
+                else "Unknown recipe"
+            )
+            description = (
+                recipe.description
+                if (recipe and getattr(recipe, "description", None))
+                else None
+            )
             super().__init__(
                 uid=item.id.__str__(),
-                summary=item.recipe.name,
+                summary=summary,
                 due=due,
                 status=_calculate_item_status(days_until),
-                description=item.recipe.description or None,
+                description=description,
             )
         elif isinstance(item, MealPlanItemWrapper):
             due = item.meal_plan.day
             days_until = _calculate_days_until(due, True)
+            mp = item.meal_plan
+            recipe = getattr(mp, "recipe", None)
+            summary = (
+                recipe.name
+                if (recipe and getattr(recipe, "name", None))
+                else "Unknown recipe"
+            )
+            description = (
+                recipe.description
+                if (recipe and getattr(recipe, "description", None))
+                else None
+            )
             super().__init__(
-                uid=item.meal_plan.id.__str__(),
-                summary=item.meal_plan.recipe.name,
+                uid=mp.id.__str__(),
+                summary=summary,
                 due=due,
                 status=_calculate_item_status(days_until),
-                description=item.meal_plan.recipe.description or None,
+                description=description,
             )
         elif isinstance(item, Product):
             super().__init__(
@@ -255,16 +278,10 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
         )
         if description.key in [ATTR_BATTERIES, ATTR_CHORES, ATTR_TASKS]:
             self._attr_supported_features |= TodoListEntityFeature.CREATE_TODO_ITEM
-        if description.key in []:
-            self._attr_supported_features |= (
-                TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
-            )
-        if description.key in []:
-            self._attr_supported_features |= TodoListEntityFeature.SET_DUE_DATE_ON_ITEM
-        if description.key in []:
-            self._attr_supported_features |= (
-                TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM
-            )
+        # SET_DESCRIPTION_ON_ITEM, SET_DUE_DATE_ON_ITEM and
+        # SET_DUE_DATETIME_ON_ITEM are deliberately not advertised:
+        # async_update_todo_item only handles status changes, so offering the
+        # edit affordances in the UI would surface fields we cannot write back.
         super().__init__(coordinator, description, config_entry)
 
     def _get_grocy_item(self, item_id: str):

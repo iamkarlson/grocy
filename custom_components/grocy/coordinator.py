@@ -25,7 +25,7 @@ from .const import (
     SCAN_INTERVAL,
 )
 from .grocy_data import GrocyData
-from .helpers import MealPlanItemWrapper, extract_base_url_and_path
+from .helpers import MealPlanItemWrapper, RecipeWrapper, extract_base_url_and_path
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,6 +42,7 @@ class GrocyCoordinatorData:
     overdue_chores: list[Chore] | None = None
     overdue_products: list[Product] | None = None
     overdue_tasks: list[Task] | None = None
+    recipes: list[RecipeWrapper] | None = None
     shopping_list: list[ShoppingListProduct] | None = None
     stock: list[Product] | None = None
     tasks: list[Task] | None = None
@@ -65,11 +66,10 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=config_entry,
             name=DOMAIN,
             update_interval=SCAN_INTERVAL,
         )
-
-        self.config_entry = config_entry
 
         url = self.config_entry.data[CONF_URL]
         api_key = self.config_entry.data[CONF_API_KEY]
@@ -81,7 +81,7 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
         self.grocy_api = Grocy(
             base_url, api_key, path=path, port=port, verify_ssl=verify_ssl
         )
-        self.grocy_data = GrocyData(hass, self.grocy_api)
+        self.grocy_data = GrocyData(hass, self.grocy_api, url)
 
         self.available_entities: list[str] = []
         self.entities: list[Entity] = []

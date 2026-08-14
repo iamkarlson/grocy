@@ -28,6 +28,7 @@ from custom_components.grocy.const import (
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
+    ATTR_RECIPES,
     CONF_API_KEY,
     CONF_PORT,
     CONF_URL,
@@ -53,7 +54,7 @@ def grocy_data(hass, mock_grocy) -> GrocyData:
         return func(*args)
 
     hass.async_add_executor_job = AsyncMock(side_effect=immediate_executor)
-    return GrocyData(hass, mock_grocy)
+    return GrocyData(hass, mock_grocy, "https://exemple.com")
 
 
 # ─── async_update_data dispatch ───────────────────────────────────────────────
@@ -186,12 +187,14 @@ async def test_async_update_shopping_list(grocy_data) -> None:
 @pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_async_update_expiring_products(grocy_data) -> None:
-    """Verify expiring products falls back to default when due_soon_days is unset."""
+    """Verify Grocy's own default window is used when due_soon_days is unset."""
     product = DummyProduct()
     grocy_data.api.stock.due_products.return_value = [product]
     result = await grocy_data.async_update_expiring_products()
     assert result == [product]
-    grocy_data.api.stock.due_products.assert_called_once_with(get_details=True)
+    grocy_data.api.stock.due_products.assert_called_once_with(
+        get_details=True, due_soon_days=None
+    )
 
 
 @pytest.mark.feature("stock_management")
@@ -199,29 +202,29 @@ async def test_async_update_expiring_products(grocy_data) -> None:
 async def test_async_update_expiring_products_uses_due_soon_days(grocy_data) -> None:
     """Verify due_soon_days is passed to the API when configured."""
     grocy_data.due_soon_days = 7
-    grocy_data.api._api_client._do_get_request.return_value = {"due_products": []}
+    grocy_data.api.stock.due_products.return_value = []
 
     result = await grocy_data.async_update_expiring_products()
 
     assert result == []
-    grocy_data.api._api_client._do_get_request.assert_called_once_with(
-        f"stock/volatile?due_soon_days={grocy_data.due_soon_days}"
+    grocy_data.api.stock.due_products.assert_called_once_with(
+        get_details=True, due_soon_days=7
     )
-    grocy_data.api.stock.due_products.assert_not_called()
 
 
 @pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
-async def test_async_update_expiring_products_due_soon_days_none_response(
-    grocy_data,
-) -> None:
-    """Verify empty list returned when API returns None for due_soon_days path."""
-    grocy_data.due_soon_days = 5
-    grocy_data.api._api_client._do_get_request.return_value = None
+async def test_async_update_expiring_products_due_soon_days_zero(grocy_data) -> None:
+    """Zero is a real window, not an "unset" sentinel, and must be forwarded."""
+    grocy_data.due_soon_days = 0
+    grocy_data.api.stock.due_products.return_value = []
 
     result = await grocy_data.async_update_expiring_products()
 
     assert result == []
+    grocy_data.api.stock.due_products.assert_called_once_with(
+        get_details=True, due_soon_days=0
+    )
 
 
 # ─── async_update_expired_products ────────────────────────────────────────────
@@ -552,11 +555,59 @@ def test_picture_view_url_pattern() -> None:
 # ─── All entity keys are mapped ──────────────────────────────────────────────
 
 
+# ─── async_update_recipes ───────────────────────────────────────────────
+
+
+@pytest.mark.feature("meal_planning")
+@pytest.mark.asyncio
+async def test_async_update_recipes(grocy_data) -> None:
+    """Verify recipe data fetching and wrapping."""
+    from grocy.grocy_api_client import RecipeFulfillmentResponse
+    from grocy.data_models.generic import EntityType
+
+    recipe_dict = {
+        "id": 1,
+        "name": "Pizza",
+        "description": "Tasty",
+        "picture_file_name": "pizza.jpg",
+        "type": "normal"
+    }
+    grocy_data.api.generic.list.return_value = [recipe_dict]
+
+    fulfillment_response = RecipeFulfillmentResponse(
+        recipe_id=1,
+        need_fulfilled=True,
+        need_fulfilled_with_shopping_list=False,
+    )
+    grocy_data.api.recipes.all_fulfillment.return_value = [fulfillment_response]
+
+    result = await grocy_data.async_update_recipes()
+
+    assert len(result) == 1
+    wrapped = result[0]
+    assert wrapped.recipe == recipe_dict
+    assert wrapped.all_ingredients_in_stock is True
+    assert wrapped.picture_url == "/api/grocy/recipepictures/cGl6emEuanBn"
+    assert wrapped.as_dict() == {
+        "id": 1,
+        "name": "Pizza",
+        "description": "Tasty",
+        "picture_file_name": "pizza.jpg",
+        "all_ingredients_in_stock": True,
+        "picture_url": "/api/grocy/recipepictures/cGl6emEuanBn",
+        "type": "normal",
+        "url": "https://exemple.com/recipes?recipe=1#fullscreen",
+    }
+
+    grocy_data.api.generic.list.assert_called_once_with(EntityType.RECIPES)
+    grocy_data.api.recipes.all_fulfillment.assert_called_once()
+
+
 @pytest.mark.feature("cross_cutting")
 def test_all_entity_keys_have_update_methods(hass, mock_grocy) -> None:
-    """Verify all 13 entity keys mapped to update methods."""
+    """Verify all 14 entity keys mapped to update methods."""
     hass.async_add_executor_job = AsyncMock()
-    data = GrocyData(hass, mock_grocy)
+    data = GrocyData(hass, mock_grocy, "https://exemple.com")
     expected_keys = {
         ATTR_STOCK,
         ATTR_CHORES,
@@ -571,5 +622,6 @@ def test_all_entity_keys_have_update_methods(hass, mock_grocy) -> None:
         ATTR_OVERDUE_TASKS,
         ATTR_BATTERIES,
         ATTR_OVERDUE_BATTERIES,
+        ATTR_RECIPES,
     }
     assert set(data.entity_update_method.keys()) == expected_keys

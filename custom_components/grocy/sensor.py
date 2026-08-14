@@ -13,13 +13,14 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
 
 from .const import (
     ATTR_BATTERIES,
     ATTR_CHORES,
     ATTR_MEAL_PLAN,
+    ATTR_RECIPES,
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
@@ -28,6 +29,7 @@ from .const import (
     ITEMS,
     MEAL_PLANS,
     PRODUCTS,
+    RECIPES,
     TASKS,
 )
 from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
@@ -40,7 +42,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ):
     """Do setup sensor platform."""
     coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
@@ -48,7 +50,6 @@ async def async_setup_entry(
     for description in SENSORS:
         if description.exists_fn(coordinator.available_entities):
             entity = GrocySensorEntity(coordinator, description, config_entry)
-            coordinator.entities.append(entity)
             entities.append(entity)
         else:
             _LOGGER.debug(
@@ -57,6 +58,7 @@ async def async_setup_entry(
             )
 
     async_add_entities(entities, True)
+    coordinator.entities.extend(entities)
 
 
 @dataclass
@@ -138,6 +140,18 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
         exists_fn=lambda entities: ATTR_BATTERIES in entities,
         attributes_fn=lambda data: {
             "batteries": [model_to_dict(x) for x in data],
+            "count": len(data),
+        },
+    ),
+    GrocySensorEntityDescription(
+        key=ATTR_RECIPES,
+        name="Grocy recipes",
+        native_unit_of_measurement=RECIPES,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:book-open-variant",
+        exists_fn=lambda entities: ATTR_RECIPES in entities,
+        attributes_fn=lambda data: {
+            "recipes": [model_to_dict(x) for x in data],
             "count": len(data),
         },
     ),

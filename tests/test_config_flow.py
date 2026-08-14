@@ -12,12 +12,18 @@ import pytest
 from homeassistant.config_entries import SOURCE_RECONFIGURE, SOURCE_REAUTH
 from homeassistant.data_entry_flow import FlowResultType
 
-from custom_components.grocy.config_flow import GrocyFlowHandler
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from custom_components.grocy.config_flow import GrocyFlowHandler, async_migrate_entry
 from custom_components.grocy.const import (
     CONF_API_KEY,
+    CONF_CALENDAR_FIX_TIMEZONE,
+    CONF_CALENDAR_SYNC_INTERVAL,
     CONF_PORT,
     CONF_URL,
     CONF_VERIFY_SSL,
+    DEFAULT_CALENDAR_SYNC_INTERVAL,
+    DOMAIN,
 )
 
 pytestmark = pytest.mark.feature("configuration_setup")
@@ -305,3 +311,55 @@ async def test_reauth_confirm_handles_error(hass, mock_config_entry) -> None:
 
     assert result["type"] == FlowResultType.FORM
     assert result["errors"] == {"base": "invalid_auth"}
+
+
+async def test_migrate_entry_v1_adds_calendar_defaults(hass, config_entry_data) -> None:
+    """A v1 entry gains the calendar options and becomes v2.
+
+    Entries created before ConfigFlow.VERSION was raised to 2 are still out in
+    the wild. If this path breaks, an upgrade bricks those installs.
+    """
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Grocy",
+        data=config_entry_data,
+        entry_id="v1-entry",
+        version=1,
+    )
+    entry.add_to_hass(hass)
+
+    assert CONF_CALENDAR_SYNC_INTERVAL not in entry.data
+    assert CONF_CALENDAR_FIX_TIMEZONE not in entry.data
+
+    assert await async_migrate_entry(hass, entry) is True
+
+    assert entry.version == 2
+    assert entry.data[CONF_CALENDAR_SYNC_INTERVAL] == DEFAULT_CALENDAR_SYNC_INTERVAL
+    assert entry.data[CONF_CALENDAR_FIX_TIMEZONE] is True
+
+    # The original credentials must survive the migration untouched.
+    for key, value in config_entry_data.items():
+        assert entry.data[key] == value
+
+
+async def test_migrate_entry_v2_is_left_alone(hass, config_entry_data) -> None:
+    """Migration is idempotent: an already-migrated entry is not rewritten."""
+    data = {
+        **config_entry_data,
+        CONF_CALENDAR_SYNC_INTERVAL: 42,
+        CONF_CALENDAR_FIX_TIMEZONE: False,
+    }
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Grocy",
+        data=data,
+        entry_id="v2-entry",
+        version=2,
+    )
+    entry.add_to_hass(hass)
+
+    assert await async_migrate_entry(hass, entry) is True
+
+    assert entry.version == 2
+    assert entry.data[CONF_CALENDAR_SYNC_INTERVAL] == 42
+    assert entry.data[CONF_CALENDAR_FIX_TIMEZONE] is False

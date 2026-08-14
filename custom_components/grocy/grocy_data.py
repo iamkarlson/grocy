@@ -14,8 +14,7 @@ from homeassistant.helpers.http import HomeAssistantView
 from grocy import Grocy
 from grocy.data_models.battery import Battery
 from grocy.data_models.chore import Chore
-from grocy.data_models.product import Product
-from grocy.grocy_api_client import CurrentVolatileStockResponse
+from grocy.data_models.generic import EntityType
 
 from .const import (
     ATTR_BATTERIES,
@@ -28,6 +27,7 @@ from .const import (
     ATTR_OVERDUE_CHORES,
     ATTR_OVERDUE_PRODUCTS,
     ATTR_OVERDUE_TASKS,
+    ATTR_RECIPES,
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
@@ -35,7 +35,7 @@ from .const import (
     CONF_PORT,
     CONF_URL,
 )
-from .helpers import MealPlanItemWrapper, extract_base_url_and_path
+from .helpers import MealPlanItemWrapper, RecipeWrapper, extract_base_url_and_path
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ _LOGGER = logging.getLogger(__name__)
 class GrocyData:
     """Handles communication and gets the data."""
 
-    def __init__(self, hass: HomeAssistant, api: Grocy) -> None:
+    def __init__(self, hass: HomeAssistant, api: Grocy, grocy_url: str) -> None:
         """Initialize Grocy data."""
         self.hass = hass
         self.api = api
@@ -62,7 +62,9 @@ class GrocyData:
             ATTR_OVERDUE_TASKS: self.async_update_overdue_tasks,
             ATTR_BATTERIES: self.async_update_batteries,
             ATTR_OVERDUE_BATTERIES: self.async_update_overdue_batteries,
+            ATTR_RECIPES: self.async_update_recipes,
         }
+        self._grocy_url = grocy_url
 
     async def async_update_data(self, entity_key):
         """Update data."""
@@ -124,7 +126,7 @@ class GrocyData:
                             key,
                         )
                         break
-                    except (TypeError, ValueError):
+                    except TypeError, ValueError:
                         _LOGGER.debug(
                             "Ignoring invalid due soon setting value for key %s: %r",
                             key,
@@ -167,34 +169,16 @@ class GrocyData:
         """Update expiring products data."""
 
         def wrapper():
-            if self.due_soon_days is not None:
-                # Pass the Grocy-configured due_soon_days to the API.
-                # Without this, the API defaults to 5 days regardless of the
-                # STOCK_DUE_SOON_DAYS system setting.
-                api_client = self.api._api_client
-                _LOGGER.debug(
-                    "Fetching expiring products from stock/volatile with due_soon_days=%s",
-                    self.due_soon_days,
-                )
-                raw = api_client._do_get_request(
-                    f"stock/volatile?due_soon_days={self.due_soon_days}"
-                )
-                if not raw:
-                    _LOGGER.debug("stock/volatile returned empty payload")
-                    return []
-                volatile = CurrentVolatileStockResponse(**raw)
-                _LOGGER.debug(
-                    "stock/volatile due_products count=%s",
-                    len(volatile.due_products or []),
-                )
-                products = [
-                    Product.from_stock_response(r)
-                    for r in (volatile.due_products or [])
-                ]
-                for item in products:
-                    item.get_details(api_client)
-                return products
-            return self.api.stock.due_products(get_details=True)
+            # Pass the Grocy-configured due_soon_days through. Without it the
+            # API defaults to 5 days regardless of the STOCK_DUE_SOON_DAYS
+            # system setting.
+            _LOGGER.debug(
+                "Fetching expiring products with due_soon_days=%s",
+                self.due_soon_days,
+            )
+            return self.api.stock.due_products(
+                get_details=True, due_soon_days=self.due_soon_days
+            )
 
         return await self.hass.async_add_executor_job(wrapper)
 
@@ -252,6 +236,26 @@ class GrocyData:
         def wrapper():
             filter_query = [f"next_estimated_charge_time<{datetime.now()}"]
             return self.api.batteries.list(filter_query, get_details=True)
+
+        return await self.hass.async_add_executor_job(wrapper)
+
+    async def async_update_recipes(self) -> list[RecipeWrapper]:
+        """Update recipes data."""
+
+        def wrapper() -> list[RecipeWrapper]:
+            recipes = self.api.generic.list(EntityType.RECIPES) or []
+            fulfillment = self.api.recipes.all_fulfillment() or []
+
+            fulfillment_map = {f.recipe_id: f.need_fulfilled for f in fulfillment}
+
+            wrapped_recipes = []
+            for r in recipes:
+                recipe_id = r.get("id")
+                need_fulfilled = fulfillment_map.get(recipe_id, False)
+                recipe_wrapper = RecipeWrapper(r, need_fulfilled, self._grocy_url)
+                if recipe_wrapper.recipe["type"] == "normal":
+                    wrapped_recipes.append(recipe_wrapper)
+            return wrapped_recipes
 
         return await self.hass.async_add_executor_job(wrapper)
 

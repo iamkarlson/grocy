@@ -17,7 +17,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.util import dt as dt_util
 
@@ -43,14 +43,14 @@ HTTP_OK = 200
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up Grocy calendar platform."""
     coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
 
     entity = GrocyCalendarEntity(coordinator, config_entry)
-    coordinator.entities.append(entity)
     async_add_entities([entity], True)
+    coordinator.entities.append(entity)
 
 
 class GrocyCalendarEntity(CalendarEntity):

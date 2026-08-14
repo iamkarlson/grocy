@@ -8,16 +8,24 @@ jobs:
   release_zip_file:
     name: Prepare and upload release asset
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # attach grocy.zip to the release
     env:
       GROCY_ROOT_DIR: "${{ github.workspace }}/custom_components/grocy"
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set release version number in files
         run: |
-          sed -i '/VERSION = /c\VERSION = "${{ github.ref_name }}"' "${{ env.GROCY_ROOT_DIR }}/const.py"
-          (jq '.version = "${{ github.ref_name }}"' "${{ env.GROCY_ROOT_DIR }}/manifest.json") > "${{ env.GROCY_ROOT_DIR }}/manifest.json.tmp"
-          mv "${{ env.GROCY_ROOT_DIR }}/manifest.json.tmp" "${{ env.GROCY_ROOT_DIR }}/manifest.json"
+          set -euo pipefail
+          # Tags are prefixed with "v"; the manifest version is not. Strip it so
+          # the published artifact matches the repo and stays valid semver —
+          # releases up to v1.15.0 shipped "version": "v1.15.0".
+          version="${GITHUB_REF_NAME#v}"
+          echo "Releasing $version from tag $GITHUB_REF_NAME"
+          sed -i "/VERSION = /c\\VERSION = \"${version}\"" "${GROCY_ROOT_DIR}/const.py"
+          jq --arg v "$version" '.version = $v' "${GROCY_ROOT_DIR}/manifest.json" > "${GROCY_ROOT_DIR}/manifest.json.tmp"
+          mv "${GROCY_ROOT_DIR}/manifest.json.tmp" "${GROCY_ROOT_DIR}/manifest.json"
 
       - name: Add Grocy folder to zip archive
         run: |
@@ -25,11 +33,6 @@ jobs:
           zip grocy.zip -r ./
 
       - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v3
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: "${{ env.GROCY_ROOT_DIR }}/grocy.zip"
-          asset_name: grocy.zip
-          asset_content_type: application/zip
+          files: "${{ env.GROCY_ROOT_DIR }}/grocy.zip"
