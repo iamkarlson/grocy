@@ -26,6 +26,13 @@ add_product_to_stock:
       description: The purchase price per purchase quantity unit of the added product
       selector:
         text:
+    best_before_date:
+      name: Best Before Date
+      example: '2019-01-19'
+      description: The best before date of the added product (YYYY-MM-DD). Defaults to
+        the product's configured default best before days when omitted
+      selector:
+        date:
 
 open_product:
   name: Open Product

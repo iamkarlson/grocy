@@ -29,6 +29,10 @@ features:
           - test_add_product_service_converts_price
           - test_add_product_service_defaults_price_zero
           - test_add_product_service_no_price_key
+          - test_add_product_service_passes_best_before_date
+          - test_add_product_service_no_best_before_date
+          - test_add_product_schema_coerces_best_before_date
+          - test_add_product_schema_rejects_bad_best_before_date
           - test_open_product_service_uses_defaults
           - test_open_product_with_substitution
           - test_consume_product_service_handles_transaction_type

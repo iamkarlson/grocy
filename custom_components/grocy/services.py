@@ -5,6 +5,7 @@ from __future__ import annotations
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.helpers import config_validation as cv
 from homeassistant.util import dt as dt_util
 
 from grocy.data_models.generic import EntityType
@@ -16,6 +17,7 @@ from .coordinator import GrocyDataUpdateCoordinator
 SERVICE_PRODUCT_ID = "product_id"
 SERVICE_AMOUNT = "amount"
 SERVICE_PRICE = "price"
+SERVICE_BEST_BEFORE_DATE = "best_before_date"
 SERVICE_SHOPPING_LIST_ID = "shopping_list_id"
 SERVICE_SPOILED = "spoiled"
 SERVICE_SUBPRODUCT_SUBSTITUTION = "allow_subproduct_substitution"
@@ -52,6 +54,7 @@ SERVICE_ADD_PRODUCT_SCHEMA = vol.All(
             vol.Required(SERVICE_PRODUCT_ID): vol.Coerce(int),
             vol.Required(SERVICE_AMOUNT): vol.Coerce(float),
             vol.Optional(SERVICE_PRICE): str,
+            vol.Optional(SERVICE_BEST_BEFORE_DATE): cv.date,
         }
     )
 )
@@ -262,9 +265,12 @@ async def async_add_product_service(
     amount = data[SERVICE_AMOUNT]
     price_raw = data.get(SERVICE_PRICE)
     price = float(price_raw) if price_raw not in (None, "") else 0.0
+    best_before_date = data.get(SERVICE_BEST_BEFORE_DATE)
 
     def wrapper():
-        coordinator.grocy_api.stock.add(product_id, amount, price)
+        coordinator.grocy_api.stock.add(
+            product_id, amount, price, best_before_date=best_before_date
+        )
 
     await hass.async_add_executor_job(wrapper)
 

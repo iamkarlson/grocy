@@ -65,6 +65,7 @@ Add a quantity of a product to stock.
 | `product_id` | int | Yes | Grocy product ID |
 | `amount` | float | Yes | Quantity to add |
 | `price` | string | No | Price per unit (empty or omitted defaults to 0.0) |
+| `best_before_date` | string | No | Best before date as `YYYY-MM-DD`. Omitted means Grocy applies the product's default best before days |
 
 #### `grocy.consume_product_from_stock`
 
