@@ -7,10 +7,12 @@ See: docs/FEATURES.md
 
 from __future__ import annotations
 
+import datetime as dt
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+import voluptuous as vol
 from grocy.data_models.generic import EntityType
 from grocy.grocy_api_client import TransactionType
 
@@ -43,7 +45,9 @@ async def test_add_product_service_converts_price(hass, coordinator) -> None:
 
     await services.async_add_product_service(hass, coordinator, data)
 
-    coordinator.grocy_api.stock.add.assert_called_once_with(5, 2.0, 1.25)
+    coordinator.grocy_api.stock.add.assert_called_once_with(
+        5, 2.0, 1.25, best_before_date=None
+    )
 
 
 @pytest.mark.feature("stock_management")
@@ -58,7 +62,9 @@ async def test_add_product_service_defaults_price_zero(hass, coordinator) -> Non
 
     await services.async_add_product_service(hass, coordinator, data)
 
-    coordinator.grocy_api.stock.add.assert_called_once_with(8, 1.0, 0.0)
+    coordinator.grocy_api.stock.add.assert_called_once_with(
+        8, 1.0, 0.0, best_before_date=None
+    )
 
 
 @pytest.mark.feature("stock_management")
@@ -468,7 +474,74 @@ async def test_add_product_service_no_price_key(hass, coordinator) -> None:
 
     await services.async_add_product_service(hass, coordinator, data)
 
-    coordinator.grocy_api.stock.add.assert_called_once_with(10, 5.0, 0.0)
+    coordinator.grocy_api.stock.add.assert_called_once_with(
+        10, 5.0, 0.0, best_before_date=None
+    )
+
+
+# ─── add_product best before date ────────────────────────────────────────────
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_add_product_service_passes_best_before_date(hass, coordinator) -> None:
+    """Verify the best before date is forwarded to Grocy."""
+    data = {
+        services.SERVICE_PRODUCT_ID: 5,
+        services.SERVICE_AMOUNT: 1.0,
+        services.SERVICE_PRICE: "1.99",
+        services.SERVICE_BEST_BEFORE_DATE: dt.date(2019, 1, 19),
+    }
+
+    await services.async_add_product_service(hass, coordinator, data)
+
+    coordinator.grocy_api.stock.add.assert_called_once_with(
+        5, 1.0, 1.99, best_before_date=dt.date(2019, 1, 19)
+    )
+
+
+@pytest.mark.feature("stock_management")
+def test_add_product_schema_coerces_best_before_date() -> None:
+    """Verify the schema turns a date string into the date grocy-py expects."""
+    validated = services.SERVICE_ADD_PRODUCT_SCHEMA(
+        {
+            services.SERVICE_PRODUCT_ID: "3",
+            services.SERVICE_AMOUNT: "1",
+            services.SERVICE_BEST_BEFORE_DATE: "2019-01-19",
+        }
+    )
+
+    assert validated[services.SERVICE_BEST_BEFORE_DATE] == dt.date(2019, 1, 19)
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.parametrize("value", ["", "19-01-2019", "not-a-date"])
+def test_add_product_schema_rejects_bad_best_before_date(value) -> None:
+    """Verify an unparseable best before date is rejected, not silently dropped."""
+    with pytest.raises(vol.Invalid):
+        services.SERVICE_ADD_PRODUCT_SCHEMA(
+            {
+                services.SERVICE_PRODUCT_ID: "3",
+                services.SERVICE_AMOUNT: "1",
+                services.SERVICE_BEST_BEFORE_DATE: value,
+            }
+        )
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_add_product_service_no_best_before_date(hass, coordinator) -> None:
+    """Verify an omitted best before date is sent as None."""
+    data = {
+        services.SERVICE_PRODUCT_ID: 7,
+        services.SERVICE_AMOUNT: 1.0,
+    }
+
+    await services.async_add_product_service(hass, coordinator, data)
+
+    coordinator.grocy_api.stock.add.assert_called_once_with(
+        7, 1.0, 0.0, best_before_date=None
+    )
 
 
 # ─── execute_chore with empty done_by ────────────────────────────────────────
