@@ -216,6 +216,8 @@ features:
           - test_event_property_returns_next_event
           - test_event_property_returns_none_when_no_events
           - test_http_error_handling
+          - test_ical_fetch_sends_api_key_and_verify_ssl
+          - test_ical_fetch_verifies_ssl_when_configured
           - test_daylight_saving_time_transition
           - test_different_timezone_pacific
           - test_fix_timezone_defaults_to_true

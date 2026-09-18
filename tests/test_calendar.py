@@ -653,6 +653,70 @@ class TestCalendarEntityEdgeCases:
 
         assert entity._events == []
 
+    @pytest.mark.asyncio
+    async def test_ical_fetch_sends_api_key_and_verify_ssl(
+        self,
+        hass,
+        mock_coordinator,
+        calendar_config_entry,
+    ) -> None:
+        """The iCal fetch authenticates and uses the configured SSL setting.
+
+        Grocy 4.7.0 answered the sharing link with 401 unless the API key was
+        sent, and a self-signed instance needs verify_ssl=False on this request
+        too, not only on the sharing-link lookup.
+        """
+        entity = GrocyCalendarEntity(mock_coordinator, calendar_config_entry)
+        entity.hass = hass
+        entity._ical_url = "https://test.local/calendar.ics"
+
+        with patch(
+            "custom_components.grocy.calendar.async_get_clientsession"
+        ) as mock_get_session:
+            session = _create_mock_session(_create_ical_calendar([]))
+            mock_get_session.return_value = session
+
+            start_date = datetime(2026, 2, 1, tzinfo=UTC)
+            end_date = datetime(2026, 2, 28, tzinfo=UTC)
+            await entity._update_events(start_date, end_date)
+
+        mock_get_session.assert_called_once_with(hass, verify_ssl=False)
+        session.get.assert_called_once()
+        assert session.get.call_args.args[0] == "https://test.local/calendar.ics"
+        assert session.get.call_args.kwargs["headers"] == {
+            "GROCY-API-KEY": "test-token"
+        }
+
+    @pytest.mark.asyncio
+    async def test_ical_fetch_verifies_ssl_when_configured(
+        self,
+        hass,
+        mock_coordinator,
+        calendar_config_entry_data,
+    ) -> None:
+        """verify_ssl=True in the entry reaches the iCal request."""
+        entry = MockConfigEntry(
+            domain=DOMAIN,
+            title="Grocy",
+            data={**calendar_config_entry_data, CONF_VERIFY_SSL: True},
+            entry_id="test-calendar-entry-ssl",
+        )
+        entity = GrocyCalendarEntity(mock_coordinator, entry)
+        entity.hass = hass
+        entity._ical_url = "https://test.local/calendar.ics"
+
+        with patch(
+            "custom_components.grocy.calendar.async_get_clientsession"
+        ) as mock_get_session:
+            mock_get_session.return_value = _create_mock_session(
+                _create_ical_calendar([])
+            )
+            await entity._update_events(
+                datetime(2026, 2, 1, tzinfo=UTC), datetime(2026, 2, 28, tzinfo=UTC)
+            )
+
+        mock_get_session.assert_called_once_with(hass, verify_ssl=True)
+
 
 @pytest.mark.feature("calendar")
 class TestCalendarEntityTimezoneEdgeCases:

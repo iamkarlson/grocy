@@ -29,6 +29,7 @@ from .const import (
     CONF_URL,
     CONF_VERIFY_SSL,
     DEFAULT_CALENDAR_SYNC_INTERVAL,
+    DEFAULT_PORT,
     DOMAIN,
     NAME,
     VERSION,
@@ -226,7 +227,7 @@ class GrocyCalendarEntity(CalendarEntity):
         try:
             url = self._config_entry.data[CONF_URL]
             api_key = self._config_entry.data[CONF_API_KEY]
-            port = self._config_entry.data.get(CONF_PORT, 9192)
+            port = self._config_entry.data.get(CONF_PORT, DEFAULT_PORT)
             verify_ssl = self._config_entry.data.get(CONF_VERIFY_SSL, False)
 
             (base_url, path) = extract_base_url_and_path(url)
@@ -261,8 +262,12 @@ class GrocyCalendarEntity(CalendarEntity):
             return
 
         try:
-            session = async_get_clientsession(self.hass)
-            async with session.get(self._ical_url) as response:
+            api_key = self._config_entry.data[CONF_API_KEY]
+            verify_ssl = self._config_entry.data.get(CONF_VERIFY_SSL, False)
+            headers = {"GROCY-API-KEY": api_key}
+
+            session = async_get_clientsession(self.hass, verify_ssl=verify_ssl)
+            async with session.get(self._ical_url, headers=headers) as response:
                 if response.status != HTTP_OK:
                     _LOGGER.error("Failed to fetch iCal data: HTTP %s", response.status)
                     return
