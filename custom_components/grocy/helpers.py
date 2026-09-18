@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import base64
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 from grocy.data_models.meal_items import MealPlanItem
 
@@ -14,6 +14,35 @@ def extract_base_url_and_path(url: str) -> tuple[str, str]:
     parsed_url = urlparse(url)
 
     return (f"{parsed_url.scheme}://{parsed_url.netloc}", parsed_url.path.strip("/"))
+
+
+def split_url_and_port(url: str, port: int) -> tuple[str, int]:
+    """
+    Return the URL without an explicit port, and the port to use.
+
+    A port written into the URL (``http://host:9283``) wins over ``port``,
+    because the integration appends the port field to the URL and
+    ``http://host:9283:9192`` cannot be reached. Without an explicit port
+    both values come back unchanged.
+    """
+    parsed_url = urlparse(url)
+    try:
+        explicit_port = parsed_url.port
+    except ValueError:
+        return url, port
+    if explicit_port is None:
+        return url, port
+
+    host = parsed_url.hostname or ""
+    if ":" in host:
+        host = f"[{host}]"
+    if parsed_url.username:
+        userinfo = parsed_url.username
+        if parsed_url.password:
+            userinfo = f"{userinfo}:{parsed_url.password}"
+        host = f"{userinfo}@{host}"
+
+    return urlunparse(parsed_url._replace(netloc=host)), explicit_port
 
 
 class RecipeWrapper:

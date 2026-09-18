@@ -334,6 +334,7 @@ async def test_migrate_entry_v1_adds_calendar_defaults(hass, config_entry_data) 
     assert await async_migrate_entry(hass, entry) is True
 
     assert entry.version == 2
+    assert entry.minor_version == 2
     assert entry.data[CONF_CALENDAR_SYNC_INTERVAL] == DEFAULT_CALENDAR_SYNC_INTERVAL
     assert entry.data[CONF_CALENDAR_FIX_TIMEZONE] is True
 
@@ -355,11 +356,82 @@ async def test_migrate_entry_v2_is_left_alone(hass, config_entry_data) -> None:
         data=data,
         entry_id="v2-entry",
         version=2,
+        minor_version=2,
     )
     entry.add_to_hass(hass)
 
     assert await async_migrate_entry(hass, entry) is True
 
     assert entry.version == 2
+    assert entry.minor_version == 2
     assert entry.data[CONF_CALENDAR_SYNC_INTERVAL] == 42
     assert entry.data[CONF_CALENDAR_FIX_TIMEZONE] is False
+
+
+async def test_migrate_entry_v2_1_moves_port_from_url(hass, config_entry_data) -> None:
+    """A 2.1 entry whose URL carries a port is repaired and becomes 2.2.
+
+    v1.16.0 appended the port field to such a URL and never connected (#68).
+    """
+    data = {
+        **config_entry_data,
+        CONF_URL: "http://192.168.1.10:9283",
+        CONF_PORT: 9192,
+        CONF_CALENDAR_SYNC_INTERVAL: 42,
+        CONF_CALENDAR_FIX_TIMEZONE: False,
+    }
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Grocy",
+        data=data,
+        entry_id="v2-1-entry",
+        version=2,
+        minor_version=1,
+    )
+    entry.add_to_hass(hass)
+
+    assert await async_migrate_entry(hass, entry) is True
+
+    assert entry.version == 2
+    assert entry.minor_version == 2
+    assert entry.data[CONF_URL] == "http://192.168.1.10"
+    assert entry.data[CONF_PORT] == 9283
+    assert entry.data[CONF_API_KEY] == config_entry_data[CONF_API_KEY]
+    assert entry.data[CONF_CALENDAR_SYNC_INTERVAL] == 42
+
+
+async def test_user_step_moves_port_from_url(hass, config_entry_data) -> None:
+    """A port typed into the URL is used as the port and stripped from the URL."""
+    flow = GrocyFlowHandler()
+    flow.hass = hass
+
+    async def immediate_executor(func, *args):
+        return func(*args)
+
+    hass.async_add_executor_job = AsyncMock(side_effect=immediate_executor)
+
+    user_input = {
+        **config_entry_data,
+        CONF_URL: "http://192.168.1.10:9283/grocy",
+        CONF_PORT: 9192,
+    }
+
+    with patch("custom_components.grocy.config_flow.Grocy") as mock_grocy:
+        client = MagicMock()
+        client.system.info.return_value = {"version": "4.0"}
+        mock_grocy.return_value = client
+
+        result = await flow.async_step_user(user_input)
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_URL] == "http://192.168.1.10/grocy"
+    assert result["data"][CONF_PORT] == 9283
+
+    # The connection test must already use the corrected values.
+    mock_grocy.assert_called_once_with(
+        "http://192.168.1.10",
+        config_entry_data[CONF_API_KEY],
+        port=9283,
+        path="grocy",
+        verify_ssl=config_entry_data[CONF_VERIFY_SSL],
+    )

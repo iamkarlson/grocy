@@ -25,9 +25,28 @@ from .const import (
     DOMAIN,
     NAME,
 )
-from .helpers import extract_base_url_and_path
+from .helpers import extract_base_url_and_path, split_url_and_port
 
 _LOGGER = logging.getLogger(__name__)
+
+# Config entry schema version. Bump MINOR for additive, downgrade-safe changes.
+CONFIG_ENTRY_VERSION = 2
+CONFIG_ENTRY_MINOR_VERSION = 2
+
+
+def _normalize_url_and_port(user_input: dict[str, Any]) -> dict[str, Any]:
+    """Move an explicit port from the URL field into the port field."""
+    url, port = split_url_and_port(
+        user_input[CONF_URL], user_input.get(CONF_PORT, DEFAULT_PORT)
+    )
+    if url != user_input[CONF_URL]:
+        _LOGGER.info(
+            "URL %s carries an explicit port; using port %s and URL %s",
+            user_input[CONF_URL],
+            port,
+            url,
+        )
+    return {**user_input, CONF_URL: url, CONF_PORT: port}
 
 
 async def async_migrate_entry(
@@ -47,6 +66,18 @@ async def async_migrate_entry(
             version,
             2,
         )
+
+    if (
+        config_entry.version == CONFIG_ENTRY_VERSION
+        and config_entry.minor_version < CONFIG_ENTRY_MINOR_VERSION
+    ):
+        # Migrate from 2.1 to 2.2: a port written into the URL wins over the
+        # port field. Entries saved as ``http://host:9283`` + 9192 never worked.
+        new_data = _normalize_url_and_port(dict(config_entry.data))
+        hass.config_entries.async_update_entry(
+            config_entry, data=new_data, minor_version=CONFIG_ENTRY_MINOR_VERSION
+        )
+        _LOGGER.info("Migrated config entry to version 2.2")
     return True
 
 
@@ -80,7 +111,8 @@ def _get_user_data_schema(
 class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for Grocy."""
 
-    VERSION = 2
+    VERSION = CONFIG_ENTRY_VERSION
+    MINOR_VERSION = CONFIG_ENTRY_MINOR_VERSION
 
     @staticmethod
     def async_get_options_flow(
@@ -104,6 +136,7 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="single_instance_allowed")
 
         if user_input is not None:
+            user_input = _normalize_url_and_port(user_input)
             error = await self._test_credentials(
                 user_input[CONF_URL],
                 user_input[CONF_API_KEY],
@@ -136,6 +169,7 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.debug("Step reconfigure")
 
         if user_input is not None:
+            user_input = _normalize_url_and_port(user_input)
             error = await self._test_credentials(
                 user_input[CONF_URL],
                 user_input[CONF_API_KEY],
@@ -248,6 +282,7 @@ class GrocyOptionsFlowHandler(config_entries.OptionsFlow):
     ) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
+            user_input = _normalize_url_and_port(user_input)
             # Validate credentials if URL or API key changed
             url_changed = user_input[CONF_URL] != self.config_entry.data.get(CONF_URL)
             api_key_changed = user_input[CONF_API_KEY] != self.config_entry.data.get(

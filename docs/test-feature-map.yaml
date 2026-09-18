@@ -279,6 +279,8 @@ features:
           - test_reauth_confirm_handles_error
           - test_migrate_entry_v1_adds_calendar_defaults
           - test_migrate_entry_v2_is_left_alone
+          - test_migrate_entry_v2_1_moves_port_from_url
+          - test_user_step_moves_port_from_url
       - file: tests/test_init.py
         functions:
           - test_async_setup_entry_initializes_integration
@@ -349,6 +351,7 @@ cross_cutting:
     - file: tests/test_helpers.py
       functions:
         - test_extract_base_url_and_path_variants
+        - test_split_url_and_port
         - test_model_to_dict_prefers_as_dict
         - test_model_to_dict_falls_back_to_model_dump
         - test_model_to_dict_uses_dunder_dict
