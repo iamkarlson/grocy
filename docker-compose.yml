@@ -1,6 +1,6 @@
 services:
   homeassistant:
-    image: ghcr.io/home-assistant/home-assistant:2026.9.2
+    image: ghcr.io/home-assistant/home-assistant:2026.9.4
     container_name: ha-dev
     depends_on:
       - grocy
