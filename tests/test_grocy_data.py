@@ -1,4 +1,5 @@
-"""GrocyData API interface tests.
+"""
+GrocyData API interface tests.
 
 Features: stock_management, shopping_list, chore_management, task_management,
           battery_tracking, meal_planning, image_proxy, cross_cutting
@@ -8,7 +9,6 @@ See: docs/FEATURES.md
 from __future__ import annotations
 
 import datetime as dt
-from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -25,10 +25,10 @@ from custom_components.grocy.const import (
     ATTR_OVERDUE_CHORES,
     ATTR_OVERDUE_PRODUCTS,
     ATTR_OVERDUE_TASKS,
+    ATTR_RECIPES,
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
-    ATTR_RECIPES,
     CONF_API_KEY,
     CONF_PORT,
     CONF_URL,
@@ -562,15 +562,15 @@ def test_picture_view_url_pattern() -> None:
 @pytest.mark.asyncio
 async def test_async_update_recipes(grocy_data) -> None:
     """Verify recipe data fetching and wrapping."""
-    from grocy.grocy_api_client import RecipeFulfillmentResponse
     from grocy.data_models.generic import EntityType
+    from grocy.grocy_api_client import RecipeFulfillmentResponse
 
     recipe_dict = {
         "id": 1,
         "name": "Pizza",
         "description": "Tasty",
         "picture_file_name": "pizza.jpg",
-        "type": "normal"
+        "type": "normal",
     }
     grocy_data.api.generic.list.return_value = [recipe_dict]
 

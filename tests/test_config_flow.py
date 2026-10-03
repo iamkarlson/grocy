@@ -1,4 +1,5 @@
-"""Configuration flow tests.
+"""
+Configuration flow tests.
 
 Features: configuration_setup
 See: docs/FEATURES.md#10-configuration-setup
@@ -9,9 +10,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.config_entries import SOURCE_RECONFIGURE, SOURCE_REAUTH
 from homeassistant.data_entry_flow import FlowResultType
-
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.grocy.config_flow import GrocyFlowHandler, async_migrate_entry
@@ -314,7 +313,8 @@ async def test_reauth_confirm_handles_error(hass, mock_config_entry) -> None:
 
 
 async def test_migrate_entry_v1_adds_calendar_defaults(hass, config_entry_data) -> None:
-    """A v1 entry gains the calendar options and becomes v2.
+    """
+    A v1 entry gains the calendar options and becomes v2.
 
     Entries created before ConfigFlow.VERSION was raised to 2 are still out in
     the wild. If this path breaks, an upgrade bricks those installs.
@@ -369,7 +369,8 @@ async def test_migrate_entry_v2_is_left_alone(hass, config_entry_data) -> None:
 
 
 async def test_migrate_entry_v2_1_moves_port_from_url(hass, config_entry_data) -> None:
-    """A 2.1 entry whose URL carries a port is repaired and becomes 2.2.
+    """
+    A 2.1 entry whose URL carries a port is repaired and becomes 2.2.
 
     v1.16.0 appended the port field to such a URL and never connected (#68).
     """

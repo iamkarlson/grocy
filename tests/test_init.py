@@ -1,4 +1,5 @@
-"""Integration setup and teardown tests.
+"""
+Integration setup and teardown tests.
 
 Features: configuration_setup
 See: docs/FEATURES.md#10-configuration-setup
@@ -6,13 +7,10 @@ See: docs/FEATURES.md#10-configuration-setup
 
 from __future__ import annotations
 
-from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.exceptions import ConfigEntryNotReady
-
-pytestmark = pytest.mark.feature("configuration_setup")
 
 from custom_components.grocy import (
     _async_get_available_entities,
@@ -30,13 +28,15 @@ from custom_components.grocy.const import (
     ATTR_OVERDUE_CHORES,
     ATTR_OVERDUE_PRODUCTS,
     ATTR_OVERDUE_TASKS,
+    ATTR_RECIPES,
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
-    ATTR_RECIPES,
     DOMAIN,
     PLATFORMS,
 )
+
+pytestmark = pytest.mark.feature("configuration_setup")
 
 
 @patch(
@@ -125,7 +125,7 @@ async def test_async_setup_entry_raises_not_ready(
 async def test_async_unload_entry_cleans_up(
     mock_unload_services, hass, mock_config_entry
 ) -> None:
-    hass.data[DOMAIN] = coordinator = MagicMock()
+    hass.data[DOMAIN] = MagicMock()
     hass.config_entries.async_unload_platforms = AsyncMock(return_value=True)
 
     result = await async_unload_entry(hass, mock_config_entry)

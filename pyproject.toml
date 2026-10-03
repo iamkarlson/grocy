@@ -34,7 +34,6 @@ target-version = "py314"
 line-length = 88
 extend-exclude = [
     "config/",
-    "tests/",
     "__pycache__",
     "docs/",
     "hooks/",
@@ -120,6 +119,17 @@ ignore = [
 
     # Import issues that need to be fixed manually
     # "F821",   # Undefined name - these should be fixed
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101",     # pytest uses assert
+    "PLR2004",  # literal expected values are the point of a test
+    "D1",       # test names document themselves
+    "ANN",      # fixtures and test helpers stay unannotated
+    "PLR0913",  # fixtures arrive as arguments
+    "PLR0917",
+    "PLC0415",  # local imports keep patch targets next to the test
 ]
 
 [tool.ruff.lint.flake8-pytest-style]

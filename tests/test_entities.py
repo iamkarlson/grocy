@@ -1,4 +1,5 @@
-"""Entity tests for sensors, binary sensors, todo lists, and coordinator data.
+"""
+Entity tests for sensors, binary sensors, todo lists, and coordinator data.
 
 Features: stock_management, shopping_list, chore_management, task_management,
           battery_tracking, meal_planning
@@ -9,7 +10,6 @@ from __future__ import annotations
 
 import datetime as dt
 from types import SimpleNamespace
-from unittest.mock import MagicMock
 
 import pytest
 from grocy.data_models.task import Task
@@ -30,13 +30,12 @@ from custom_components.grocy.const import (
     ATTR_OVERDUE_CHORES,
     ATTR_OVERDUE_PRODUCTS,
     ATTR_OVERDUE_TASKS,
+    ATTR_RECIPES,
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
-    ATTR_RECIPES,
 )
 from custom_components.grocy.coordinator import GrocyCoordinatorData
-from custom_components.grocy.entity import GrocyEntity
 from custom_components.grocy.sensor import SENSORS, GrocySensorEntity
 from custom_components.grocy.todo import TODOS, GrocyTodoListEntity
 from tests.factories import (
@@ -198,7 +197,12 @@ def test_sensor_meal_plan_counts() -> None:
 def test_sensor_recipes_counts() -> None:
     """Verify recipes sensor counts correctly."""
     from custom_components.grocy.helpers import RecipeWrapper
-    recipe_wrap = RecipeWrapper({"id": 1, "name": "Pizza", "picture_file_name": "pizza.jpg"}, True, "http://example.com/")
+
+    recipe_wrap = RecipeWrapper(
+        {"id": 1, "name": "Pizza", "picture_file_name": "pizza.jpg"},
+        True,
+        "http://example.com/",
+    )
     entity = _build_sensor(ATTR_RECIPES, [recipe_wrap])
     assert entity.native_value == 1
     attrs = entity.extra_state_attributes

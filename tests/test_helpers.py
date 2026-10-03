@@ -1,4 +1,5 @@
-"""Helper function tests.
+"""
+Helper function tests.
 
 Features: meal_planning, cross_cutting
 See: docs/FEATURES.md
@@ -134,7 +135,8 @@ class _UserfieldModel(BaseModel):
 
 @pytest.mark.feature("cross_cutting")
 def test_model_to_dict_suppresses_userfields_warning() -> None:
-    """Verify model_to_dict does not emit PydanticSerializationUnexpectedValue.
+    """
+    Verify model_to_dict does not emit PydanticSerializationUnexpectedValue.
 
     The Grocy API returns [] for empty userfields. grocy-py assigns this
     directly to the Pydantic model attribute, bypassing validation.
