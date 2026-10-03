@@ -17,6 +17,7 @@ from custom_components.grocy.helpers import (
     MealPlanItemWrapper,
     extract_base_url_and_path,
     model_to_dict,
+    split_url_and_port,
 )
 from tests.factories import (
     DummyMealPlanItem,
@@ -34,6 +35,23 @@ def test_extract_base_url_and_path_variants() -> None:
     base, path = extract_base_url_and_path("https://demo.grocy.info/grocy/api/")
     assert base == "https://demo.grocy.info"
     assert path == "grocy/api"
+
+
+@pytest.mark.feature("cross_cutting")
+@pytest.mark.parametrize(
+    ("url", "port", "expected"),
+    [
+        ("http://192.168.1.10", 9192, ("http://192.168.1.10", 9192)),
+        ("http://192.168.1.10:9283", 9192, ("http://192.168.1.10", 9283)),
+        ("https://grocy.local:8443/grocy", 9192, ("https://grocy.local/grocy", 8443)),
+        ("http://[::1]:9283", 9192, ("http://[::1]", 9283)),
+        ("http://user:pw@grocy.local:9283", 9192, ("http://user:pw@grocy.local", 9283)),
+        ("http://grocy.local:abc", 9192, ("http://grocy.local:abc", 9192)),
+    ],
+)
+def test_split_url_and_port(url: str, port: int, expected: tuple[str, int]) -> None:
+    """A port inside the URL wins over the port field; otherwise nothing changes."""
+    assert split_url_and_port(url, port) == expected
 
 
 @pytest.mark.feature("meal_planning")

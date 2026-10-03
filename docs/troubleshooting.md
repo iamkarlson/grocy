@@ -21,7 +21,7 @@ This usually means the coordinator update cycle failed entirely. Check the debug
 
 **Possible causes:**
 
-- **Validation errors** from the Grocy API (e.g., unexpected `null` values). Update the integration and [grocy-py](https://github.com/iamkarlson/pygrocy2) to the latest version.
+- **Validation errors** from the Grocy API (e.g., unexpected `null` values). Update the integration and [grocy-py](https://github.com/iamkarlson/grocy-py) to the latest version.
 - **Connection issues** — see below.
 
 With the latest version of the integration, a failure in one entity type (e.g., stock) will not bring down other entity types (e.g., chores, tasks). If you see only some entities unavailable, check the logs for the specific entity type that failed.
@@ -32,6 +32,16 @@ With the latest version of the integration, a failure in one entity type (e.g., 
 - Check that the port number is correct.
 - Verify your API key is valid (Grocy → Settings → Manage API keys).
 - If using HTTPS, ensure your certificate is valid or disable SSL verification in the integration config.
+
+### The URL is the Home Assistant ingress path
+
+A URL like `https://homeassistant.local:8123/a0d7b954_grocy` is the Home Assistant ingress path of the Grocy add-on. Ingress only works inside a logged-in Home Assistant browser session, so a Grocy API key can never authenticate through it.
+
+The integration needs Grocy's own port. In the add-on settings, open **Network** and expose a port (for example 9192). If Grocy refuses to start after that, the port is already taken on the host: pick another one. Then use `http://homeassistant.local` as the URL and that port in the **Port** field.
+
+### The port is in the URL
+
+Since 1.17.0, a port written into the URL (`http://192.168.1.10:9283`) is used as the port and the **Port** field is ignored. Older versions appended the port field to the URL and tried to reach `http://192.168.1.10:9283:9192`. Existing entries are corrected on upgrade.
 
 ### Entities not appearing
 
