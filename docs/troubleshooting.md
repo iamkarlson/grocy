@@ -35,9 +35,18 @@ With the latest version of the integration, a failure in one entity type (e.g., 
 
 ### The URL is the Home Assistant ingress path
 
-A URL like `https://homeassistant.local:8123/a0d7b954_grocy` is the Home Assistant ingress path of the Grocy add-on. Ingress only works inside a logged-in Home Assistant browser session, so a Grocy API key can never authenticate through it.
+A URL like `https://homeassistant.local:8123/a0d7b954_grocy` is the Home Assistant ingress path of the Grocy add-on. Ingress only works inside a logged-in Home Assistant browser session, so a Grocy API key can never authenticate through it. Since 1.17.3 the setup form detects this URL and tells you so.
 
-The integration needs Grocy's own port. In the add-on settings, open **Network** and expose a port (for example 9192). If Grocy refuses to start after that, the port is already taken on the host: pick another one. Then use `http://homeassistant.local` as the URL and that port in the **Port** field.
+The integration needs Grocy's own port. In the add-on settings, open **Network** and expose a port (for example 9192). Then use `http://homeassistant.local` as the URL and that port in the **Port** field.
+
+If the add-on does not start after you expose the port, check two things:
+
+- **SSL.** The add-on has `ssl: true` by default. With an exposed port it then needs the certificate files `certfile` and `keyfile` in `/ssl`. Without them it does not start. Turn `ssl` off in the add-on configuration, or add the certificates. With `ssl` on and a certificate that does not match the host name, use `https://` and turn off **Verify SSL Certificate** in the integration.
+- **The port.** Another service on the host can already use it. Pick another port.
+
+### Setup says "Invalid API key" for a wrong address
+
+Before 1.17.3, the setup form reported every connection or SSL problem as an invalid API key. Since 1.17.3 it shows the real cause: cannot connect, timeout, SSL certificate check failed, or the ingress address. "Invalid API key" now means that Grocy answered and rejected the key.
 
 ### The port is in the URL
 
