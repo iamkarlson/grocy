@@ -187,6 +187,7 @@ features:
           - test_todo_item_from_meal_plan_item
           - test_todo_item_from_meal_plan_item_wrapper
           - test_todo_item_from_meal_plan_item_missing_recipe
+          - test_todo_item_from_meal_plan_item_any_type
           - test_async_update_todo_item_complete_meal_plan
           - test_async_update_todo_item_meal_plan_needs_action_raises
       - file: tests/test_grocy_data.py
@@ -198,6 +199,7 @@ features:
         functions:
           - test_meal_plan_item_wrapper_generates_picture_url
           - test_meal_plan_item_wrapper_handles_missing_picture
+          - test_meal_plan_item_wrapper_serializes_every_type
 
   calendar:
     name: Calendar

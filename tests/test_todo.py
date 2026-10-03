@@ -320,6 +320,28 @@ def test_todo_item_from_meal_plan_item_missing_recipe() -> None:
     assert item.description is None
 
 
+@pytest.mark.feature("meal_planning")
+@pytest.mark.parametrize("item_type", [*MealPlanItemType, "dessert"])
+def test_todo_item_from_meal_plan_item_any_type(
+    item_type: MealPlanItemType | str,
+) -> None:
+    """Enum types and unknown string types both become a todo item (#69)."""
+    mpi = MealPlanItem(
+        id=52,
+        day=dt.date.today() + dt.timedelta(days=1),
+        recipe=None,
+        type=item_type,
+    )
+
+    assert mpi.type == item_type
+    assert isinstance(mpi.type, MealPlanItemType) == (item_type != "dessert")
+
+    item = GrocyTodoItem(mpi, ATTR_MEAL_PLAN)
+
+    assert item.uid == "52"
+    assert item.summary == "Unknown recipe"
+
+
 # ─── GrocyTodoItem from MealPlanItemWrapper ───────────────────────────────────
 
 

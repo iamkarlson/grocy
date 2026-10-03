@@ -9,9 +9,12 @@ from __future__ import annotations
 
 import base64
 import datetime as dt
+import json
 import warnings
 
 import pytest
+from grocy.data_models.meal_items import MealPlanItem, MealPlanItemType
+from grocy.grocy_api_client import MealPlanResponse
 from pydantic import BaseModel
 
 from custom_components.grocy.helpers import (
@@ -20,6 +23,7 @@ from custom_components.grocy.helpers import (
     model_to_dict,
     split_url_and_port,
 )
+from custom_components.grocy.json_encoder import CustomJSONEncoder
 from tests.factories import (
     DummyMealPlanItem,
     DummyRecipe,
@@ -79,6 +83,27 @@ def test_meal_plan_item_wrapper_handles_missing_picture() -> None:
     wrapper = MealPlanItemWrapper(item)
 
     assert wrapper.picture_url is None
+
+
+@pytest.mark.feature("meal_planning")
+@pytest.mark.parametrize(
+    "type_value", [*(member.value for member in MealPlanItemType), "dessert"]
+)
+def test_meal_plan_item_wrapper_serializes_every_type(type_value: str) -> None:
+    """Enum types and unknown string types both reach the sensor attributes (#69)."""
+    item = MealPlanItem.from_response(
+        MealPlanResponse(
+            id=7,
+            day="2026-10-03 00:00:00",
+            type=type_value,
+            row_created_timestamp="2026-10-01 12:00:00",
+        )
+    )
+
+    payload = MealPlanItemWrapper(item).as_dict()
+
+    assert payload["type"] == type_value
+    assert json.loads(json.dumps(payload, cls=CustomJSONEncoder))["type"] == type_value
 
 
 class WithAsDict:
