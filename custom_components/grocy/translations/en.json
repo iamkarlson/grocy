@@ -10,7 +10,9 @@
             "invalid_auth": "Invalid API key or authentication failed.",
             "cannot_connect": "Failed to connect to the Grocy server.",
             "timeout": "Connection timed out.",
-            "unknown": "Unexpected error"
+            "unknown": "Unexpected error",
+            "ssl_error": "SSL certificate check failed. Turn off \"Verify SSL Certificate\", or use http if Grocy has no valid certificate.",
+            "ingress_url": "This is the Home Assistant ingress address of the Grocy add-on. It cannot work with an API key. Expose a port in the add-on network settings and use that port."
         },
         "step": {
             "user": {
@@ -60,6 +62,14 @@
                 "description": "Configure Grocy integration options.",
                 "title": "Grocy Options"
             }
+        },
+        "error": {
+            "invalid_auth": "Invalid API key or authentication failed.",
+            "cannot_connect": "Failed to connect to the Grocy server.",
+            "timeout": "Connection timed out.",
+            "unknown": "Unexpected error",
+            "ssl_error": "SSL certificate check failed. Turn off \"Verify SSL Certificate\", or use http if Grocy has no valid certificate.",
+            "ingress_url": "This is the Home Assistant ingress address of the Grocy add-on. It cannot work with an API key. Expose a port in the add-on network settings and use that port."
         }
     }
 }

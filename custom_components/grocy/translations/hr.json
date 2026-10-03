@@ -7,7 +7,9 @@
         },
         "error": {
             "cannot_connect": "Povezivanje s Grocy poslužiteljem nije uspjelo.",
+            "ingress_url": "Ovo je Home Assistant ingress adresa Grocy dodatka. Ne radi s API ključem. Otvorite port u mrežnim postavkama dodatka i koristite taj port.",
             "invalid_auth": "Nevažeći API ključ ili autentifikacija nije uspjela.",
+            "ssl_error": "Provjera SSL certifikata nije uspjela. Isključite \"Provjerite SSL certifikat\" ili koristite http ako Grocy nema valjani certifikat.",
             "timeout": "Veza je istekla.",
             "unknown": "Neočekivana greška"
         },
@@ -46,6 +48,14 @@
         }
     },
     "options": {
+        "error": {
+            "cannot_connect": "Povezivanje s Grocy poslužiteljem nije uspjelo.",
+            "ingress_url": "Ovo je Home Assistant ingress adresa Grocy dodatka. Ne radi s API ključem. Otvorite port u mrežnim postavkama dodatka i koristite taj port.",
+            "invalid_auth": "Nevažeći API ključ ili autentifikacija nije uspjela.",
+            "ssl_error": "Provjera SSL certifikata nije uspjela. Isključite \"Provjerite SSL certifikat\" ili koristite http ako Grocy nema valjani certifikat.",
+            "timeout": "Veza je istekla.",
+            "unknown": "Neočekivana greška"
+        },
         "step": {
             "init": {
                 "data": {

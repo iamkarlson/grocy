@@ -7,7 +7,9 @@
         },
         "error": {
             "cannot_connect": "Kon geen verbinding maken met de Grocy-server.",
+            "ingress_url": "Dit is het Home Assistant-ingressadres van de Grocy-add-on. Het werkt niet met een API-sleutel. Stel in de netwerkinstellingen van de add-on een poort open en gebruik die poort.",
             "invalid_auth": "Ongeldige API-sleutel of authenticatie mislukt.",
+            "ssl_error": "Controle van het SSL-certificaat mislukt. Schakel \"SSL-certificaat verifiëren\" uit, of gebruik http als Grocy geen geldig certificaat heeft.",
             "timeout": "Verbinding time-out.",
             "unknown": "Onverwachte fout"
         },
@@ -46,6 +48,14 @@
         }
     },
     "options": {
+        "error": {
+            "cannot_connect": "Kon geen verbinding maken met de Grocy-server.",
+            "ingress_url": "Dit is het Home Assistant-ingressadres van de Grocy-add-on. Het werkt niet met een API-sleutel. Stel in de netwerkinstellingen van de add-on een poort open en gebruik die poort.",
+            "invalid_auth": "Ongeldige API-sleutel of authenticatie mislukt.",
+            "ssl_error": "Controle van het SSL-certificaat mislukt. Schakel \"SSL-certificaat verifiëren\" uit, of gebruik http als Grocy geen geldig certificaat heeft.",
+            "timeout": "Verbinding time-out.",
+            "unknown": "Onverwachte fout"
+        },
         "step": {
             "init": {
                 "data": {

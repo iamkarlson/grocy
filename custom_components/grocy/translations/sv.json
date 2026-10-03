@@ -7,7 +7,9 @@
         },
         "error": {
             "cannot_connect": "Kunde inte ansluta till Grocy-servern.",
+            "ingress_url": "Detta är Home Assistants ingress-adress för Grocy-tillägget. Den fungerar inte med en API-nyckel. Öppna en port i tilläggets nätverksinställningar och använd den porten.",
             "invalid_auth": "Ogiltig API-nyckel eller autentisering misslyckades.",
+            "ssl_error": "Kontrollen av SSL-certifikatet misslyckades. Stäng av \"Verifiera SSL certifikat\" eller använd http om Grocy saknar ett giltigt certifikat.",
             "timeout": "Anslutningstiden överskreds.",
             "unknown": "Oväntat fel"
         },
@@ -46,6 +48,14 @@
         }
     },
     "options": {
+        "error": {
+            "cannot_connect": "Kunde inte ansluta till Grocy-servern.",
+            "ingress_url": "Detta är Home Assistants ingress-adress för Grocy-tillägget. Den fungerar inte med en API-nyckel. Öppna en port i tilläggets nätverksinställningar och använd den porten.",
+            "invalid_auth": "Ogiltig API-nyckel eller autentisering misslyckades.",
+            "ssl_error": "Kontrollen av SSL-certifikatet misslyckades. Stäng av \"Verifiera SSL certifikat\" eller använd http om Grocy saknar ett giltigt certifikat.",
+            "timeout": "Anslutningstiden överskreds.",
+            "unknown": "Oväntat fel"
+        },
         "step": {
             "init": {
                 "data": {

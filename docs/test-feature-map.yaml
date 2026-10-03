@@ -283,6 +283,14 @@ features:
           - test_migrate_entry_v2_is_left_alone
           - test_migrate_entry_v2_1_moves_port_from_url
           - test_user_step_moves_port_from_url
+          - test_user_step_maps_each_failure_to_its_message
+          - test_html_error_page_maps_to_cannot_connect
+          - test_user_step_rejects_ingress_url
+          - test_user_step_accepts_normal_subpath
+          - test_options_step_shows_form
+          - test_options_step_shows_connection_error
+          - test_options_step_rejects_ingress_url
+          - test_options_step_saves_and_reloads
       - file: tests/test_init.py
         functions:
           - test_async_setup_entry_initializes_integration

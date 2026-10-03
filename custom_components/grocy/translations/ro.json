@@ -7,7 +7,9 @@
         },
         "error": {
             "cannot_connect": "Nu s-a putut conecta la serverul Grocy.",
+            "ingress_url": "Aceasta este adresa de ingress Home Assistant a add-on-ului Grocy. Nu funcționează cu o cheie API. Expuneți un port în setările de rețea ale add-on-ului și folosiți acel port.",
             "invalid_auth": "Cheie API invalidă sau autentificare eșuată.",
+            "ssl_error": "Verificarea certificatului SSL a eșuat. Dezactivați „Verificați certificatul SSL” sau folosiți http dacă Grocy nu are un certificat valid.",
             "timeout": "Conexiunea a expirat.",
             "unknown": "Eroare neașteptată"
         },
@@ -46,6 +48,14 @@
         }
     },
     "options": {
+        "error": {
+            "cannot_connect": "Nu s-a putut conecta la serverul Grocy.",
+            "ingress_url": "Aceasta este adresa de ingress Home Assistant a add-on-ului Grocy. Nu funcționează cu o cheie API. Expuneți un port în setările de rețea ale add-on-ului și folosiți acel port.",
+            "invalid_auth": "Cheie API invalidă sau autentificare eșuată.",
+            "ssl_error": "Verificarea certificatului SSL a eșuat. Dezactivați „Verificați certificatul SSL” sau folosiți http dacă Grocy nu are un certificat valid.",
+            "timeout": "Conexiunea a expirat.",
+            "unknown": "Eroare neașteptată"
+        },
         "step": {
             "init": {
                 "data": {
