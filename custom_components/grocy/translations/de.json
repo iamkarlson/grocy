@@ -7,7 +7,9 @@
         },
         "error": {
             "cannot_connect": "Verbindung zum Grocy-Server fehlgeschlagen.",
+            "ingress_url": "Dies ist die Home-Assistant-Ingress-Adresse des Grocy-Add-ons. Sie funktioniert nicht mit einem API-Schlüssel. Gib in den Netzwerkeinstellungen des Add-ons einen Port frei und verwende diesen Port.",
             "invalid_auth": "Ungültiger API-Schlüssel oder Authentifizierung fehlgeschlagen.",
+            "ssl_error": "SSL-Zertifikatsprüfung fehlgeschlagen. Deaktiviere \"SSL-Zertifikat verifizieren\" oder verwende http, wenn Grocy kein gültiges Zertifikat hat.",
             "timeout": "Verbindungszeitüberschreitung.",
             "unknown": "Unerwarteter Fehler"
         },
@@ -46,6 +48,14 @@
         }
     },
     "options": {
+        "error": {
+            "cannot_connect": "Verbindung zum Grocy-Server fehlgeschlagen.",
+            "ingress_url": "Dies ist die Home-Assistant-Ingress-Adresse des Grocy-Add-ons. Sie funktioniert nicht mit einem API-Schlüssel. Gib in den Netzwerkeinstellungen des Add-ons einen Port frei und verwende diesen Port.",
+            "invalid_auth": "Ungültiger API-Schlüssel oder Authentifizierung fehlgeschlagen.",
+            "ssl_error": "SSL-Zertifikatsprüfung fehlgeschlagen. Deaktiviere \"SSL-Zertifikat verifizieren\" oder verwende http, wenn Grocy kein gültiges Zertifikat hat.",
+            "timeout": "Verbindungszeitüberschreitung.",
+            "unknown": "Unerwarteter Fehler"
+        },
         "step": {
             "init": {
                 "data": {

@@ -7,7 +7,9 @@
         },
         "error": {
             "cannot_connect": "Falha ao conectar ao servidor Grocy.",
+            "ingress_url": "Este é o endereço de ingress do Home Assistant do add-on Grocy. Ele não funciona com uma chave de API. Exponha uma porta nas configurações de rede do add-on e use essa porta.",
             "invalid_auth": "Chave de API inválida ou falha na autenticação.",
+            "ssl_error": "Falha na verificação do certificado SSL. Desative \"Verificar certificado SSL\" ou use http se o Grocy não tiver um certificado válido.",
             "timeout": "Tempo limite de conexão esgotado.",
             "unknown": "Erro inesperado"
         },
@@ -46,6 +48,14 @@
         }
     },
     "options": {
+        "error": {
+            "cannot_connect": "Falha ao conectar ao servidor Grocy.",
+            "ingress_url": "Este é o endereço de ingress do Home Assistant do add-on Grocy. Ele não funciona com uma chave de API. Exponha uma porta nas configurações de rede do add-on e use essa porta.",
+            "invalid_auth": "Chave de API inválida ou falha na autenticação.",
+            "ssl_error": "Falha na verificação do certificado SSL. Desative \"Verificar certificado SSL\" ou use http se o Grocy não tiver um certificado válido.",
+            "timeout": "Tempo limite de conexão esgotado.",
+            "unknown": "Erro inesperado"
+        },
         "step": {
             "init": {
                 "data": {
