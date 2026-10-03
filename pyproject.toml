@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.14.2"
 dependencies = [
     "homeassistant==2026.9.4",
-    "grocy-py==1.2.0",
+    "grocy-py==1.3.0",
     "icalendar>=6.3.1",
 ]
 
@@ -16,7 +16,7 @@ Issues = "https://github.com/iamkarlson/grocy/issues"
 
 [dependency-groups]
 dev = [
-    "ruff==0.16.5",
+    "ruff==0.16.10",
     "pre-commit>=3.0.0",
     "debugpy>=1.8.0",
     "pytest>=8.2.0",
@@ -34,7 +34,6 @@ target-version = "py314"
 line-length = 88
 extend-exclude = [
     "config/",
-    "tests/",
     "__pycache__",
     "docs/",
     "hooks/",
@@ -120,6 +119,17 @@ ignore = [
 
     # Import issues that need to be fixed manually
     # "F821",   # Undefined name - these should be fixed
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101",     # pytest uses assert
+    "PLR2004",  # literal expected values are the point of a test
+    "D1",       # test names document themselves
+    "ANN",      # fixtures and test helpers stay unannotated
+    "PLR0913",  # fixtures arrive as arguments
+    "PLR0917",
+    "PLC0415",  # local imports keep patch targets next to the test
 ]
 
 [tool.ruff.lint.flake8-pytest-style]

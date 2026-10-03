@@ -42,7 +42,7 @@ def pytest_collection_modifyitems(config, items):
     selected = []
     deselected = []
     for item in items:
-        dominated = False  # noqa: F841
+        dominated = False
         for marker in item.iter_markers("feature"):
             if feature_name in marker.args:
                 selected.append(item)
@@ -68,13 +68,12 @@ def config_entry_data_fixture() -> dict[str, object]:
 def mock_config_entry_fixture(
     config_entry_data: dict[str, object],
 ) -> MockConfigEntry:
-    entry = MockConfigEntry(
+    return MockConfigEntry(
         domain=DOMAIN,
         title="Grocy",
         data=config_entry_data,
         entry_id="test-entry",
     )
-    return entry
 
 
 @pytest.fixture(name="mock_grocy")

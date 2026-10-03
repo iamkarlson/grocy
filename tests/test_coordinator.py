@@ -1,4 +1,5 @@
-"""Coordinator tests for the data update loop.
+"""
+Coordinator tests for the data update loop.
 
 Features: configuration_setup
 See: docs/FEATURES.md#10-configuration-setup
@@ -59,7 +60,9 @@ async def test_async_update_data_raises_update_failed_when_all_fail() -> None:
 
 
 @pytest.mark.asyncio
-async def test_async_update_data_raises_update_failed_when_all_fail_with_previous_data() -> None:
+async def test_async_update_data_raises_update_failed_when_all_fail_with_previous_data() -> (
+    None
+):
     """UpdateFailed must still fire on total failure even when previous data exists."""
     from custom_components.grocy.coordinator import GrocyCoordinatorData
 
@@ -89,7 +92,8 @@ async def test_async_update_data_partial_failure_does_not_raise() -> None:
 
     async def mock_update(key: str):
         if key == "stock":
-            raise RuntimeError("validation error")
+            msg = "validation error"
+            raise RuntimeError(msg)
         return ["task1"]
 
     coordinator.data = None
@@ -119,7 +123,8 @@ async def test_async_update_data_partial_failure_keeps_previous_data() -> None:
 
     async def mock_update(key: str):
         if key == "stock":
-            raise RuntimeError("transient error")
+            msg = "transient error"
+            raise RuntimeError(msg)
         return ["task1"]
 
     coordinator.grocy_data = SimpleNamespace(

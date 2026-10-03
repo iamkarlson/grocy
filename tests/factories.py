@@ -79,7 +79,7 @@ class DummyTask:
     id: int = 1
     name: str = "Task"
     description: str | None = "Task description"
-    due_date: dt.date | None = field(default_factory=lambda: dt.date.today())
+    due_date: dt.date | None = field(default_factory=dt.date.today)
 
     def as_dict(self) -> dict[str, Any]:
         return {

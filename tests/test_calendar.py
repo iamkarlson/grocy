@@ -1,4 +1,5 @@
-"""Tests for the Grocy calendar platform with timezone handling.
+"""
+Tests for the Grocy calendar platform with timezone handling.
 
 Features: calendar
 See: docs/FEATURES.md#7-calendar
@@ -7,8 +8,7 @@ See: docs/FEATURES.md#7-calendar
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 from zoneinfo import ZoneInfo
 
 import icalendar
@@ -49,9 +49,11 @@ def _create_mock_session(ical_data: str, status: int = 200) -> MagicMock:
     """Create a properly mocked aiohttp session for calendar tests."""
     mock_response = MagicMock()
     mock_response.status = status
+
     # Use a regular function that returns a coroutine for text()
     async def mock_text():
         return ical_data
+
     mock_response.text = mock_text
 
     session = MagicMock()
@@ -102,7 +104,8 @@ def _create_ical_event(
     uid: str = "test-uid",
     tzid: str | None = None,
 ) -> icalendar.Event:
-    """Create an iCal event for testing.
+    """
+    Create an iCal event for testing.
 
     Args:
         summary: Event summary/title
@@ -163,7 +166,8 @@ class TestCalendarEntityTimezoneFixEnabled:
         mock_coordinator,
         calendar_config_entry,
     ) -> None:
-        """Test that UTC times are treated as local time when fix_timezone=True.
+        """
+        Test that UTC times are treated as local time when fix_timezone=True.
 
         This tests the Grocy addon bug where local times are incorrectly marked as UTC.
         When fix is enabled, a time like 14:00 UTC should be treated as 14:00 local time.
@@ -224,8 +228,8 @@ class TestCalendarEntityTimezoneFixEnabled:
         entity._ical_url = "http://test.local/calendar.ics"
 
         # Create event with naive datetime (no timezone info)
-        event_start_naive = datetime(2026, 2, 15, 14, 0, 0)
-        event_end_naive = datetime(2026, 2, 15, 15, 0, 0)
+        event_start_naive = datetime(2026, 2, 15, 14, 0, 0)  # noqa: DTZ001
+        event_end_naive = datetime(2026, 2, 15, 15, 0, 0)  # noqa: DTZ001
         ical_event = _create_ical_event(
             summary="Naive Event",
             start=event_start_naive,
@@ -284,7 +288,8 @@ class TestCalendarEntityTimezoneFixDisabled:
         mock_coordinator,
         config_entry_fix_disabled,
     ) -> None:
-        """Test that UTC times are properly converted when fix_timezone=False.
+        """
+        Test that UTC times are properly converted when fix_timezone=False.
 
         This is the correct behavior for Grocy instances that properly send UTC times.
         """
@@ -580,7 +585,6 @@ class TestCalendarEntityEdgeCases:
         entity.hass = hass
         entity._ical_url = "http://test.local/calendar.ics"
 
-        local_tz = ZoneInfo("Europe/Berlin")
         now = dt_util.now()
 
         # Create events: one past, one current, one future
@@ -660,7 +664,8 @@ class TestCalendarEntityEdgeCases:
         mock_coordinator,
         calendar_config_entry,
     ) -> None:
-        """The iCal fetch authenticates and uses the configured SSL setting.
+        """
+        The iCal fetch authenticates and uses the configured SSL setting.
 
         Grocy 4.7.0 answered the sharing link with 401 unless the API key was
         sent, and a self-signed instance needs verify_ssl=False on this request

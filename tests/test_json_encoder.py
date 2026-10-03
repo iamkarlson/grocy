@@ -1,4 +1,5 @@
-"""JSON encoder tests for datetime types.
+"""
+JSON encoder tests for datetime types.
 
 Features: cross_cutting
 See: docs/FEATURES.md#cross-cutting-tests
@@ -29,7 +30,7 @@ def test_encodes_time() -> None:
 
 
 def test_encodes_datetime_via_parent() -> None:
-    data = {"dt": dt.datetime(2025, 6, 15, 14, 30, 0)}
+    data = {"dt": dt.datetime(2025, 6, 15, 14, 30, 0, tzinfo=dt.UTC)}
     result = json.dumps(data, cls=CustomJSONEncoder)
     assert "2025-06-15" in result
 

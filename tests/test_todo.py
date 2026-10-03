@@ -1,4 +1,5 @@
-"""Todo list platform tests.
+"""
+Todo list platform tests.
 
 Features: stock_management, shopping_list, chore_management, task_management,
           battery_tracking, meal_planning, cross_cutting
@@ -40,7 +41,6 @@ from tests.factories import (
     DummyMealPlanItem,
     DummyRecipe,
 )
-
 
 # ─── _calculate_days_until ────────────────────────────────────────────────────
 
@@ -106,9 +106,7 @@ def test_calculate_item_status_future() -> None:
 @pytest.mark.feature("task_management")
 def test_todo_item_from_task() -> None:
     """Verify task converts to todo item with correct fields."""
-    due = dt.datetime.combine(
-        dt.date.today() + dt.timedelta(days=2), dt.time.min
-    )
+    due = dt.datetime.combine(dt.date.today() + dt.timedelta(days=2), dt.time.min)
     task = Task(id=7, name="Buy groceries", description="Weekly shopping", due_date=due)
     item = GrocyTodoItem(task, ATTR_TASKS)
 
@@ -121,9 +119,7 @@ def test_todo_item_from_task() -> None:
 @pytest.mark.feature("task_management")
 def test_todo_item_from_task_overdue() -> None:
     """Verify overdue task shows NEEDS_ACTION status."""
-    due = dt.datetime.combine(
-        dt.date.today() - dt.timedelta(days=1), dt.time.min
-    )
+    due = dt.datetime.combine(dt.date.today() - dt.timedelta(days=1), dt.time.min)
     task = Task(id=3, name="Late task", description=None, due_date=due)
     item = GrocyTodoItem(task, ATTR_TASKS)
 
@@ -324,6 +320,28 @@ def test_todo_item_from_meal_plan_item_missing_recipe() -> None:
     assert item.description is None
 
 
+@pytest.mark.feature("meal_planning")
+@pytest.mark.parametrize("item_type", [*MealPlanItemType, "dessert"])
+def test_todo_item_from_meal_plan_item_any_type(
+    item_type: MealPlanItemType | str,
+) -> None:
+    """Enum types and unknown string types both become a todo item (#69)."""
+    mpi = MealPlanItem(
+        id=52,
+        day=dt.date.today() + dt.timedelta(days=1),
+        recipe=None,
+        type=item_type,
+    )
+
+    assert mpi.type == item_type
+    assert isinstance(mpi.type, MealPlanItemType) == (item_type != "dessert")
+
+    item = GrocyTodoItem(mpi, ATTR_MEAL_PLAN)
+
+    assert item.uid == "52"
+    assert item.summary == "Unknown recipe"
+
+
 # ─── GrocyTodoItem from MealPlanItemWrapper ───────────────────────────────────
 
 
@@ -369,24 +387,26 @@ def _build_todo(key: str, data) -> GrocyTodoListEntity:
     return entity
 
 
+def _features_for(key: str) -> TodoListEntityFeature:
+    desc = next(d for d in TODOS if d.key == key)
+    entity = GrocyTodoListEntity(MagicMock(), desc, MagicMock(entry_id="test"))
+    return entity.supported_features
+
+
 @pytest.mark.feature("battery_tracking")
 def test_todo_list_entity_batteries_supports_create() -> None:
-    """Verify battery todo supports CREATE."""
-    desc = next(d for d in TODOS if d.key == ATTR_BATTERIES)
-    entity = GrocyTodoListEntity.__new__(GrocyTodoListEntity)
-    entity._attr_supported_features = (
-        TodoListEntityFeature.UPDATE_TODO_ITEM
-        | TodoListEntityFeature.DELETE_TODO_ITEM
-        | TodoListEntityFeature.CREATE_TODO_ITEM
-    )
-    assert entity._attr_supported_features & TodoListEntityFeature.CREATE_TODO_ITEM
+    """Battery, chore and task lists accept new items; the constructor decides."""
+    for key in (ATTR_BATTERIES, ATTR_CHORES, ATTR_TASKS):
+        assert _features_for(key) & TodoListEntityFeature.CREATE_TODO_ITEM, key
 
 
 @pytest.mark.feature("stock_management")
 def test_todo_list_entity_stock_no_create() -> None:
-    """Verify stock todo does not support CREATE."""
-    desc = next(d for d in TODOS if d.key == ATTR_STOCK)
-    assert ATTR_STOCK not in [ATTR_BATTERIES, ATTR_CHORES, ATTR_TASKS]
+    """Stock, shopping list and meal plan lists do not offer CREATE."""
+    for key in (ATTR_STOCK, ATTR_SHOPPING_LIST, ATTR_MEAL_PLAN):
+        features = _features_for(key)
+        assert not features & TodoListEntityFeature.CREATE_TODO_ITEM, key
+        assert features & TodoListEntityFeature.UPDATE_TODO_ITEM, key
 
 
 # ─── async_create_todo_item ──────────────────────────────────────────────────

@@ -1,4 +1,5 @@
-"""Service handler tests.
+"""
+Service handler tests.
 
 Features: stock_management, shopping_list, chore_management, task_management,
           battery_tracking, meal_planning, generic_crud, calendar
@@ -456,7 +457,7 @@ async def test_consume_product_defaults_transaction_type(hass, coordinator) -> N
 
     await services.async_consume_product_service(hass, coordinator, data)
 
-    _, args, kwargs = coordinator.grocy_api.stock.consume.mock_calls[0]
+    _, _, kwargs = coordinator.grocy_api.stock.consume.mock_calls[0]
     assert kwargs["transaction_type"] == TransactionType.CONSUME
 
 
@@ -562,9 +563,7 @@ async def test_execute_chore_empty_done_by(hass, coordinator) -> None:
     ):
         await services.async_execute_chore_service(hass, coordinator, data)
 
-    coordinator.grocy_api.chores.execute.assert_called_once_with(
-        7, None, skipped=False
-    )
+    coordinator.grocy_api.chores.execute.assert_called_once_with(7, None, skipped=False)
 
 
 # ─── open_product with substitution enabled ──────────────────────────────────
@@ -600,7 +599,9 @@ async def test_remove_product_shopping_list_id_key(hass, coordinator) -> None:
 
     await services.async_remove_product_in_shopping_list(hass, coordinator, data)
 
-    coordinator.grocy_api.shopping_list.remove_product.assert_called_once_with(5, 3, 1.0)
+    coordinator.grocy_api.shopping_list.remove_product.assert_called_once_with(
+        5, 3, 1.0
+    )
 
 
 # ─── add_missing_products with explicit list_id ──────────────────────────────
@@ -612,9 +613,7 @@ async def test_add_missing_products_explicit_list_id(hass, coordinator) -> None:
     """Verify accepts explicit list ID."""
     data = {services.SERVICE_LIST_ID: 7}
 
-    await services.async_add_missing_products_to_shopping_list(
-        hass, coordinator, data
-    )
+    await services.async_add_missing_products_to_shopping_list(hass, coordinator, data)
 
     coordinator.grocy_api.shopping_list.add_missing_products.assert_called_once_with(7)
 
