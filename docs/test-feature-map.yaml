@@ -87,6 +87,7 @@ features:
           - test_todo_item_from_shopping_list_product_done
           - test_todo_item_from_shopping_list_product_no_product
           - test_todo_item_from_shopping_list_product_string_done_flag
+          - test_remove_completed_items_removes_done_shopping_list_items
           - test_async_update_todo_item_complete_shopping_list
           - test_async_update_todo_item_uncomplete_shopping_list
       - file: tests/test_grocy_data.py
@@ -110,6 +111,7 @@ features:
         functions:
           - test_todo_item_from_chore
           - test_todo_item_from_chore_date_only
+          - test_remove_completed_items_keeps_items_not_due_yet
           - test_async_create_todo_item_chore
           - test_async_update_todo_item_complete_chore
           - test_async_update_todo_item_chore_needs_action_raises
@@ -330,13 +332,6 @@ cross_cutting:
         - test_coordinator_data_defaults_to_none
     - file: tests/test_todo.py
       functions:
-        - test_calculate_days_until_none_returns_zero
-        - test_calculate_days_until_date_only_future
-        - test_calculate_days_until_date_only_past
-        - test_calculate_days_until_datetime
-        - test_calculate_days_until_datetime_date_only
-        - test_calculate_item_status_overdue
-        - test_calculate_item_status_future
         - test_todo_item_raises_for_unknown_type
         - test_get_grocy_item_finds_by_id
         - test_get_grocy_item_finds_meal_plan_wrapper

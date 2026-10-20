@@ -187,6 +187,7 @@ Remove a product from a shopping list.
 | tests/test_todo.py | `test_todo_item_from_shopping_list_product_done` | Done item shows COMPLETED status |
 | tests/test_todo.py | `test_todo_item_from_shopping_list_product_no_product` | Missing product shows "Unknown product" |
 | tests/test_todo.py | `test_todo_item_from_shopping_list_product_string_done_flag` | Pydantic coerces string done flag |
+| tests/test_todo.py | `test_remove_completed_items_removes_done_shopping_list_items` | Clear completed removes done shopping list items |
 | tests/test_todo.py | `test_async_update_todo_item_complete_shopping_list` | Completing marks item done |
 | tests/test_todo.py | `test_async_update_todo_item_uncomplete_shopping_list` | Uncompleting marks item undone |
 | tests/test_grocy_data.py | `test_async_update_shopping_list` | Shopping list data fetching |
@@ -245,6 +246,7 @@ After execution, the chores sensor is force-refreshed.
 | tests/test_services.py | `test_dispatcher_routes_execute_chore` | Dispatcher routes execute_chore correctly |
 | tests/test_todo.py | `test_todo_item_from_chore` | Chore converts to todo item |
 | tests/test_todo.py | `test_todo_item_from_chore_date_only` | Date-only chore handled correctly |
+| tests/test_todo.py | `test_remove_completed_items_keeps_items_not_due_yet` | Clear completed keeps chores, tasks and batteries that are due later |
 | tests/test_todo.py | `test_async_create_todo_item_chore` | Creating chore todo sets period_type=manually |
 | tests/test_todo.py | `test_async_update_todo_item_complete_chore` | Completing chore todo executes chore |
 | tests/test_todo.py | `test_async_update_todo_item_chore_needs_action_raises` | Uncompleting chore raises NotImplementedError |
@@ -626,13 +628,6 @@ These tests validate infrastructure shared across all features.
 | tests/test_entities.py | `test_binary_sensor_exists_fn` | All binary sensor descriptions have correct exists_fn |
 | tests/test_entities.py | `test_coordinator_data_setitem_getitem` | CoordinatorData dict-like access |
 | tests/test_entities.py | `test_coordinator_data_defaults_to_none` | CoordinatorData defaults to None |
-| tests/test_todo.py | `test_calculate_days_until_none_returns_zero` | Days calculation handles None |
-| tests/test_todo.py | `test_calculate_days_until_date_only_future` | Future date calculation |
-| tests/test_todo.py | `test_calculate_days_until_date_only_past` | Past date calculation |
-| tests/test_todo.py | `test_calculate_days_until_datetime` | Datetime calculation |
-| tests/test_todo.py | `test_calculate_days_until_datetime_date_only` | Datetime as date calculation |
-| tests/test_todo.py | `test_calculate_item_status_overdue` | Overdue status mapping |
-| tests/test_todo.py | `test_calculate_item_status_future` | Future status mapping |
 | tests/test_todo.py | `test_todo_item_raises_for_unknown_type` | Unknown type raises NotImplementedError |
 | tests/test_todo.py | `test_get_grocy_item_finds_by_id` | Item lookup by ID |
 | tests/test_todo.py | `test_get_grocy_item_finds_meal_plan_wrapper` | MealPlanItemWrapper lookup |

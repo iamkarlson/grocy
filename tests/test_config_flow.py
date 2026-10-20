@@ -7,6 +7,7 @@ See: docs/FEATURES.md#10-configuration-setup
 
 from __future__ import annotations
 
+from http import HTTPStatus
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -502,13 +503,13 @@ async def test_user_step_maps_each_failure_to_its_message(
 
 
 def test_html_error_page_maps_to_cannot_connect() -> None:
-    """A non-Grocy server answers with HTML; grocy-py fails to read it as JSON."""
+    """A non-Grocy server answers with HTML; grocy-py keeps it as a GrocyError."""
     from custom_components.grocy.config_flow import _error_key
 
-    with pytest.raises(requests.exceptions.JSONDecodeError) as caught:
-        _grocy_error(404, "<!DOCTYPE html><html></html>")
+    error = _grocy_error(404, "<!DOCTYPE html><html></html>")
 
-    assert _error_key(caught.value) == "cannot_connect"
+    assert error.status_code == HTTPStatus.NOT_FOUND
+    assert _error_key(error) == "cannot_connect"
 
 
 @pytest.mark.parametrize(
