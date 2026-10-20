@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import datetime
+import datetime as dt
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -134,14 +134,13 @@ TODOS: tuple[GrocyTodoListEntityDescription, ...] = (
 
 
 def _calculate_days_until(
-    due: datetime.datetime | datetime.date | None, date_only: bool = False
+    due: dt.datetime | dt.date | None, date_only: bool = False
 ) -> int:
     return (
         (
-            (due.date() if isinstance(due, datetime.datetime) else due)
-            - datetime.date.today()
+            (due.date() if isinstance(due, dt.datetime) else due) - dt.date.today()
             if date_only
-            else due - datetime.datetime.now()
+            else due - dt.datetime.now()
         ).days
         if due
         else 0
@@ -345,7 +344,7 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
                     SERVICE_DATA: {
                         "name": item.summary,
                         "description": item.description,
-                        "due_date": (item.due or datetime.date.today()).isoformat(),
+                        "due_date": (item.due or dt.date.today()).isoformat(),
                     },
                 },
             )

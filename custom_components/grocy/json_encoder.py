@@ -1,6 +1,6 @@
 """JSON encoder for Grocy."""
 
-import datetime
+import datetime as dt
 from typing import Any
 
 from homeassistant.helpers.json import ExtendedJSONEncoder
@@ -11,7 +11,7 @@ class CustomJSONEncoder(ExtendedJSONEncoder):
 
     def default(self, o: Any) -> Any:
         """Convert certain objects."""
-        if isinstance(o, (datetime.date, datetime.time)):
+        if isinstance(o, (dt.date, dt.time)):
             return o.isoformat()
 
         return super().default(o)
