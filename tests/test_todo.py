@@ -19,6 +19,7 @@ from grocy.data_models.meal_items import MealPlanItem, MealPlanItemType, RecipeI
 from grocy.data_models.product import Product, ShoppingListProduct
 from grocy.data_models.task import Task
 from homeassistant.components.todo import TodoItemStatus, TodoListEntityFeature
+from homeassistant.components.todo.services import _async_remove_completed_items
 
 from custom_components.grocy.const import (
     ATTR_BATTERIES,
@@ -34,71 +35,11 @@ from custom_components.grocy.todo import (
     TODOS,
     GrocyTodoItem,
     GrocyTodoListEntity,
-    _calculate_days_until,
-    _calculate_item_status,
 )
 from tests.factories import (
     DummyMealPlanItem,
     DummyRecipe,
 )
-
-# ─── _calculate_days_until ────────────────────────────────────────────────────
-
-
-@pytest.mark.feature("cross_cutting")
-def test_calculate_days_until_none_returns_zero() -> None:
-    """Verify days calculation handles None."""
-    assert _calculate_days_until(None) == 0
-
-
-@pytest.mark.feature("cross_cutting")
-def test_calculate_days_until_date_only_future() -> None:
-    """Verify future date calculation."""
-    future = dt.date.today() + dt.timedelta(days=5)
-    result = _calculate_days_until(future, date_only=True)
-    assert result == 5
-
-
-@pytest.mark.feature("cross_cutting")
-def test_calculate_days_until_date_only_past() -> None:
-    """Verify past date calculation."""
-    past = dt.date.today() - dt.timedelta(days=3)
-    result = _calculate_days_until(past, date_only=True)
-    assert result == -3
-
-
-@pytest.mark.feature("cross_cutting")
-def test_calculate_days_until_datetime() -> None:
-    """Verify datetime calculation."""
-    future = dt.datetime.now() + dt.timedelta(days=2, hours=12)
-    result = _calculate_days_until(future, date_only=False)
-    assert result >= 2
-
-
-@pytest.mark.feature("cross_cutting")
-def test_calculate_days_until_datetime_date_only() -> None:
-    """Verify datetime as date calculation."""
-    future_dt = dt.datetime.now() + dt.timedelta(days=4)
-    result = _calculate_days_until(future_dt, date_only=True)
-    assert result == 4
-
-
-# ─── _calculate_item_status ───────────────────────────────────────────────────
-
-
-@pytest.mark.feature("cross_cutting")
-def test_calculate_item_status_overdue() -> None:
-    """Verify overdue status mapping."""
-    assert _calculate_item_status(0) == TodoItemStatus.NEEDS_ACTION
-    assert _calculate_item_status(-1) == TodoItemStatus.NEEDS_ACTION
-
-
-@pytest.mark.feature("cross_cutting")
-def test_calculate_item_status_future() -> None:
-    """Verify future status mapping."""
-    assert _calculate_item_status(1) == TodoItemStatus.COMPLETED
-    assert _calculate_item_status(10) == TodoItemStatus.COMPLETED
-
 
 # ─── GrocyTodoItem from Task ─────────────────────────────────────────────────
 
@@ -113,7 +54,7 @@ def test_todo_item_from_task() -> None:
     assert item.uid == "7"
     assert item.summary == "Buy groceries"
     assert item.description == "Weekly shopping"
-    assert item.status == TodoItemStatus.COMPLETED
+    assert item.status == TodoItemStatus.NEEDS_ACTION
 
 
 @pytest.mark.feature("task_management")
@@ -145,7 +86,7 @@ def test_todo_item_from_chore() -> None:
     assert item.uid == "5"
     assert item.summary == "Clean kitchen"
     assert item.description == "Wipe counters"
-    assert item.status == TodoItemStatus.COMPLETED
+    assert item.status == TodoItemStatus.NEEDS_ACTION
 
 
 @pytest.mark.feature("chore_management")
@@ -181,7 +122,7 @@ def test_todo_item_from_battery() -> None:
     assert item.uid == "10"
     assert item.summary == "Remote battery"
     assert item.description == "TV remote"
-    assert item.status == TodoItemStatus.COMPLETED
+    assert item.status == TodoItemStatus.NEEDS_ACTION
 
 
 @pytest.mark.feature("battery_tracking")
@@ -301,7 +242,7 @@ def test_todo_item_from_meal_plan_item() -> None:
     assert item.uid == "50"
     assert item.summary == "Pasta"
     assert item.description == "Italian classic"
-    assert item.status == TodoItemStatus.COMPLETED
+    assert item.status == TodoItemStatus.NEEDS_ACTION
 
 
 @pytest.mark.feature("meal_planning")
@@ -651,6 +592,65 @@ async def test_async_delete_todo_items_calls_delete_for_each_uid() -> None:
         await GrocyTodoListEntity.async_delete_todo_items(entity, ["1", "2", "3"])
 
     assert mock_delete.await_count == 3
+
+
+@pytest.mark.feature("chore_management")
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("key", "item"),
+    [
+        (
+            ATTR_CHORES,
+            Chore(
+                id=7,
+                name="Vacuum",
+                next_estimated_execution_time=dt.datetime.now() + dt.timedelta(days=3),
+                track_date_only=False,
+            ),
+        ),
+        (
+            ATTR_TASKS,
+            Task(
+                id=8, name="Pay rent", due_date=dt.date.today() + dt.timedelta(days=5)
+            ),
+        ),
+        (
+            ATTR_BATTERIES,
+            Battery(
+                id=9,
+                name="Remote",
+                next_estimated_charge_time=dt.date.today() + dt.timedelta(days=30),
+            ),
+        ),
+    ],
+)
+async def test_remove_completed_items_keeps_items_not_due_yet(key, item) -> None:
+    """Clear completed must not delete chores, tasks or batteries that are due later."""
+    entity = _build_todo(key, [item])
+
+    with patch(
+        "custom_components.grocy.todo.async_delete_generic_service",
+        new_callable=AsyncMock,
+    ) as mock_delete:
+        await _async_remove_completed_items(entity, None)
+
+    mock_delete.assert_not_awaited()
+
+
+@pytest.mark.feature("shopping_list")
+@pytest.mark.asyncio
+async def test_remove_completed_items_removes_done_shopping_list_items() -> None:
+    """Clear completed still removes shopping list items that are done."""
+    done = ShoppingListProduct(id=3, amount=1.0, product=_make_product(), done=True)
+    entity = _build_todo(ATTR_SHOPPING_LIST, [done])
+
+    with patch(
+        "custom_components.grocy.todo.async_delete_generic_service",
+        new_callable=AsyncMock,
+    ) as mock_delete:
+        await _async_remove_completed_items(entity, None)
+
+    assert mock_delete.call_args[0][2]["object_id"] == "3"
 
 
 # ─── _get_grocy_item ─────────────────────────────────────────────────────────

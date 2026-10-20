@@ -142,7 +142,7 @@ def test_todo_list_entity_exposes_items() -> None:
     item = todo_items[0]
     assert item.uid == "7"
     assert item.summary == "Task"
-    assert item.status == TodoItemStatus.COMPLETED
+    assert item.status == TodoItemStatus.NEEDS_ACTION
 
 
 @pytest.mark.feature("task_management")

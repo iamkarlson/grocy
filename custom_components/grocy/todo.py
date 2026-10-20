@@ -133,24 +133,6 @@ TODOS: tuple[GrocyTodoListEntityDescription, ...] = (
 )
 
 
-def _calculate_days_until(
-    due: dt.datetime | dt.date | None, date_only: bool = False
-) -> int:
-    return (
-        (
-            (due.date() if isinstance(due, dt.datetime) else due) - dt.date.today()
-            if date_only
-            else due - dt.datetime.now()
-        ).days
-        if due
-        else 0
-    )
-
-
-def _calculate_item_status(daysUntilDue: int):
-    return TodoItemStatus.NEEDS_ACTION if daysUntilDue < 1 else TodoItemStatus.COMPLETED
-
-
 class GrocyTodoItem(TodoItem):
     def __init__(
         self,
@@ -166,27 +148,24 @@ class GrocyTodoItem(TodoItem):
     ):
         if isinstance(item, Chore):
             due = item.next_estimated_execution_time
-            days_until = _calculate_days_until(due, item.track_date_only)
             super().__init__(
                 uid=item.id.__str__(),
                 summary=item.name,
                 due=due,
-                status=_calculate_item_status(days_until),
+                status=TodoItemStatus.NEEDS_ACTION,
                 description=item.description or None,
             )
         elif isinstance(item, Battery):
             due = item.next_estimated_charge_time
-            days_until = _calculate_days_until(due, True)
             super().__init__(
                 uid=item.id.__str__(),
                 summary=item.name,
                 due=due,
-                status=_calculate_item_status(days_until),
+                status=TodoItemStatus.NEEDS_ACTION,
                 description=item.description or None,
             )
         elif isinstance(item, MealPlanItem):
             due = item.day
-            days_until = _calculate_days_until(due, True)
             recipe = getattr(item, "recipe", None)
             summary = (
                 recipe.name
@@ -202,12 +181,11 @@ class GrocyTodoItem(TodoItem):
                 uid=item.id.__str__(),
                 summary=summary,
                 due=due,
-                status=_calculate_item_status(days_until),
+                status=TodoItemStatus.NEEDS_ACTION,
                 description=description,
             )
         elif isinstance(item, MealPlanItemWrapper):
             due = item.meal_plan.day
-            days_until = _calculate_days_until(due, True)
             mp = item.meal_plan
             recipe = getattr(mp, "recipe", None)
             summary = (
@@ -224,7 +202,7 @@ class GrocyTodoItem(TodoItem):
                 uid=mp.id.__str__(),
                 summary=summary,
                 due=due,
-                status=_calculate_item_status(days_until),
+                status=TodoItemStatus.NEEDS_ACTION,
                 description=description,
             )
         elif isinstance(item, Product):
@@ -250,12 +228,11 @@ class GrocyTodoItem(TodoItem):
             )
         elif isinstance(item, Task):
             due = item.due_date
-            days_until = _calculate_days_until(due, True)
             super().__init__(
                 uid=item.id.__str__(),
                 summary=item.name,
                 due=due,
-                status=_calculate_item_status(days_until),
+                status=TodoItemStatus.NEEDS_ACTION,
                 description=item.description or None,
             )
         else:
