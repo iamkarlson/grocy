@@ -20,6 +20,7 @@ from grocy.data_models.product import Product, ShoppingListProduct
 from grocy.data_models.task import Task
 from homeassistant.components.todo import TodoItemStatus, TodoListEntityFeature
 from homeassistant.components.todo.services import _async_remove_completed_items
+from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.grocy.const import (
     ATTR_BATTERIES,
@@ -676,6 +677,16 @@ def test_get_grocy_item_finds_meal_plan_wrapper() -> None:
 
     result = entity._get_grocy_item("55")
     assert result.meal_plan.id == 55
+
+
+@pytest.mark.feature("cross_cutting")
+@pytest.mark.parametrize("data", [[], None])
+def test_get_grocy_item_removed_in_grocy_raises_clear_error(data) -> None:
+    """An item removed in Grocy after the last update gives a clear error (#80)."""
+    entity = _build_todo(ATTR_TASKS, data)
+
+    with pytest.raises(HomeAssistantError, match="not in the last data from Grocy"):
+        entity._get_grocy_item("7")
 
 
 # ─── todo_items property ─────────────────────────────────────────────────────

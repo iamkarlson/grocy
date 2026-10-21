@@ -16,6 +16,7 @@ from homeassistant.components.todo import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -261,13 +262,21 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
         super().__init__(coordinator, description, config_entry)
 
     def _get_grocy_item(self, item_id: str):
-        entity_data = self.coordinator.data[self.entity_description.key]
-        return [
-            item
-            for item in entity_data
-            if (item.id if hasattr(item, "id") else item.meal_plan.id).__str__()
-            == item_id
-        ][0] or None
+        entity_data = self.coordinator.data[self.entity_description.key] or []
+        item = next(
+            (
+                item
+                for item in entity_data
+                if str(item.id if hasattr(item, "id") else item.meal_plan.id) == item_id
+            ),
+            None,
+        )
+        if item is None:
+            raise HomeAssistantError(
+                f"Grocy item {item_id} is not in the last data from Grocy. "
+                "It was probably removed in Grocy. Wait for the next update."
+            )
+        return item
 
     @property
     def todo_items(self) -> list[TodoItem] | None:

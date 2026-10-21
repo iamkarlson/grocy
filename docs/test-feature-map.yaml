@@ -338,6 +338,7 @@ cross_cutting:
         - test_todo_item_raises_for_unknown_type
         - test_get_grocy_item_finds_by_id
         - test_get_grocy_item_finds_meal_plan_wrapper
+        - test_get_grocy_item_removed_in_grocy_raises_clear_error
         - test_todo_items_none_data
         - test_todo_exists_fn_checks_available_entities
         - test_async_create_todo_item_unsupported_raises

@@ -634,6 +634,7 @@ These tests validate infrastructure shared across all features.
 | tests/test_todo.py | `test_todo_item_raises_for_unknown_type` | Unknown type raises NotImplementedError |
 | tests/test_todo.py | `test_get_grocy_item_finds_by_id` | Item lookup by ID |
 | tests/test_todo.py | `test_get_grocy_item_finds_meal_plan_wrapper` | MealPlanItemWrapper lookup |
+| tests/test_todo.py | `test_get_grocy_item_removed_in_grocy_raises_clear_error` | An item removed in Grocy gives a clear error |
 | tests/test_todo.py | `test_todo_items_none_data` | None data returns empty list |
 | tests/test_todo.py | `test_todo_exists_fn_checks_available_entities` | Todo exists_fn validation |
 | tests/test_todo.py | `test_async_create_todo_item_unsupported_raises` | Unsupported create raises error |
