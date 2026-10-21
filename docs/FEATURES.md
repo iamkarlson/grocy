@@ -253,6 +253,8 @@ After execution, the chores sensor is force-refreshed.
 | tests/test_todo.py | `test_async_update_todo_item_chore_needs_action_raises` | Uncompleting chore raises NotImplementedError |
 | tests/test_grocy_data.py | `test_async_update_chores` | Chores data fetching with details |
 | tests/test_grocy_data.py | `test_async_update_overdue_chores` | Overdue chores filtering with query |
+| tests/test_grocy_data.py | `test_overdue_filters_use_the_grocy_server_clock` | Overdue filters use the Grocy server clock, read once |
+| tests/test_grocy_data.py | `test_unknown_server_zone_name_uses_the_offset` | An unknown server zone name falls back to the UTC offset |
 
 ---
 

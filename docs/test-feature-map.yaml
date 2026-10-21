@@ -120,6 +120,8 @@ features:
         functions:
           - test_async_update_chores
           - test_async_update_overdue_chores
+          - test_overdue_filters_use_the_grocy_server_clock
+          - test_unknown_server_zone_name_uses_the_offset
 
   task_management:
     name: Task Management

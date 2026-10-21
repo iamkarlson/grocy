@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone, tzinfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from aiohttp import hdrs, web
 from homeassistant.config_entries import ConfigEntry
@@ -65,6 +66,24 @@ class GrocyData:
             ATTR_RECIPES: self.async_update_recipes,
         }
         self._grocy_url = grocy_url
+        self._server_zone: tzinfo | None = None
+
+    def _server_now(self) -> datetime:
+        """
+        Return the current time on the Grocy server clock, as a naive datetime.
+
+        Grocy stores due times in server local time, which can differ from the
+        Home Assistant time zone (#83). The zone is read once from Grocy, so
+        call this from the executor.
+        """
+        if self._server_zone is None:
+            server_time = self.api.system.time()
+            try:
+                self._server_zone = ZoneInfo(server_time.timezone)
+            except ZoneInfoNotFoundError, ValueError:
+                offset = server_time.time_local - server_time.time_utc
+                self._server_zone = timezone(offset)
+        return datetime.now(self._server_zone).replace(tzinfo=None)
 
     async def async_update_data(self, entity_key):
         """Update data."""
@@ -89,9 +108,9 @@ class GrocyData:
 
     async def async_update_overdue_chores(self):
         """Update overdue chores data."""
-        query_filter = [f"next_estimated_execution_time<{datetime.now()}"]
 
         def wrapper():
+            query_filter = [f"next_estimated_execution_time<{self._server_now()}"]
             return self.api.chores.list(get_details=True, query_filters=query_filter)
 
         return await self.hass.async_add_executor_job(wrapper)
@@ -144,15 +163,15 @@ class GrocyData:
 
     async def async_update_overdue_tasks(self):
         """Update overdue tasks data."""
-        and_query_filter = [
-            f"due_date<{datetime.now().date()}",
-            # It's not possible to pass an empty value to Grocy
-            # so use a regex that matches non-empty values
-            # to exclude empty str due_date.
-            r"due_date§.*\S.*",
-        ]
 
         def wrapper():
+            and_query_filter = [
+                f"due_date<{self._server_now().date()}",
+                # It's not possible to pass an empty value to Grocy
+                # so use a regex that matches non-empty values
+                # to exclude empty str due_date.
+                r"due_date§.*\S.*",
+            ]
             return self.api.tasks.list(query_filters=and_query_filter)
 
         return await self.hass.async_add_executor_job(wrapper)
@@ -208,12 +227,12 @@ class GrocyData:
 
     async def async_update_meal_plan(self):
         """Update meal plan data."""
-        # The >= condition is broken before Grocy 3.3.1.
-        # So use > to maintain backward compatibility.
-        yesterday = datetime.now() - timedelta(1)
-        query_filter = [f"day>{yesterday.date()}"]
 
         def wrapper():
+            # The >= condition is broken before Grocy 3.3.1.
+            # So use > to maintain backward compatibility.
+            yesterday = self._server_now() - timedelta(1)
+            query_filter = [f"day>{yesterday.date()}"]
             meal_plan = self.api.meal_plan.items(
                 get_details=True, query_filters=query_filter
             )
@@ -234,7 +253,7 @@ class GrocyData:
         """Update overdue batteries."""
 
         def wrapper():
-            filter_query = [f"next_estimated_charge_time<{datetime.now()}"]
+            filter_query = [f"next_estimated_charge_time<{self._server_now()}"]
             return self.api.batteries.list(filter_query, get_details=True)
 
         return await self.hass.async_add_executor_job(wrapper)

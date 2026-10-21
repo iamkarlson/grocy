@@ -9,7 +9,9 @@ See: docs/FEATURES.md
 from __future__ import annotations
 
 import datetime as dt
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
+from zoneinfo import ZoneInfo
 
 import pytest
 from aiohttp import hdrs
@@ -54,7 +56,16 @@ def grocy_data(hass, mock_grocy) -> GrocyData:
         return func(*args)
 
     hass.async_add_executor_job = AsyncMock(side_effect=immediate_executor)
+    mock_grocy.system.time.return_value = _server_time("UTC", hours=0)
     return GrocyData(hass, mock_grocy, "https://exemple.com")
+
+
+def _server_time(zone: str, hours: int) -> SimpleNamespace:
+    """Build the system.time() answer of a Grocy server."""
+    now = dt.datetime(2026, 10, 21, 12, 0, tzinfo=dt.UTC)
+    return SimpleNamespace(
+        timezone=zone, time_utc=now, time_local=now + dt.timedelta(hours=hours)
+    )
 
 
 # ─── async_update_data dispatch ───────────────────────────────────────────────
@@ -133,6 +144,44 @@ async def test_async_update_overdue_chores(grocy_data) -> None:
     filters = call_args.kwargs["query_filters"]
     assert len(filters) == 1
     assert "next_estimated_execution_time<" in filters[0]
+
+
+@pytest.mark.feature("chore_management")
+@pytest.mark.asyncio
+async def test_overdue_filters_use_the_grocy_server_clock(grocy_data) -> None:
+    """Grocy stores due times in its own time zone, not in the HA one (#83)."""
+    zone = ZoneInfo("Pacific/Kiritimati")  # UTC+14, so the day differs from UTC
+    grocy_data.api.system.time.return_value = _server_time(zone.key, hours=14)
+    grocy_data.api.tasks.list.return_value = []
+    grocy_data.api.chores.list.return_value = []
+
+    before = dt.datetime.now(zone).replace(tzinfo=None)
+    await grocy_data.async_update_overdue_tasks()
+    await grocy_data.async_update_overdue_chores()
+    after = dt.datetime.now(zone).replace(tzinfo=None)
+
+    task_filter = grocy_data.api.tasks.list.call_args.kwargs["query_filters"][0]
+    assert task_filter in {f"due_date<{before.date()}", f"due_date<{after.date()}"}
+    chore_filter = grocy_data.api.chores.list.call_args.kwargs["query_filters"][0]
+    sent = dt.datetime.fromisoformat(chore_filter.split("<")[1])
+    assert before <= sent <= after
+    # The zone is read once, not at each update.
+    grocy_data.api.system.time.assert_called_once()
+
+
+@pytest.mark.feature("chore_management")
+@pytest.mark.asyncio
+async def test_unknown_server_zone_name_uses_the_offset(grocy_data) -> None:
+    """A zone name that zoneinfo does not know falls back to the UTC offset (#83)."""
+    grocy_data.api.system.time.return_value = _server_time("Not/AZone", hours=14)
+    grocy_data.api.chores.list.return_value = []
+
+    await grocy_data.async_update_overdue_chores()
+
+    chore_filter = grocy_data.api.chores.list.call_args.kwargs["query_filters"][0]
+    sent = dt.datetime.fromisoformat(chore_filter.split("<")[1])
+    expected = dt.datetime.now(dt.UTC).replace(tzinfo=None) + dt.timedelta(hours=14)
+    assert abs(sent - expected) < dt.timedelta(minutes=1)
 
 
 # ─── async_update_tasks ──────────────────────────────────────────────────────
