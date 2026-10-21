@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import base64
 import logging
+from collections.abc import Mapping
 from datetime import datetime, timedelta, timezone, tzinfo
+from http import HTTPStatus
+from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from aiohttp import hdrs, web
-from homeassistant.config_entries import ConfigEntry
+from aiohttp import ClientError, hdrs, web
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.http import HomeAssistantView
@@ -35,6 +38,8 @@ from .const import (
     CONF_API_KEY,
     CONF_PORT,
     CONF_URL,
+    CONF_VERIFY_SSL,
+    DOMAIN,
 )
 from .helpers import MealPlanItemWrapper, RecipeWrapper, extract_base_url_and_path
 
@@ -279,57 +284,99 @@ class GrocyData:
         return await self.hass.async_add_executor_job(wrapper)
 
 
-async def async_setup_endpoint_for_image_proxy(
-    hass: HomeAssistant, config_entry: ConfigEntry
-):
-    """Do setup and register the image api for grocy images with HA."""
-    session = async_get_clientsession(hass)
+# Only the picture groups that the integration links to. Other groups, for
+# example userfiles, must not be readable through this view without a login.
+PICTURE_GROUPS = frozenset({"recipepictures", "productpictures"})
+DEFAULT_PICTURE_WIDTH = 400
+MAX_PICTURE_WIDTH = 2000
+_PICTURE_VIEW_REGISTERED = f"{DOMAIN}_picture_view_registered"
+_FORWARDED_HEADERS = (
+    hdrs.CACHE_CONTROL,
+    hdrs.CONTENT_DISPOSITION,
+    hdrs.CONTENT_LENGTH,
+    hdrs.CONTENT_TYPE,
+    hdrs.CONTENT_ENCODING,
+)
 
-    url = config_entry.get(CONF_URL) or ""
-    (grocy_base_url, grocy_path) = extract_base_url_and_path(url)
-    api_key = config_entry.get(CONF_API_KEY)
-    port_number = config_entry.get(CONF_PORT)
-    if grocy_path:
-        grocy_full_url = f"{grocy_base_url}:{port_number}/{grocy_path}"
-    else:
-        grocy_full_url = f"{grocy_base_url}:{port_number}"
 
-    _LOGGER.debug("Generated image api url to grocy: '%s'", grocy_full_url)
-    hass.http.register_view(GrocyPictureView(session, grocy_full_url, api_key))
+async def async_setup_endpoint_for_image_proxy(hass: HomeAssistant) -> None:
+    """
+    Register the picture proxy view once per Home Assistant run.
+
+    Home Assistant cannot remove a view, and a second registration never
+    answers (#72). The view reads the settings of the entry on each request.
+    """
+    if hass.data.get(_PICTURE_VIEW_REGISTERED):
+        return
+    hass.http.register_view(GrocyPictureView(hass))
+    hass.data[_PICTURE_VIEW_REGISTERED] = True
+
+
+def _grocy_base_url(data: Mapping[str, Any]) -> str:
+    """Return the Grocy URL with port and path from the entry data."""
+    (base_url, path) = extract_base_url_and_path(data.get(CONF_URL) or "")
+    port = data.get(CONF_PORT)
+    return f"{base_url}:{port}/{path}" if path else f"{base_url}:{port}"
+
+
+def _is_file_name(encoded: str) -> bool:
+    """Return True if the value is base64 of a file name without a path."""
+    try:
+        name = base64.b64decode(encoded, validate=True).decode("utf-8")
+    except ValueError:  # also binascii.Error and UnicodeDecodeError
+        return False
+    return bool(name) and "/" not in name and "\\" not in name
+
+
+def _picture_width(raw: str | None) -> int:
+    """Return the requested picture width, or the default for a bad value."""
+    try:
+        width = int(raw) if raw is not None else DEFAULT_PICTURE_WIDTH
+    except ValueError:
+        return DEFAULT_PICTURE_WIDTH
+    return min(max(width, 1), MAX_PICTURE_WIDTH)
 
 
 class GrocyPictureView(HomeAssistantView):
-    """View to render pictures from grocy without auth."""
+    """Proxy Grocy pictures, so that dashboards can show them without the API key."""
 
     requires_auth = False
     url = "/api/grocy/{picture_type}/{filename}"
     name = "api:grocy:picture"
 
-    def __init__(self, session, base_url, api_key) -> None:
-        self._session = session
-        self._base_url = base_url
-        self._api_key = api_key
+    def __init__(self, hass: HomeAssistant) -> None:
+        self._hass = hass
 
     async def get(self, request, picture_type: str, filename: str) -> web.Response:
         """GET request for the image."""
-        width = request.query.get("width", 400)
-        url = f"{self._base_url}/api/files/{picture_type}/{filename}"
-        url = f"{url}?force_serve_as=picture&best_fit_width={int(width)}"
-        headers = {"GROCY-API-KEY": self._api_key, "accept": "*/*"}
+        coordinator = self._hass.data.get(DOMAIN)
+        if (
+            coordinator is None
+            or picture_type not in PICTURE_GROUPS
+            or not _is_file_name(filename)
+        ):
+            raise web.HTTPNotFound
 
-        async with self._session.get(url, headers=headers) as resp:
-            resp.raise_for_status()
+        # Read the settings now, so that a changed URL or API key applies at once.
+        data = coordinator.config_entry.data
+        width = _picture_width(request.query.get("width"))
+        url = f"{_grocy_base_url(data)}/api/files/{picture_type}/{filename}"
+        url = f"{url}?force_serve_as=picture&best_fit_width={width}"
+        headers = {"GROCY-API-KEY": data[CONF_API_KEY], "accept": "*/*"}
+        session = async_get_clientsession(
+            self._hass, verify_ssl=data.get(CONF_VERIFY_SSL, False)
+        )
 
-            response_headers = {}
-            for name, value in resp.headers.items():
-                if name in (
-                    hdrs.CACHE_CONTROL,
-                    hdrs.CONTENT_DISPOSITION,
-                    hdrs.CONTENT_LENGTH,
-                    hdrs.CONTENT_TYPE,
-                    hdrs.CONTENT_ENCODING,
-                ):
-                    response_headers[name] = value
-
-            body = await resp.read()
-            return web.Response(body=body, headers=response_headers)
+        try:
+            async with session.get(url, headers=headers) as resp:
+                if resp.status != HTTPStatus.OK:
+                    raise web.HTTPNotFound
+                response_headers = {
+                    name: value
+                    for name, value in resp.headers.items()
+                    if name in _FORWARDED_HEADERS
+                }
+                body = await resp.read()
+        except (ClientError, TimeoutError) as error:
+            raise web.HTTPBadGateway from error
+        return web.Response(body=body, headers=response_headers)

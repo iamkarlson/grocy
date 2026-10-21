@@ -250,10 +250,16 @@ features:
     tests:
       - file: tests/test_grocy_data.py
         functions:
-          - test_async_setup_endpoint_registers_view
-          - test_async_setup_endpoint_with_path
+          - test_async_setup_endpoint_registers_view_once
           - test_picture_view_get_proxies_request
-          - test_picture_view_uses_default_width
+          - test_picture_view_uses_path_and_default_width
+          - test_picture_view_reads_the_current_entry
+          - test_picture_view_uses_verify_ssl
+          - test_picture_view_rejects_other_groups_and_names
+          - test_picture_view_without_loaded_entry_is_not_found
+          - test_picture_view_reads_width_safely
+          - test_picture_view_maps_grocy_errors
+          - test_recipe_picture_url_encodes_utf8
           - test_picture_view_requires_no_auth
           - test_picture_view_url_pattern
 

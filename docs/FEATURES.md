@@ -494,19 +494,27 @@ Proxies product and recipe images from Grocy through Home Assistant. This allows
 
 `/api/grocy/{picture_type}/{filename}`
 
-- `picture_type`: `productpictures` or `recipepictures`
-- `filename`: Base64-encoded filename from Grocy
-- Optional query parameter: `width` (default: 400)
+- `picture_type`: `productpictures` or `recipepictures`. Other file groups answer 404.
+- `filename`: the file name from Grocy, as base64 of its UTF-8 bytes. A value that is not a plain file name answers 404.
+- Optional query parameter: `width` (default: 400, maximum: 2000)
 - No authentication required
+- The view reads the Grocy URL, API key and `verify_ssl` of the entry on each request, so changes apply without a restart.
+- A Grocy error answers 404, and a connection error answers 502.
 
 ### Test Coverage
 
 | Test File | Test Function | What It Validates |
 |-----------|---------------|-------------------|
-| tests/test_grocy_data.py | `test_async_setup_endpoint_registers_view` | Endpoint registration |
-| tests/test_grocy_data.py | `test_async_setup_endpoint_with_path` | URL path handling for subpath installations |
+| tests/test_grocy_data.py | `test_async_setup_endpoint_registers_view_once` | The view is registered once, also after a reload |
 | tests/test_grocy_data.py | `test_picture_view_get_proxies_request` | Image proxying with correct headers |
-| tests/test_grocy_data.py | `test_picture_view_uses_default_width` | Default width=400 |
+| tests/test_grocy_data.py | `test_picture_view_uses_path_and_default_width` | URL path for subpath installations and default width 400 |
+| tests/test_grocy_data.py | `test_picture_view_reads_the_current_entry` | A changed URL or API key applies without a restart |
+| tests/test_grocy_data.py | `test_picture_view_uses_verify_ssl` | The proxy honours verify_ssl |
+| tests/test_grocy_data.py | `test_picture_view_rejects_other_groups_and_names` | Only picture groups and plain file names are served |
+| tests/test_grocy_data.py | `test_picture_view_without_loaded_entry_is_not_found` | No loaded entry answers 404 |
+| tests/test_grocy_data.py | `test_picture_view_reads_width_safely` | A bad width gives the default or the limit |
+| tests/test_grocy_data.py | `test_picture_view_maps_grocy_errors` | Grocy errors answer 404, connection errors 502 |
+| tests/test_grocy_data.py | `test_recipe_picture_url_encodes_utf8` | Picture names are encoded as UTF-8; unroutable names give no URL |
 | tests/test_grocy_data.py | `test_picture_view_requires_no_auth` | No authentication required |
 | tests/test_grocy_data.py | `test_picture_view_url_pattern` | URL pattern contains expected placeholders |
 
