@@ -459,12 +459,14 @@ Manually trigger a calendar sync. No parameters.
 | tests/test_calendar.py | `test_utc_event_converted_to_local_when_fix_disabled` | Proper UTC-to-local conversion when fix disabled |
 | tests/test_calendar.py | `test_all_day_event_single_day` | Single-day all-day event handling |
 | tests/test_calendar.py | `test_all_day_event_multi_day` | Multi-day event spanning |
-| tests/test_calendar.py | `test_all_day_event_no_end_date` | All-day event without end date defaults to end of day |
+| tests/test_calendar.py | `test_all_day_event_no_end_date` | All-day event without end date lasts one day |
 | tests/test_calendar.py | `test_event_without_end_time_defaults_to_one_hour` | Timed event without end defaults to 1 hour |
 | tests/test_calendar.py | `test_multiple_events_sorted_by_start_time` | Events sorted chronologically |
 | tests/test_calendar.py | `test_event_property_returns_next_event` | Next upcoming event returned correctly |
 | tests/test_calendar.py | `test_event_property_returns_none_when_no_events` | Empty calendar returns None |
-| tests/test_calendar.py | `test_http_error_handling` | HTTP errors handled gracefully |
+| tests/test_calendar.py | `test_http_error_handling` | An HTTP error keeps the events of the last good fetch |
+| tests/test_calendar.py | `test_failed_sync_keeps_events_and_retries` | A failed sync keeps the events and is not counted as done |
+| tests/test_calendar.py | `test_get_events_returns_event_in_progress` | Events in progress and all-day events of today are returned |
 | tests/test_calendar.py | `test_daylight_saving_time_transition` | DST transition handling |
 | tests/test_calendar.py | `test_different_timezone_pacific` | US/Pacific timezone validation |
 | tests/test_calendar.py | `test_fix_timezone_defaults_to_true` | Default timezone fix setting |
