@@ -598,6 +598,7 @@ All entities (except calendar) are updated every 30 seconds via the data coordin
 | tests/test_config_flow.py | `test_reauth_step_shows_confirm_form` | Reauth form display |
 | tests/test_config_flow.py | `test_reauth_confirm_updates_entry` | Successful reauth |
 | tests/test_config_flow.py | `test_reauth_confirm_handles_error` | Error during reauth |
+| tests/test_config_flow.py | `test_url_with_password_is_logged_only_at_debug` | A URL with a password goes to the log only at DEBUG |
 | tests/test_init.py | `test_async_setup_entry_initializes_integration` | Full setup flow: coordinator, services, proxy, platforms |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready` | Connection failure raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready_on_timeout` | Timeout raises ConfigEntryNotReady |

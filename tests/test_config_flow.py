@@ -7,6 +7,7 @@ See: docs/FEATURES.md#10-configuration-setup
 
 from __future__ import annotations
 
+import logging
 from http import HTTPStatus
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -16,7 +17,11 @@ from grocy.errors import GrocyError
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.grocy.config_flow import GrocyFlowHandler, async_migrate_entry
+from custom_components.grocy.config_flow import (
+    GrocyFlowHandler,
+    _normalize_url_and_port,
+    async_migrate_entry,
+)
 from custom_components.grocy.const import (
     CONF_API_KEY,
     CONF_CALENDAR_FIX_TIMEZONE,
@@ -429,6 +434,19 @@ async def test_migrate_entry_v2_1_moves_port_from_url(hass, config_entry_data) -
     assert entry.data[CONF_PORT] == 9283
     assert entry.data[CONF_API_KEY] == config_entry_data[CONF_API_KEY]
     assert entry.data[CONF_CALENDAR_SYNC_INTERVAL] == 42
+
+
+def test_url_with_password_is_logged_only_at_debug(caplog) -> None:
+    """The URL can carry user:password@, so it goes to the log only at DEBUG (#82)."""
+    user_input = {CONF_URL: "http://user:s3cret@192.168.1.10:9283", CONF_PORT: 9192}
+
+    caplog.set_level(logging.INFO, logger="custom_components.grocy")
+    _normalize_url_and_port(user_input)
+    assert "s3cret" not in caplog.text
+
+    caplog.set_level(logging.DEBUG, logger="custom_components.grocy")
+    _normalize_url_and_port(user_input)
+    assert "s3cret" in caplog.text
 
 
 async def test_user_step_moves_port_from_url(hass, config_entry_data) -> None:

@@ -285,6 +285,7 @@ features:
           - test_migrate_entry_v2_is_left_alone
           - test_migrate_entry_v2_1_moves_port_from_url
           - test_user_step_moves_port_from_url
+          - test_url_with_password_is_logged_only_at_debug
           - test_user_step_maps_each_failure_to_its_message
           - test_html_error_page_maps_to_cannot_connect
           - test_user_step_rejects_ingress_url

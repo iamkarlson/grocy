@@ -107,7 +107,7 @@ def _normalize_url_and_port(user_input: dict[str, Any]) -> dict[str, Any]:
         user_input[CONF_URL], user_input.get(CONF_PORT, DEFAULT_PORT)
     )
     if url != user_input[CONF_URL]:
-        _LOGGER.info(
+        _LOGGER.debug(
             "URL %s carries an explicit port; using port %s and URL %s",
             user_input[CONF_URL],
             port,
