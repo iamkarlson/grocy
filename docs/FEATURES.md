@@ -605,6 +605,7 @@ All entities (except calendar) are updated every 30 seconds via the data coordin
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready` | Connection failure raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready_on_timeout` | Timeout raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready_on_os_error` | OS error raises ConfigEntryNotReady |
+| tests/test_init.py | `test_async_setup_entry_maps_grocy_errors` | Grocy 401 or 403 at setup starts re-authentication; other errors retry |
 | tests/test_init.py | `test_async_unload_entry_cleans_up` | Unload cleans up data and services |
 | tests/test_init.py | `test_async_unload_entry_platform_failure` | Partial cleanup on platform failure |
 | tests/test_init.py | `test_available_entities_all_features` | All features enabled creates all entities |

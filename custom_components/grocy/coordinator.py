@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from http import HTTPStatus
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
@@ -15,6 +17,7 @@ from grocy.data_models.battery import Battery
 from grocy.data_models.chore import Chore
 from grocy.data_models.product import Product, ShoppingListProduct
 from grocy.data_models.task import Task
+from grocy.errors import GrocyError
 
 from .const import (
     CONF_API_KEY,
@@ -109,6 +112,14 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
                 data[key] = await self.grocy_data.async_update_data(key)
                 successful_updates += 1
             except Exception as error:  # pylint: disable=broad-except
+                # A 401 affects every entity; HA then asks the user for a new key.
+                # A 403 is one missing permission, so it stays an error of this entity.
+                if (
+                    isinstance(error, GrocyError)
+                    and error.status_code == HTTPStatus.UNAUTHORIZED
+                ):
+                    msg = f"Grocy rejected the API key: {error}"
+                    raise ConfigEntryAuthFailed(msg) from error
                 _LOGGER.error("Failed to update %s: %s", key, error)
                 errors[key] = error
                 previous = getattr(self, "data", None)

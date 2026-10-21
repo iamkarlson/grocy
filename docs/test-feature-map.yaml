@@ -302,6 +302,7 @@ features:
           - test_async_setup_entry_raises_not_ready
           - test_async_setup_entry_raises_not_ready_on_timeout
           - test_async_setup_entry_raises_not_ready_on_os_error
+          - test_async_setup_entry_maps_grocy_errors
           - test_async_unload_entry_cleans_up
           - test_async_unload_entry_platform_failure
           - test_available_entities_all_features
@@ -320,6 +321,8 @@ features:
           - test_async_update_data_partial_failure_does_not_raise
           - test_async_update_data_raises_update_failed_when_all_fail_with_previous_data
           - test_async_update_data_partial_failure_keeps_previous_data
+          - test_async_update_data_unauthorized_starts_reauth
+          - test_async_update_data_forbidden_stays_an_entity_error
 
 # Cross-cutting tests that validate shared infrastructure.
 # These don't belong to a single feature but are essential.

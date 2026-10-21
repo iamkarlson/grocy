@@ -11,6 +11,9 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
+import requests
+from grocy.errors import GrocyError
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.grocy.coordinator import GrocyDataUpdateCoordinator
@@ -134,4 +137,44 @@ async def test_async_update_data_partial_failure_keeps_previous_data() -> None:
     result = await GrocyDataUpdateCoordinator._async_update_data(coordinator)
 
     assert result.stock == ["old_item"]
+    assert result.tasks == ["task1"]
+
+
+def _coordinator_with_stock_error(status: int) -> GrocyDataUpdateCoordinator:
+    response = requests.Response()
+    response.status_code = status
+    response._content = b""
+    error = GrocyError(response)
+
+    async def mock_update(key: str):
+        if key == "stock":
+            raise error
+        return ["task1"]
+
+    coordinator = GrocyDataUpdateCoordinator.__new__(GrocyDataUpdateCoordinator)
+    coordinator.entities = [DummyEntity("stock"), DummyEntity("tasks")]
+    coordinator.data = None
+    coordinator.grocy_data = SimpleNamespace(
+        async_update_data=AsyncMock(side_effect=mock_update)
+    )
+    return coordinator
+
+
+@pytest.mark.asyncio
+async def test_async_update_data_unauthorized_starts_reauth() -> None:
+    """A revoked API key makes HA ask for a new one, not retry forever (#75)."""
+    coordinator = _coordinator_with_stock_error(401)
+
+    with pytest.raises(ConfigEntryAuthFailed):
+        await GrocyDataUpdateCoordinator._async_update_data(coordinator)
+
+
+@pytest.mark.asyncio
+async def test_async_update_data_forbidden_stays_an_entity_error() -> None:
+    """A missing permission affects one entity only (#75)."""
+    coordinator = _coordinator_with_stock_error(403)
+
+    result = await GrocyDataUpdateCoordinator._async_update_data(coordinator)
+
+    assert result.stock is None
     assert result.tasks == ["task1"]
