@@ -13,12 +13,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import requests
+import voluptuous as vol
 from grocy.errors import GrocyError
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.grocy.config_flow import (
     GrocyFlowHandler,
+    _get_user_data_schema,
     _normalize_url_and_port,
     async_migrate_entry,
 )
@@ -434,6 +436,21 @@ async def test_migrate_entry_v2_1_moves_port_from_url(hass, config_entry_data) -
     assert entry.data[CONF_PORT] == 9283
     assert entry.data[CONF_API_KEY] == config_entry_data[CONF_API_KEY]
     assert entry.data[CONF_CALENDAR_SYNC_INTERVAL] == 42
+
+
+@pytest.mark.parametrize(("interval", "valid"), [(0, False), (-1, False), (1, True)])
+def test_calendar_sync_interval_must_be_at_least_one_minute(
+    config_entry_data, interval, valid
+) -> None:
+    """0 would schedule the calendar sync in a tight loop (#76)."""
+    schema = _get_user_data_schema()
+    data = {**config_entry_data, CONF_CALENDAR_SYNC_INTERVAL: interval}
+
+    if valid:
+        assert schema(data)[CONF_CALENDAR_SYNC_INTERVAL] == interval
+    else:
+        with pytest.raises(vol.Invalid):
+            schema(data)
 
 
 def test_url_with_password_is_logged_only_at_debug(caplog) -> None:

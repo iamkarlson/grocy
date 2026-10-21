@@ -921,3 +921,26 @@ class TestCalendarEntityConfiguration:
 
         entity = GrocyCalendarEntity(mock_coordinator, config_entry)
         assert entity._sync_interval_minutes == 15
+
+    @pytest.mark.parametrize("saved_interval", [0, -5])
+    def test_sync_interval_below_one_minute_is_raised_to_one(
+        self,
+        mock_coordinator,
+        saved_interval,
+    ) -> None:
+        """An entry saved with 0 must not schedule the sync in a tight loop (#76)."""
+        config_entry = MockConfigEntry(
+            domain=DOMAIN,
+            title="Grocy",
+            data={
+                CONF_URL: "https://demo.grocy.info",
+                CONF_API_KEY: "test-token",
+                CONF_PORT: 9192,
+                CONF_VERIFY_SSL: False,
+                CONF_CALENDAR_SYNC_INTERVAL: saved_interval,
+            },
+            entry_id="test-sync-zero",
+        )
+
+        entity = GrocyCalendarEntity(mock_coordinator, config_entry)
+        assert entity._sync_interval_minutes == 1

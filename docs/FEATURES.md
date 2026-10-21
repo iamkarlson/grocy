@@ -470,6 +470,7 @@ Manually trigger a calendar sync. No parameters.
 | tests/test_calendar.py | `test_fix_timezone_can_be_disabled` | Explicit disable option |
 | tests/test_calendar.py | `test_sync_interval_default` | Default 5-minute sync interval |
 | tests/test_calendar.py | `test_sync_interval_custom` | Custom sync interval |
+| tests/test_calendar.py | `test_sync_interval_below_one_minute_is_raised_to_one` | A saved interval of 0 or less is raised to 1 minute |
 | tests/test_services.py | `test_sync_calendar_service_calls_calendar_update` | Sync service triggers calendar update |
 | tests/test_services.py | `test_sync_calendar_service_handles_no_calendar_entity` | Missing calendar entity handled gracefully |
 | tests/test_services.py | `test_dispatcher_routes_sync_calendar` | Dispatcher routes sync_calendar |
@@ -599,6 +600,7 @@ All entities (except calendar) are updated every 30 seconds via the data coordin
 | tests/test_config_flow.py | `test_reauth_confirm_updates_entry` | Successful reauth |
 | tests/test_config_flow.py | `test_reauth_confirm_handles_error` | Error during reauth |
 | tests/test_config_flow.py | `test_url_with_password_is_logged_only_at_debug` | A URL with a password goes to the log only at DEBUG |
+| tests/test_config_flow.py | `test_calendar_sync_interval_must_be_at_least_one_minute` | The form accepts a calendar sync interval of 1 minute or more |
 | tests/test_init.py | `test_async_setup_entry_initializes_integration` | Full setup flow: coordinator, services, proxy, platforms |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready` | Connection failure raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready_on_timeout` | Timeout raises ConfigEntryNotReady |

@@ -228,6 +228,7 @@ features:
           - test_fix_timezone_can_be_disabled
           - test_sync_interval_default
           - test_sync_interval_custom
+          - test_sync_interval_below_one_minute_is_raised_to_one
       - file: tests/test_services.py
         functions:
           - test_sync_calendar_service_calls_calendar_update
@@ -286,6 +287,7 @@ features:
           - test_migrate_entry_v2_1_moves_port_from_url
           - test_user_step_moves_port_from_url
           - test_url_with_password_is_logged_only_at_debug
+          - test_calendar_sync_interval_must_be_at_least_one_minute
           - test_user_step_maps_each_failure_to_its_message
           - test_html_error_page_maps_to_cannot_connect
           - test_user_step_rejects_ingress_url

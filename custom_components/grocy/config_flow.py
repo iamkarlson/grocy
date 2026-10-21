@@ -166,7 +166,7 @@ def _get_user_data_schema(
                 default=defaults.get(
                     CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
                 ),
-            ): int,
+            ): vol.All(vol.Coerce(int), vol.Range(min=1)),
             vol.Optional(
                 CONF_CALENDAR_FIX_TIMEZONE,
                 default=defaults.get(CONF_CALENDAR_FIX_TIMEZONE, True),

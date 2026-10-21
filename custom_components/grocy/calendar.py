@@ -68,9 +68,7 @@ class GrocyCalendarEntity(CalendarEntity):
         self._config_entry = config_entry
         self._ical_url: str | None = None
         self._events: list[CalendarEvent] = []
-        self._sync_interval_minutes: int = config_entry.data.get(
-            CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
-        )
+        self._sync_interval_minutes = self._read_sync_interval()
         self._fix_timezone: bool = config_entry.data.get(
             CONF_CALENDAR_FIX_TIMEZONE, True
         )
@@ -136,14 +134,25 @@ class GrocyCalendarEntity(CalendarEntity):
             self._unsub_update()
             self._unsub_update = None
 
+    def _read_sync_interval(self) -> int:
+        """
+        Return the sync interval in minutes from the config entry.
+
+        At least 1: an interval of 0 schedules the next sync at once, in a loop.
+        Entries saved before the form had a minimum can still have 0.
+        """
+        return max(
+            1,
+            self._config_entry.data.get(
+                CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
+            ),
+        )
+
     def _schedule_update(self) -> None:
         """Schedule the next update."""
         if self._unsub_update:
             self._unsub_update()
-        # Get current sync interval from config entry
-        self._sync_interval_minutes = self._config_entry.data.get(
-            CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
-        )
+        self._sync_interval_minutes = self._read_sync_interval()
         interval = timedelta(minutes=self._sync_interval_minutes)
         self._unsub_update = async_track_time_interval(
             self.hass, self._async_update_calendar, interval
