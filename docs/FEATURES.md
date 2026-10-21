@@ -218,7 +218,7 @@ Requires Grocy feature flag: `FEATURE_FLAG_CHORES`
 
 | Entity ID | Supports | Update behavior | Delete behavior |
 |-----------|----------|----------------|-----------------|
-| `todo.grocy_chores` | CREATE, UPDATE, DELETE | Marking complete **executes** the chore (done_by=1) | Deletes chore |
+| `todo.grocy_chores` | CREATE, UPDATE, DELETE | Marking complete **executes** the chore for the owner of the API key, or for the assigned user when the option "Chores completed in Home Assistant are done by" says so | Deletes chore |
 
 ### Services
 
