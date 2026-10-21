@@ -26,6 +26,7 @@
                     "api_key": "Clé API Grocy",
                     "calendar_fix_timezone": "Fuseau horaire fixe pour le calendrier",
                     "calendar_sync_interval": "Intervalle de synchronisation du calendrier (en minutes)",
+                    "chore_done_by": "Les corvées terminées dans Home Assistant sont faites par",
                     "port": "Numéro de port (9192)",
                     "url": "URL de l'API Grocy",
                     "verify_ssl": "Vérifier le certificat SSL"
@@ -38,6 +39,7 @@
                     "api_key": "Clé API Grocy",
                     "calendar_fix_timezone": "Fuseau horaire fixe pour le calendrier",
                     "calendar_sync_interval": "Intervalle de synchronisation du calendrier (en minutes)",
+                    "chore_done_by": "Les corvées terminées dans Home Assistant sont faites par",
                     "port": "Numéro de port (9192)",
                     "url": "URL de l'API Grocy",
                     "verify_ssl": "Vérifier le certificat SSL"
@@ -62,12 +64,21 @@
                     "api_key": "Clé API Grocy",
                     "calendar_fix_timezone": "Fuseau horaire fixe pour le calendrier",
                     "calendar_sync_interval": "Intervalle de synchronisation du calendrier (en minutes)",
+                    "chore_done_by": "Les corvées terminées dans Home Assistant sont faites par",
                     "port": "Numéro de port (9192)",
                     "url": "URL de l'API Grocy",
                     "verify_ssl": "Vérifier le certificat SSL"
                 },
                 "description": "Configurer les options de l'intégration Grocy.",
                 "title": "Options de Grocy"
+            }
+        }
+    },
+    "selector": {
+        "chore_done_by": {
+            "options": {
+                "api_key_owner": "Le propriétaire de la clé API",
+                "assigned_user": "L'utilisateur assigné à la corvée"
             }
         }
     },

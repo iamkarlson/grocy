@@ -218,7 +218,7 @@ Requires Grocy feature flag: `FEATURE_FLAG_CHORES`
 
 | Entity ID | Supports | Update behavior | Delete behavior |
 |-----------|----------|----------------|-----------------|
-| `todo.grocy_chores` | CREATE, UPDATE, DELETE | Marking complete **executes** the chore (done_by=1) | Deletes chore |
+| `todo.grocy_chores` | CREATE, UPDATE, DELETE | Marking complete **executes** the chore for the owner of the API key, or for the assigned user when the option "Chores completed in Home Assistant are done by" says so | Deletes chore |
 
 ### Services
 
@@ -249,9 +249,12 @@ After execution, the chores sensor is force-refreshed.
 | tests/test_todo.py | `test_remove_completed_items_keeps_items_not_due_yet` | Clear completed keeps chores, tasks and batteries that are due later |
 | tests/test_todo.py | `test_async_create_todo_item_chore` | Creating chore todo sets period_type=manually |
 | tests/test_todo.py | `test_async_update_todo_item_complete_chore` | Completing chore todo executes chore |
+| tests/test_todo.py | `test_complete_chore_done_by_follows_the_option` | The chore is logged for the API key owner or the assigned user |
 | tests/test_todo.py | `test_async_update_todo_item_chore_needs_action_raises` | Uncompleting chore raises NotImplementedError |
 | tests/test_grocy_data.py | `test_async_update_chores` | Chores data fetching with details |
 | tests/test_grocy_data.py | `test_async_update_overdue_chores` | Overdue chores filtering with query |
+| tests/test_grocy_data.py | `test_overdue_filters_use_the_grocy_server_clock` | Overdue filters use the Grocy server clock, read once |
+| tests/test_grocy_data.py | `test_unknown_server_zone_name_uses_the_offset` | An unknown server zone name falls back to the UTC offset |
 
 ---
 
@@ -388,7 +391,7 @@ Requires Grocy feature flag: `FEATURE_FLAG_RECIPES`
 
 | Entity ID | Supports | Update behavior | Delete behavior |
 |-----------|----------|----------------|-----------------|
-| `todo.grocy_meal_plan` | UPDATE, DELETE | Marking complete **consumes the recipe** (removes ingredients from stock) and deletes the meal plan entry | Deletes meal plan entry |
+| `todo.grocy_meal_plan` | UPDATE, DELETE | Marking complete **consumes** the entry as the Grocy meal plan page does (a recipe with the servings of the entry, a product with its amount, a note nothing) and marks it done. The entry stays in Grocy. Unchecking marks it not done | Deletes meal plan entry |
 
 **Note:** Meal plan todo items cannot be created through Home Assistant. Use the Grocy UI to plan meals.
 
@@ -411,8 +414,12 @@ Consume a recipe (deduct all ingredients from stock).
 | tests/test_services.py | `test_dispatcher_routes_consume_recipe` | Dispatcher routes consume_recipe |
 | tests/test_todo.py | `test_todo_item_from_meal_plan_item` | Meal plan item converts to todo |
 | tests/test_todo.py | `test_todo_item_from_meal_plan_item_wrapper` | MealPlanItemWrapper converts to todo |
-| tests/test_todo.py | `test_async_update_todo_item_complete_meal_plan` | Completing meal plan consumes recipe and deletes entry |
-| tests/test_todo.py | `test_async_update_todo_item_meal_plan_needs_action_raises` | Uncompleting meal plan raises NotImplementedError |
+| tests/test_todo.py | `test_complete_meal_plan_recipe_consumes_the_meal_plan_recipe` | Completing a recipe entry consumes its meal plan recipe and marks it done |
+| tests/test_todo.py | `test_complete_meal_plan_product_consumes_its_amount` | Completing a product entry consumes its amount and marks it done |
+| tests/test_todo.py | `test_complete_meal_plan_note_only_marks_it_done` | Completing a note only marks it done |
+| tests/test_todo.py | `test_uncomplete_meal_plan_marks_it_not_done` | Unchecking an entry marks it not done |
+| tests/test_todo.py | `test_complete_meal_plan_without_meal_plan_recipe_raises` | A missing meal plan recipe gives a clear error |
+| tests/test_todo.py | `test_meal_plan_item_shows_done_state_and_note` | Done entries show as completed; notes show their text |
 | tests/test_entities.py | `test_sensor_recipes_counts` | Recipes sensor counts correctly |
 | tests/test_grocy_data.py | `test_async_update_meal_plan_sorts_by_day` | Meal plan sorted by date, filters from yesterday |
 | tests/test_grocy_data.py | `test_async_update_meal_plan_empty` | Empty meal plan handled |
@@ -458,18 +465,21 @@ Manually trigger a calendar sync. No parameters.
 | tests/test_calendar.py | `test_utc_event_converted_to_local_when_fix_disabled` | Proper UTC-to-local conversion when fix disabled |
 | tests/test_calendar.py | `test_all_day_event_single_day` | Single-day all-day event handling |
 | tests/test_calendar.py | `test_all_day_event_multi_day` | Multi-day event spanning |
-| tests/test_calendar.py | `test_all_day_event_no_end_date` | All-day event without end date defaults to end of day |
+| tests/test_calendar.py | `test_all_day_event_no_end_date` | All-day event without end date lasts one day |
 | tests/test_calendar.py | `test_event_without_end_time_defaults_to_one_hour` | Timed event without end defaults to 1 hour |
 | tests/test_calendar.py | `test_multiple_events_sorted_by_start_time` | Events sorted chronologically |
 | tests/test_calendar.py | `test_event_property_returns_next_event` | Next upcoming event returned correctly |
 | tests/test_calendar.py | `test_event_property_returns_none_when_no_events` | Empty calendar returns None |
-| tests/test_calendar.py | `test_http_error_handling` | HTTP errors handled gracefully |
+| tests/test_calendar.py | `test_http_error_handling` | An HTTP error keeps the events of the last good fetch |
+| tests/test_calendar.py | `test_failed_sync_keeps_events_and_retries` | A failed sync keeps the events and is not counted as done |
+| tests/test_calendar.py | `test_get_events_returns_event_in_progress` | Events in progress and all-day events of today are returned |
 | tests/test_calendar.py | `test_daylight_saving_time_transition` | DST transition handling |
 | tests/test_calendar.py | `test_different_timezone_pacific` | US/Pacific timezone validation |
 | tests/test_calendar.py | `test_fix_timezone_defaults_to_true` | Default timezone fix setting |
 | tests/test_calendar.py | `test_fix_timezone_can_be_disabled` | Explicit disable option |
 | tests/test_calendar.py | `test_sync_interval_default` | Default 5-minute sync interval |
 | tests/test_calendar.py | `test_sync_interval_custom` | Custom sync interval |
+| tests/test_calendar.py | `test_sync_interval_below_one_minute_is_raised_to_one` | A saved interval of 0 or less is raised to 1 minute |
 | tests/test_services.py | `test_sync_calendar_service_calls_calendar_update` | Sync service triggers calendar update |
 | tests/test_services.py | `test_sync_calendar_service_handles_no_calendar_entity` | Missing calendar entity handled gracefully |
 | tests/test_services.py | `test_dispatcher_routes_sync_calendar` | Dispatcher routes sync_calendar |
@@ -484,19 +494,27 @@ Proxies product and recipe images from Grocy through Home Assistant. This allows
 
 `/api/grocy/{picture_type}/{filename}`
 
-- `picture_type`: `productpictures` or `recipepictures`
-- `filename`: Base64-encoded filename from Grocy
-- Optional query parameter: `width` (default: 400)
+- `picture_type`: `productpictures` or `recipepictures`. Other file groups answer 404.
+- `filename`: the file name from Grocy, as base64 of its UTF-8 bytes. A value that is not a plain file name answers 404.
+- Optional query parameter: `width` (default: 400, maximum: 2000)
 - No authentication required
+- The view reads the Grocy URL, API key and `verify_ssl` of the entry on each request, so changes apply without a restart.
+- A Grocy error answers 404, and a connection error answers 502.
 
 ### Test Coverage
 
 | Test File | Test Function | What It Validates |
 |-----------|---------------|-------------------|
-| tests/test_grocy_data.py | `test_async_setup_endpoint_registers_view` | Endpoint registration |
-| tests/test_grocy_data.py | `test_async_setup_endpoint_with_path` | URL path handling for subpath installations |
+| tests/test_grocy_data.py | `test_async_setup_endpoint_registers_view_once` | The view is registered once, also after a reload |
 | tests/test_grocy_data.py | `test_picture_view_get_proxies_request` | Image proxying with correct headers |
-| tests/test_grocy_data.py | `test_picture_view_uses_default_width` | Default width=400 |
+| tests/test_grocy_data.py | `test_picture_view_uses_path_and_default_width` | URL path for subpath installations and default width 400 |
+| tests/test_grocy_data.py | `test_picture_view_reads_the_current_entry` | A changed URL or API key applies without a restart |
+| tests/test_grocy_data.py | `test_picture_view_uses_verify_ssl` | The proxy honours verify_ssl |
+| tests/test_grocy_data.py | `test_picture_view_rejects_other_groups_and_names` | Only picture groups and plain file names are served |
+| tests/test_grocy_data.py | `test_picture_view_without_loaded_entry_is_not_found` | No loaded entry answers 404 |
+| tests/test_grocy_data.py | `test_picture_view_reads_width_safely` | A bad width gives the default or the limit |
+| tests/test_grocy_data.py | `test_picture_view_maps_grocy_errors` | Grocy errors answer 404, connection errors 502 |
+| tests/test_grocy_data.py | `test_recipe_picture_url_encodes_utf8` | Picture names are encoded as UTF-8; unroutable names give no URL |
 | tests/test_grocy_data.py | `test_picture_view_requires_no_auth` | No authentication required |
 | tests/test_grocy_data.py | `test_picture_view_url_pattern` | URL pattern contains expected placeholders |
 
@@ -598,10 +616,14 @@ All entities (except calendar) are updated every 30 seconds via the data coordin
 | tests/test_config_flow.py | `test_reauth_step_shows_confirm_form` | Reauth form display |
 | tests/test_config_flow.py | `test_reauth_confirm_updates_entry` | Successful reauth |
 | tests/test_config_flow.py | `test_reauth_confirm_handles_error` | Error during reauth |
+| tests/test_config_flow.py | `test_url_with_password_is_logged_only_at_debug` | A URL with a password goes to the log only at DEBUG |
+| tests/test_config_flow.py | `test_calendar_sync_interval_must_be_at_least_one_minute` | The form accepts a calendar sync interval of 1 minute or more |
+| tests/test_config_flow.py | `test_chore_done_by_defaults_to_the_api_key_owner` | New entries log chores for the API key owner |
 | tests/test_init.py | `test_async_setup_entry_initializes_integration` | Full setup flow: coordinator, services, proxy, platforms |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready` | Connection failure raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready_on_timeout` | Timeout raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready_on_os_error` | OS error raises ConfigEntryNotReady |
+| tests/test_init.py | `test_async_setup_entry_maps_grocy_errors` | Grocy 401 or 403 at setup starts re-authentication; other errors retry |
 | tests/test_init.py | `test_async_unload_entry_cleans_up` | Unload cleans up data and services |
 | tests/test_init.py | `test_async_unload_entry_platform_failure` | Partial cleanup on platform failure |
 | tests/test_init.py | `test_available_entities_all_features` | All features enabled creates all entities |
@@ -631,6 +653,7 @@ These tests validate infrastructure shared across all features.
 | tests/test_todo.py | `test_todo_item_raises_for_unknown_type` | Unknown type raises NotImplementedError |
 | tests/test_todo.py | `test_get_grocy_item_finds_by_id` | Item lookup by ID |
 | tests/test_todo.py | `test_get_grocy_item_finds_meal_plan_wrapper` | MealPlanItemWrapper lookup |
+| tests/test_todo.py | `test_get_grocy_item_removed_in_grocy_raises_clear_error` | An item removed in Grocy gives a clear error |
 | tests/test_todo.py | `test_todo_items_none_data` | None data returns empty list |
 | tests/test_todo.py | `test_todo_exists_fn_checks_available_entities` | Todo exists_fn validation |
 | tests/test_todo.py | `test_async_create_todo_item_unsupported_raises` | Unsupported create raises error |

@@ -26,6 +26,7 @@
                     "api_key": "Ключ Grocy API",
                     "calendar_fix_timezone": "Виправити часовий пояс для календаря",
                     "calendar_sync_interval": "Інтервал синхронізації календаря (хвилини)",
+                    "chore_done_by": "Завдання, виконані в Home Assistant, виконує",
                     "port": "Номер порту (9192)",
                     "url": "URL-адреса Grocy API",
                     "verify_ssl": "Перевірте сертифікат SSL"
@@ -38,6 +39,7 @@
                     "api_key": "Ключ Grocy API",
                     "calendar_fix_timezone": "Виправити часовий пояс для календаря",
                     "calendar_sync_interval": "Інтервал синхронізації календаря (хвилини)",
+                    "chore_done_by": "Завдання, виконані в Home Assistant, виконує",
                     "port": "Номер порту (9192)",
                     "url": "URL-адреса Grocy API",
                     "verify_ssl": "Перевірте сертифікат SSL"
@@ -62,12 +64,21 @@
                     "api_key": "Ключ Grocy API",
                     "calendar_fix_timezone": "Виправити часовий пояс для календаря",
                     "calendar_sync_interval": "Інтервал синхронізації календаря (хвилини)",
+                    "chore_done_by": "Завдання, виконані в Home Assistant, виконує",
                     "port": "Номер порту (9192)",
                     "url": "URL-адреса Grocy API",
                     "verify_ssl": "Перевірте сертифікат SSL"
                 },
                 "description": "Налаштувати параметри інтеграції Grocy.",
                 "title": "Параметри Grocy"
+            }
+        }
+    },
+    "selector": {
+        "chore_done_by": {
+            "options": {
+                "api_key_owner": "Власник ключа API",
+                "assigned_user": "Користувач, якому призначено завдання"
             }
         }
     },

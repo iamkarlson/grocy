@@ -114,11 +114,14 @@ features:
           - test_remove_completed_items_keeps_items_not_due_yet
           - test_async_create_todo_item_chore
           - test_async_update_todo_item_complete_chore
+          - test_complete_chore_done_by_follows_the_option
           - test_async_update_todo_item_chore_needs_action_raises
       - file: tests/test_grocy_data.py
         functions:
           - test_async_update_chores
           - test_async_update_overdue_chores
+          - test_overdue_filters_use_the_grocy_server_clock
+          - test_unknown_server_zone_name_uses_the_offset
 
   task_management:
     name: Task Management
@@ -190,8 +193,12 @@ features:
           - test_todo_item_from_meal_plan_item_wrapper
           - test_todo_item_from_meal_plan_item_missing_recipe
           - test_todo_item_from_meal_plan_item_any_type
-          - test_async_update_todo_item_complete_meal_plan
-          - test_async_update_todo_item_meal_plan_needs_action_raises
+          - test_complete_meal_plan_recipe_consumes_the_meal_plan_recipe
+          - test_complete_meal_plan_product_consumes_its_amount
+          - test_complete_meal_plan_note_only_marks_it_done
+          - test_uncomplete_meal_plan_marks_it_not_done
+          - test_complete_meal_plan_without_meal_plan_recipe_raises
+          - test_meal_plan_item_shows_done_state_and_note
       - file: tests/test_grocy_data.py
         functions:
           - test_async_update_meal_plan_sorts_by_day
@@ -220,6 +227,8 @@ features:
           - test_event_property_returns_next_event
           - test_event_property_returns_none_when_no_events
           - test_http_error_handling
+          - test_failed_sync_keeps_events_and_retries
+          - test_get_events_returns_event_in_progress
           - test_ical_fetch_sends_api_key_and_verify_ssl
           - test_ical_fetch_verifies_ssl_when_configured
           - test_daylight_saving_time_transition
@@ -228,6 +237,7 @@ features:
           - test_fix_timezone_can_be_disabled
           - test_sync_interval_default
           - test_sync_interval_custom
+          - test_sync_interval_below_one_minute_is_raised_to_one
       - file: tests/test_services.py
         functions:
           - test_sync_calendar_service_calls_calendar_update
@@ -240,10 +250,16 @@ features:
     tests:
       - file: tests/test_grocy_data.py
         functions:
-          - test_async_setup_endpoint_registers_view
-          - test_async_setup_endpoint_with_path
+          - test_async_setup_endpoint_registers_view_once
           - test_picture_view_get_proxies_request
-          - test_picture_view_uses_default_width
+          - test_picture_view_uses_path_and_default_width
+          - test_picture_view_reads_the_current_entry
+          - test_picture_view_uses_verify_ssl
+          - test_picture_view_rejects_other_groups_and_names
+          - test_picture_view_without_loaded_entry_is_not_found
+          - test_picture_view_reads_width_safely
+          - test_picture_view_maps_grocy_errors
+          - test_recipe_picture_url_encodes_utf8
           - test_picture_view_requires_no_auth
           - test_picture_view_url_pattern
 
@@ -285,6 +301,9 @@ features:
           - test_migrate_entry_v2_is_left_alone
           - test_migrate_entry_v2_1_moves_port_from_url
           - test_user_step_moves_port_from_url
+          - test_url_with_password_is_logged_only_at_debug
+          - test_calendar_sync_interval_must_be_at_least_one_minute
+          - test_chore_done_by_defaults_to_the_api_key_owner
           - test_user_step_maps_each_failure_to_its_message
           - test_html_error_page_maps_to_cannot_connect
           - test_user_step_rejects_ingress_url
@@ -299,6 +318,7 @@ features:
           - test_async_setup_entry_raises_not_ready
           - test_async_setup_entry_raises_not_ready_on_timeout
           - test_async_setup_entry_raises_not_ready_on_os_error
+          - test_async_setup_entry_maps_grocy_errors
           - test_async_unload_entry_cleans_up
           - test_async_unload_entry_platform_failure
           - test_available_entities_all_features
@@ -317,6 +337,8 @@ features:
           - test_async_update_data_partial_failure_does_not_raise
           - test_async_update_data_raises_update_failed_when_all_fail_with_previous_data
           - test_async_update_data_partial_failure_keeps_previous_data
+          - test_async_update_data_unauthorized_starts_reauth
+          - test_async_update_data_forbidden_stays_an_entity_error
 
 # Cross-cutting tests that validate shared infrastructure.
 # These don't belong to a single feature but are essential.
@@ -335,6 +357,7 @@ cross_cutting:
         - test_todo_item_raises_for_unknown_type
         - test_get_grocy_item_finds_by_id
         - test_get_grocy_item_finds_meal_plan_wrapper
+        - test_get_grocy_item_removed_in_grocy_raises_clear_error
         - test_todo_items_none_data
         - test_todo_exists_fn_checks_available_entities
         - test_async_create_todo_item_unsupported_raises

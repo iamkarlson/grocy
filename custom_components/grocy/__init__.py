@@ -8,11 +8,14 @@ https://github.com/iamkarlson/grocy
 from __future__ import annotations
 
 import logging
+from http import HTTPStatus
 
 from aiohttp import ClientConnectorError
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+
+from grocy.errors import GrocyError
 
 from .config_flow import async_migrate_entry
 from .const import (
@@ -64,13 +67,20 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     ) as error:
         _LOGGER.warning("Unable to connect to Grocy: %s", error)
         raise ConfigEntryNotReady(f"Unable to connect to Grocy: {error}") from error
+    except GrocyError as error:
+        # 401: the API key is wrong or revoked. 403: its user cannot read the config.
+        if error.status_code in (HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN):
+            raise ConfigEntryAuthFailed(
+                f"Grocy rejected the API key: {error}"
+            ) from error
+        raise ConfigEntryNotReady(f"Grocy answered with an error: {error}") from error
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN] = coordinator
 
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
     await async_setup_services(hass, config_entry)
-    await async_setup_endpoint_for_image_proxy(hass, config_entry.data)
+    await async_setup_endpoint_for_image_proxy(hass)
 
     return True
 

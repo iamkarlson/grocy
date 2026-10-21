@@ -26,6 +26,7 @@
                     "api_key": "Grocy chave da API",
                     "calendar_fix_timezone": "Corrigir fuso horário para calendário",
                     "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
+                    "chore_done_by": "As tarefas concluídas no Home Assistant são feitas por",
                     "port": "Número da Porta (9192)",
                     "url": "URL da API do Grocy",
                     "verify_ssl": "Verificar o certificado SSL Certificate"
@@ -38,6 +39,7 @@
                     "api_key": "Grocy chave da API",
                     "calendar_fix_timezone": "Corrigir fuso horário para calendário",
                     "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
+                    "chore_done_by": "As tarefas concluídas no Home Assistant são feitas por",
                     "port": "Número da Porta (9192)",
                     "url": "URL da API do Grocy",
                     "verify_ssl": "Verificar o certificado SSL Certificate"
@@ -62,12 +64,21 @@
                     "api_key": "Grocy chave da API",
                     "calendar_fix_timezone": "Corrigir fuso horário para calendário",
                     "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
+                    "chore_done_by": "As tarefas concluídas no Home Assistant são feitas por",
                     "port": "Número da Porta (9192)",
                     "url": "Link AP da Grocy",
                     "verify_ssl": "Verificar o certificado SSL Certificate"
                 },
                 "description": "Configurar opções de integração do Grocy.",
                 "title": "Opções do Grocy"
+            }
+        }
+    },
+    "selector": {
+        "chore_done_by": {
+            "options": {
+                "api_key_owner": "O proprietário da chave de API",
+                "assigned_user": "O utilizador atribuído à tarefa"
             }
         }
     },

@@ -15,11 +15,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from grocy.data_models.battery import Battery
 from grocy.data_models.chore import Chore
+from grocy.data_models.generic import EntityType
 from grocy.data_models.meal_items import MealPlanItem, MealPlanItemType, RecipeItem
 from grocy.data_models.product import Product, ShoppingListProduct
 from grocy.data_models.task import Task
 from homeassistant.components.todo import TodoItemStatus, TodoListEntityFeature
 from homeassistant.components.todo.services import _async_remove_completed_items
+from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.grocy.const import (
     ATTR_BATTERIES,
@@ -28,6 +30,9 @@ from custom_components.grocy.const import (
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
+    CHORE_DONE_BY_API_KEY_OWNER,
+    CHORE_DONE_BY_ASSIGNED_USER,
+    CONF_CHORE_DONE_BY,
 )
 from custom_components.grocy.coordinator import GrocyCoordinatorData
 from custom_components.grocy.helpers import MealPlanItemWrapper
@@ -314,13 +319,14 @@ def test_todo_item_raises_for_unknown_type() -> None:
 # ─── GrocyTodoListEntity supported features ──────────────────────────────────
 
 
-def _build_todo(key: str, data) -> GrocyTodoListEntity:
+def _build_todo(key: str, data, entry_data: dict | None = None) -> GrocyTodoListEntity:
     description = next(d for d in TODOS if d.key == key)
     entity = GrocyTodoListEntity.__new__(GrocyTodoListEntity)
     entity.entity_description = description
     entity.coordinator = SimpleNamespace(
         data=GrocyCoordinatorData(),
         async_refresh=AsyncMock(),
+        config_entry=SimpleNamespace(data=entry_data or {}),
     )
     entity.coordinator.data[key] = data
     entity.hass = SimpleNamespace()
@@ -466,7 +472,35 @@ async def test_async_update_todo_item_complete_chore() -> None:
     mock_exec.assert_awaited_once()
     call_data = mock_exec.call_args[0][2]
     assert call_data["chore_id"] == "5"
-    assert call_data["done_by"] == 1
+    # Without done_by, Grocy logs the chore for the owner of the API key (#81).
+    assert "done_by" not in call_data
+
+
+@pytest.mark.feature("chore_management")
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("option", "assigned_user", "expected"),
+    [
+        (CHORE_DONE_BY_API_KEY_OWNER, 3, None),
+        (CHORE_DONE_BY_ASSIGNED_USER, 3, 3),
+        (CHORE_DONE_BY_ASSIGNED_USER, None, None),
+    ],
+)
+async def test_complete_chore_done_by_follows_the_option(
+    option, assigned_user, expected
+) -> None:
+    """The chore is logged for the API key owner or the assigned user (#81)."""
+    chore = SimpleNamespace(id=5, next_execution_assigned_to_user_id=assigned_user)
+    entity = _build_todo(ATTR_CHORES, [chore], {CONF_CHORE_DONE_BY: option})
+    todo_item = SimpleNamespace(uid="5", status=TodoItemStatus.COMPLETED)
+
+    with patch(
+        "custom_components.grocy.todo.async_execute_chore_service",
+        new_callable=AsyncMock,
+    ) as mock_exec:
+        await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
+
+    assert mock_exec.call_args[0][2].get("done_by") == expected
 
 
 @pytest.mark.feature("task_management")
@@ -486,35 +520,141 @@ async def test_async_update_todo_item_complete_task() -> None:
     assert mock_complete.call_args[0][2]["task_id"] == "11"
 
 
-@pytest.mark.feature("meal_planning")
-@pytest.mark.asyncio
-async def test_async_update_todo_item_complete_meal_plan() -> None:
-    """Verify completing meal plan consumes recipe and deletes entry."""
-    recipe = SimpleNamespace(id=99, name="Pasta", description=None)
-    mpi_inner = SimpleNamespace(id=60, day=dt.date.today(), recipe=recipe)
-    # _get_grocy_item checks hasattr(item, "id") -- MealPlanItemWrapper
-    # doesn't have .id, so it falls through to item.meal_plan.id
-    wrapper = MagicMock(spec=[])  # no attributes by default
-    wrapper.meal_plan = mpi_inner
-
+def _meal_plan_todo(**fields) -> GrocyTodoListEntity:
+    meal_plan = SimpleNamespace(
+        **{
+            "id": 60,
+            "day": dt.date(2026, 10, 21),
+            "recipe_id": None,
+            "product_id": None,
+            "product_amount": None,
+            **fields,
+        }
+    )
+    # _get_grocy_item checks hasattr(item, "id"); a wrapper has only .meal_plan.
+    wrapper = MagicMock(spec=[])
+    wrapper.meal_plan = meal_plan
     entity = _build_todo(ATTR_MEAL_PLAN, [wrapper])
-    todo_item = SimpleNamespace(uid="60", status=TodoItemStatus.COMPLETED)
+    entity.coordinator.grocy_api = MagicMock()
+    entity.hass = SimpleNamespace(
+        async_add_executor_job=AsyncMock(side_effect=lambda func, *args: func(*args))
+    )
+    return entity
 
+
+async def _update_meal_plan(entity, status):
+    """Run async_update_todo_item for entry 60 and return the mocked services."""
+    todo_item = SimpleNamespace(uid="60", status=status)
     with (
         patch(
             "custom_components.grocy.todo.async_consume_recipe_service",
             new_callable=AsyncMock,
-        ) as mock_consume,
+        ) as consume_recipe,
+        patch(
+            "custom_components.grocy.todo.async_consume_product_service",
+            new_callable=AsyncMock,
+        ) as consume_product,
+        patch(
+            "custom_components.grocy.todo.async_update_generic_service",
+            new_callable=AsyncMock,
+        ) as update,
         patch(
             "custom_components.grocy.todo.async_delete_generic_service",
             new_callable=AsyncMock,
-        ) as mock_delete,
+        ) as delete,
     ):
         await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
+    delete.assert_not_awaited()  # Grocy keeps the entry (#77)
+    return consume_recipe, consume_product, update
 
-    mock_consume.assert_awaited_once()
-    assert mock_consume.call_args[0][2]["recipe_id"] == 99
-    mock_delete.assert_awaited_once()
+
+@pytest.mark.feature("meal_planning")
+@pytest.mark.asyncio
+async def test_complete_meal_plan_recipe_consumes_the_meal_plan_recipe() -> None:
+    """A recipe entry consumes the copy of the recipe with the entry servings (#77)."""
+    entity = _meal_plan_todo(recipe_id=4)
+    entity.coordinator.grocy_api.generic.list.return_value = [{"id": -62}]
+
+    consume_recipe, consume_product, update = await _update_meal_plan(
+        entity, TodoItemStatus.COMPLETED
+    )
+
+    entity.coordinator.grocy_api.generic.list.assert_called_once_with(
+        EntityType.RECIPES, ["name=2026-10-21#60"]
+    )
+    assert consume_recipe.call_args[0][2]["recipe_id"] == -62
+    consume_product.assert_not_awaited()
+    assert update.call_args[0][2]["data"] == {"done": 1}
+
+
+@pytest.mark.feature("meal_planning")
+@pytest.mark.asyncio
+async def test_complete_meal_plan_product_consumes_its_amount() -> None:
+    """A product entry consumes its amount, as the Grocy meal plan page does (#77)."""
+    entity = _meal_plan_todo(product_id=3, product_amount=2.5)
+
+    consume_recipe, consume_product, update = await _update_meal_plan(
+        entity, TodoItemStatus.COMPLETED
+    )
+
+    consume_recipe.assert_not_awaited()
+    assert consume_product.call_args[0][2] == {"product_id": 3, "amount": 2.5}
+    assert update.call_args[0][2]["data"] == {"done": 1}
+
+
+@pytest.mark.feature("meal_planning")
+@pytest.mark.asyncio
+async def test_complete_meal_plan_note_only_marks_it_done() -> None:
+    """A note consumes nothing; before, it raised AttributeError (#77)."""
+    entity = _meal_plan_todo(note="Pizza night")
+
+    consume_recipe, consume_product, update = await _update_meal_plan(
+        entity, TodoItemStatus.COMPLETED
+    )
+
+    consume_recipe.assert_not_awaited()
+    consume_product.assert_not_awaited()
+    assert update.call_args[0][2]["object_id"] == "60"
+    assert update.call_args[0][2]["data"] == {"done": 1}
+
+
+@pytest.mark.feature("meal_planning")
+@pytest.mark.asyncio
+async def test_uncomplete_meal_plan_marks_it_not_done() -> None:
+    """Unchecking an entry sets done back to 0 and consumes nothing."""
+    entity = _meal_plan_todo(recipe_id=4)
+
+    consume_recipe, _, update = await _update_meal_plan(
+        entity, TodoItemStatus.NEEDS_ACTION
+    )
+
+    consume_recipe.assert_not_awaited()
+    assert update.call_args[0][2]["data"] == {"done": 0}
+
+
+@pytest.mark.feature("meal_planning")
+@pytest.mark.asyncio
+async def test_complete_meal_plan_without_meal_plan_recipe_raises() -> None:
+    """A missing meal plan recipe gives a clear error and changes nothing."""
+    entity = _meal_plan_todo(recipe_id=4)
+    entity.coordinator.grocy_api.generic.list.return_value = []
+
+    with pytest.raises(HomeAssistantError, match="no meal plan recipe"):
+        await _update_meal_plan(entity, TodoItemStatus.COMPLETED)
+
+
+@pytest.mark.feature("meal_planning")
+def test_meal_plan_item_shows_done_state_and_note() -> None:
+    """A done entry shows as completed, and a note shows its text (#77)."""
+    # The real model: grocy-py before 1.5.0 has no "done" field.
+    meal_plan = MealPlanItem(
+        id=5, day=dt.date(2026, 10, 21), type="note", note="Pizza night", done=True
+    )
+
+    item = GrocyTodoItem(MealPlanItemWrapper(meal_plan), ATTR_MEAL_PLAN)
+
+    assert item.status == TodoItemStatus.COMPLETED
+    assert item.summary == "Pizza night"
 
 
 @pytest.mark.feature("shopping_list")
@@ -678,6 +818,16 @@ def test_get_grocy_item_finds_meal_plan_wrapper() -> None:
     assert result.meal_plan.id == 55
 
 
+@pytest.mark.feature("cross_cutting")
+@pytest.mark.parametrize("data", [[], None])
+def test_get_grocy_item_removed_in_grocy_raises_clear_error(data) -> None:
+    """An item removed in Grocy after the last update gives a clear error (#80)."""
+    entity = _build_todo(ATTR_TASKS, data)
+
+    with pytest.raises(HomeAssistantError, match="not in the last data from Grocy"):
+        entity._get_grocy_item("7")
+
+
 # ─── todo_items property ─────────────────────────────────────────────────────
 
 
@@ -707,17 +857,6 @@ def test_todo_exists_fn_checks_available_entities() -> None:
 async def test_async_update_todo_item_chore_needs_action_raises() -> None:
     """Verify uncompleting chore raises NotImplementedError."""
     entity = _build_todo(ATTR_CHORES, [])
-    todo_item = SimpleNamespace(uid="1", status=TodoItemStatus.NEEDS_ACTION)
-
-    with pytest.raises(NotImplementedError):
-        await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
-
-
-@pytest.mark.feature("meal_planning")
-@pytest.mark.asyncio
-async def test_async_update_todo_item_meal_plan_needs_action_raises() -> None:
-    """Verify uncompleting meal plan raises NotImplementedError."""
-    entity = _build_todo(ATTR_MEAL_PLAN, [])
     todo_item = SimpleNamespace(uid="1", status=TodoItemStatus.NEEDS_ACTION)
 
     with pytest.raises(NotImplementedError):

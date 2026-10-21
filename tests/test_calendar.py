@@ -7,13 +7,14 @@ See: docs/FEATURES.md#7-calendar
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from unittest.mock import MagicMock, patch
 from zoneinfo import ZoneInfo
 
 import icalendar
 import pytest
 from homeassistant.components.calendar import CalendarEvent
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -373,14 +374,10 @@ class TestCalendarEntityAllDayEvents:
         assert len(entity._events) == 1
         event = entity._events[0]
 
-        local_tz = ZoneInfo("Europe/Berlin")
-        # Start should be at beginning of day (00:00:00)
-        expected_start = datetime(2026, 2, 15, 0, 0, 0, tzinfo=local_tz)
-        # End should be at end of day (23:59:59.999999)
-        expected_end = datetime(2026, 2, 15, 23, 59, 59, 999999, tzinfo=local_tz)
-
-        assert event.start == expected_start
-        assert event.end == expected_end
+        # All-day events use date values with an exclusive end, as in iCal (#79).
+        assert event.start == date(2026, 2, 15)
+        assert event.end == date(2026, 2, 16)
+        assert event.all_day
 
     @pytest.mark.asyncio
     async def test_all_day_event_multi_day(
@@ -418,13 +415,9 @@ class TestCalendarEntityAllDayEvents:
         assert len(entity._events) == 1
         event = entity._events[0]
 
-        local_tz = ZoneInfo("Europe/Berlin")
-        expected_start = datetime(2026, 2, 15, 0, 0, 0, tzinfo=local_tz)
-        # End is one day before exclusive end date, at end of day
-        expected_end = datetime(2026, 2, 17, 23, 59, 59, 999999, tzinfo=local_tz)
-
-        assert event.start == expected_start
-        assert event.end == expected_end
+        assert event.start == date(2026, 2, 15)
+        assert event.end == date(2026, 2, 18)  # exclusive: the event ends on Feb 17
+        assert event.all_day
 
     @pytest.mark.asyncio
     async def test_all_day_event_no_end_date(
@@ -433,7 +426,7 @@ class TestCalendarEntityAllDayEvents:
         mock_coordinator,
         calendar_config_entry,
     ) -> None:
-        """Test that an all-day event without end date ends at end of start day."""
+        """Test that an all-day event without end date lasts one day."""
         hass.config.time_zone = "Europe/Berlin"
         dt_util.set_default_time_zone(ZoneInfo("Europe/Berlin"))
 
@@ -461,12 +454,10 @@ class TestCalendarEntityAllDayEvents:
         assert len(entity._events) == 1
         event = entity._events[0]
 
-        local_tz = ZoneInfo("Europe/Berlin")
-        expected_start = datetime(2026, 2, 15, 0, 0, 0, tzinfo=local_tz)
-        expected_end = datetime(2026, 2, 15, 23, 59, 59, 999999, tzinfo=local_tz)
-
-        assert event.start == expected_start
-        assert event.end == expected_end
+        # Grocy sends all-day events without DTEND: they last one day.
+        assert event.start == date(2026, 2, 15)
+        assert event.end == date(2026, 2, 16)
+        assert event.all_day
 
 
 @pytest.mark.feature("calendar")
@@ -635,14 +626,17 @@ class TestCalendarEntityEdgeCases:
         mock_coordinator,
         calendar_config_entry,
     ) -> None:
-        """Test that HTTP errors are handled gracefully."""
+        """An HTTP error raises and keeps the events of the last good fetch (#78)."""
         hass.config.time_zone = "Europe/Berlin"
         dt_util.set_default_time_zone(ZoneInfo("Europe/Berlin"))
 
         entity = GrocyCalendarEntity(mock_coordinator, calendar_config_entry)
         entity.hass = hass
         entity._ical_url = "http://test.local/calendar.ics"
-        entity._events = []
+        old_event = CalendarEvent(
+            summary="Old", start=date(2026, 2, 3), end=date(2026, 2, 4)
+        )
+        entity._events = [old_event]
 
         with patch(
             "custom_components.grocy.calendar.async_get_clientsession"
@@ -652,10 +646,71 @@ class TestCalendarEntityEdgeCases:
             start_date = datetime(2026, 2, 1, tzinfo=ZoneInfo("Europe/Berlin"))
             end_date = datetime(2026, 2, 28, tzinfo=ZoneInfo("Europe/Berlin"))
 
-            # Should not raise, just return without updating events
-            await entity._update_events(start_date, end_date)
+            with pytest.raises(HomeAssistantError, match="HTTP 500"):
+                await entity._update_events(start_date, end_date)
 
-        assert entity._events == []
+        assert entity._events == [old_event]
+
+    @pytest.mark.asyncio
+    async def test_failed_sync_keeps_events_and_retries(
+        self,
+        hass,
+        mock_coordinator,
+        calendar_config_entry,
+    ) -> None:
+        """A failed periodic sync keeps the events and is not counted as done (#78)."""
+        entity = GrocyCalendarEntity(mock_coordinator, calendar_config_entry)
+        entity.hass = hass
+        entity.async_write_ha_state = MagicMock()
+        entity._ical_url = "http://test.local/calendar.ics"
+        old_event = CalendarEvent(
+            summary="Old", start=date(2026, 2, 3), end=date(2026, 2, 4)
+        )
+        entity._events = [old_event]
+
+        session = MagicMock()
+        session.get.side_effect = TimeoutError
+        with patch(
+            "custom_components.grocy.calendar.async_get_clientsession",
+            return_value=session,
+        ):
+            await entity._async_update_calendar(dt_util.now())
+
+        assert entity._events == [old_event]
+        assert entity._last_update is None
+
+    @pytest.mark.asyncio
+    async def test_get_events_returns_event_in_progress(
+        self,
+        hass,
+        mock_coordinator,
+        calendar_config_entry,
+    ) -> None:
+        """An event that started before the range and is still going is kept (#79)."""
+        now = dt_util.now()
+        entity = GrocyCalendarEntity(mock_coordinator, calendar_config_entry)
+        entity.hass = hass
+        entity._ical_url = "http://test.local/calendar.ics"
+        entity._last_update = now
+        in_progress = CalendarEvent(
+            summary="Long", start=now - timedelta(days=2), end=now + timedelta(days=2)
+        )
+        today = CalendarEvent(
+            summary="Today", start=now.date(), end=now.date() + timedelta(days=1)
+        )
+        tomorrow = CalendarEvent(
+            summary="Tomorrow",
+            start=now.date() + timedelta(days=1),
+            end=now.date() + timedelta(days=2),
+        )
+        entity._events = [in_progress, today, tomorrow]
+
+        events = await entity.async_get_events(
+            hass, now - timedelta(minutes=1), now + timedelta(minutes=1)
+        )
+
+        assert events == [in_progress, today]
+        assert entity.event == in_progress
 
     @pytest.mark.asyncio
     async def test_ical_fetch_sends_api_key_and_verify_ssl(
@@ -921,3 +976,26 @@ class TestCalendarEntityConfiguration:
 
         entity = GrocyCalendarEntity(mock_coordinator, config_entry)
         assert entity._sync_interval_minutes == 15
+
+    @pytest.mark.parametrize("saved_interval", [0, -5])
+    def test_sync_interval_below_one_minute_is_raised_to_one(
+        self,
+        mock_coordinator,
+        saved_interval,
+    ) -> None:
+        """An entry saved with 0 must not schedule the sync in a tight loop (#76)."""
+        config_entry = MockConfigEntry(
+            domain=DOMAIN,
+            title="Grocy",
+            data={
+                CONF_URL: "https://demo.grocy.info",
+                CONF_API_KEY: "test-token",
+                CONF_PORT: 9192,
+                CONF_VERIFY_SSL: False,
+                CONF_CALENDAR_SYNC_INTERVAL: saved_interval,
+            },
+            entry_id="test-sync-zero",
+        )
+
+        entity = GrocyCalendarEntity(mock_coordinator, config_entry)
+        assert entity._sync_interval_minutes == 1

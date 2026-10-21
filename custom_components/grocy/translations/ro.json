@@ -26,6 +26,7 @@
                     "api_key": "Cheie API Grocy",
                     "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
                     "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
+                    "chore_done_by": "Treburile casnice finalizate în Home Assistant sunt făcute de",
                     "port": "Număr port (9192)",
                     "url": "Adresa URL a API-ului Grocy",
                     "verify_ssl": "Verificați certificatul SSL"
@@ -38,6 +39,7 @@
                     "api_key": "Cheie API Grocy",
                     "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
                     "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
+                    "chore_done_by": "Treburile casnice finalizate în Home Assistant sunt făcute de",
                     "port": "Număr port (9192)",
                     "url": "Adresa URL a API-ului Grocy",
                     "verify_ssl": "Verificați certificatul SSL"
@@ -62,12 +64,21 @@
                     "api_key": "Cheie API Grocy",
                     "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
                     "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
+                    "chore_done_by": "Treburile casnice finalizate în Home Assistant sunt făcute de",
                     "port": "Număr port (9192)",
                     "url": "Adresa URL a API-ului Grocy",
                     "verify_ssl": "Verificați certificatul SSL"
                 },
                 "description": "Configurați opțiunile de integrare Grocy.",
                 "title": "Opțiuni Grocy"
+            }
+        }
+    },
+    "selector": {
+        "chore_done_by": {
+            "options": {
+                "api_key_owner": "Proprietarul cheii API",
+                "assigned_user": "Utilizatorul căruia i-a fost atribuită treaba"
             }
         }
     },

@@ -9,10 +9,12 @@ See: docs/FEATURES.md
 from __future__ import annotations
 
 import datetime as dt
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
+from zoneinfo import ZoneInfo
 
 import pytest
-from aiohttp import hdrs
+from aiohttp import ClientError, hdrs, web
 
 from custom_components.grocy.const import (
     ATTR_BATTERIES,
@@ -32,12 +34,15 @@ from custom_components.grocy.const import (
     CONF_API_KEY,
     CONF_PORT,
     CONF_URL,
+    CONF_VERIFY_SSL,
+    DOMAIN,
 )
 from custom_components.grocy.grocy_data import (
     GrocyData,
     GrocyPictureView,
     async_setup_endpoint_for_image_proxy,
 )
+from custom_components.grocy.helpers import recipe_picture_url
 from tests.factories import (
     DummyBattery,
     DummyChore,
@@ -54,7 +59,16 @@ def grocy_data(hass, mock_grocy) -> GrocyData:
         return func(*args)
 
     hass.async_add_executor_job = AsyncMock(side_effect=immediate_executor)
+    mock_grocy.system.time.return_value = _server_time("UTC", hours=0)
     return GrocyData(hass, mock_grocy, "https://exemple.com")
+
+
+def _server_time(zone: str, hours: int) -> SimpleNamespace:
+    """Build the system.time() answer of a Grocy server."""
+    now = dt.datetime(2026, 10, 21, 12, 0, tzinfo=dt.UTC)
+    return SimpleNamespace(
+        timezone=zone, time_utc=now, time_local=now + dt.timedelta(hours=hours)
+    )
 
 
 # ─── async_update_data dispatch ───────────────────────────────────────────────
@@ -133,6 +147,44 @@ async def test_async_update_overdue_chores(grocy_data) -> None:
     filters = call_args.kwargs["query_filters"]
     assert len(filters) == 1
     assert "next_estimated_execution_time<" in filters[0]
+
+
+@pytest.mark.feature("chore_management")
+@pytest.mark.asyncio
+async def test_overdue_filters_use_the_grocy_server_clock(grocy_data) -> None:
+    """Grocy stores due times in its own time zone, not in the HA one (#83)."""
+    zone = ZoneInfo("Pacific/Kiritimati")  # UTC+14, so the day differs from UTC
+    grocy_data.api.system.time.return_value = _server_time(zone.key, hours=14)
+    grocy_data.api.tasks.list.return_value = []
+    grocy_data.api.chores.list.return_value = []
+
+    before = dt.datetime.now(zone).replace(tzinfo=None)
+    await grocy_data.async_update_overdue_tasks()
+    await grocy_data.async_update_overdue_chores()
+    after = dt.datetime.now(zone).replace(tzinfo=None)
+
+    task_filter = grocy_data.api.tasks.list.call_args.kwargs["query_filters"][0]
+    assert task_filter in {f"due_date<{before.date()}", f"due_date<{after.date()}"}
+    chore_filter = grocy_data.api.chores.list.call_args.kwargs["query_filters"][0]
+    sent = dt.datetime.fromisoformat(chore_filter.split("<")[1])
+    assert before <= sent <= after
+    # The zone is read once, not at each update.
+    grocy_data.api.system.time.assert_called_once()
+
+
+@pytest.mark.feature("chore_management")
+@pytest.mark.asyncio
+async def test_unknown_server_zone_name_uses_the_offset(grocy_data) -> None:
+    """A zone name that zoneinfo does not know falls back to the UTC offset (#83)."""
+    grocy_data.api.system.time.return_value = _server_time("Not/AZone", hours=14)
+    grocy_data.api.chores.list.return_value = []
+
+    await grocy_data.async_update_overdue_chores()
+
+    chore_filter = grocy_data.api.chores.list.call_args.kwargs["query_filters"][0]
+    sent = dt.datetime.fromisoformat(chore_filter.split("<")[1])
+    expected = dt.datetime.now(dt.UTC).replace(tzinfo=None) + dt.timedelta(hours=14)
+    assert abs(sent - expected) < dt.timedelta(minutes=1)
 
 
 # ─── async_update_tasks ──────────────────────────────────────────────────────
@@ -424,119 +476,207 @@ async def test_async_get_config_due_soon_days_handles_invalid_value(
     assert grocy_data.due_soon_days is None
 
 
-# ─── async_setup_endpoint_for_image_proxy ─────────────────────────────────────
+# ─── image proxy ──────────────────────────────────────────────────────────────
+
+PICTURE = "Y29va2llcy5qcGc="  # base64 of "cookies.jpg"
+
+
+def _proxy_hass(**data) -> SimpleNamespace:
+    """Return a hass with a loaded entry, as the picture view sees it."""
+    entry_data = {
+        CONF_URL: "https://grocy.local",
+        CONF_API_KEY: "key-1",
+        CONF_PORT: 9192,
+        CONF_VERIFY_SSL: False,
+        **data,
+    }
+    coordinator = SimpleNamespace(config_entry=SimpleNamespace(data=entry_data))
+    return SimpleNamespace(data={DOMAIN: coordinator})
+
+
+def _picture_session(status=200, body=b"img", headers=None) -> MagicMock:
+    resp = MagicMock()
+    resp.status = status
+    resp.headers = headers or {}
+    resp.read = AsyncMock(return_value=body)
+    context = MagicMock()
+    context.__aenter__ = AsyncMock(return_value=resp)
+    context.__aexit__ = AsyncMock(return_value=False)
+    session = MagicMock()
+    session.get.return_value = context
+    return session
+
+
+async def _get_picture(
+    hass, picture_type="productpictures", filename=PICTURE, query=None, session=None
+):
+    session = session or _picture_session()
+    with patch(
+        "custom_components.grocy.grocy_data.async_get_clientsession",
+        return_value=session,
+    ) as get_session:
+        response = await GrocyPictureView(hass).get(
+            SimpleNamespace(query=query or {}), picture_type, filename
+        )
+    return response, session, get_session
 
 
 @pytest.mark.feature("image_proxy")
 @pytest.mark.asyncio
-async def test_async_setup_endpoint_registers_view(hass) -> None:
-    """Verify endpoint registration."""
-    config_data = {
-        CONF_URL: "https://demo.grocy.info",
-        CONF_API_KEY: "test-key",
-        CONF_PORT: 9192,
-    }
+async def test_async_setup_endpoint_registers_view_once(hass) -> None:
+    """A reload must not add a second view that never answers (#72)."""
     hass.http = MagicMock()
 
-    with patch(
-        "custom_components.grocy.grocy_data.async_get_clientsession"
-    ) as mock_session:
-        mock_session.return_value = MagicMock()
-        await async_setup_endpoint_for_image_proxy(hass, config_data)
+    await async_setup_endpoint_for_image_proxy(hass)
+    await async_setup_endpoint_for_image_proxy(hass)
 
     hass.http.register_view.assert_called_once()
-    view = hass.http.register_view.call_args[0][0]
-    assert isinstance(view, GrocyPictureView)
-
-
-@pytest.mark.feature("image_proxy")
-@pytest.mark.asyncio
-async def test_async_setup_endpoint_with_path(hass) -> None:
-    """Verify URL path handling for subpath installations."""
-    config_data = {
-        CONF_URL: "https://demo.grocy.info/grocy",
-        CONF_API_KEY: "test-key",
-        CONF_PORT: 443,
-    }
-    hass.http = MagicMock()
-
-    with patch(
-        "custom_components.grocy.grocy_data.async_get_clientsession"
-    ) as mock_session:
-        mock_session.return_value = MagicMock()
-        await async_setup_endpoint_for_image_proxy(hass, config_data)
-
-    view = hass.http.register_view.call_args[0][0]
-    assert "grocy" in view._base_url
-
-
-# ─── GrocyPictureView ────────────────────────────────────────────────────────
+    assert isinstance(hass.http.register_view.call_args[0][0], GrocyPictureView)
 
 
 @pytest.mark.feature("image_proxy")
 @pytest.mark.asyncio
 async def test_picture_view_get_proxies_request() -> None:
     """Verify image proxying with correct headers."""
-    mock_session = MagicMock()
-    response_body = b"\x89PNG\r\n"
-    mock_resp = MagicMock()
-    mock_resp.headers = {
-        hdrs.CONTENT_TYPE: "image/png",
-        hdrs.CONTENT_LENGTH: str(len(response_body)),
-        "X-Custom-Header": "should-be-excluded",
-    }
-    mock_resp.read = AsyncMock(return_value=response_body)
-    mock_resp.raise_for_status = MagicMock()
+    body = b"\x89PNG\r\n"
+    session = _picture_session(
+        body=body,
+        headers={
+            hdrs.CONTENT_TYPE: "image/png",
+            hdrs.CONTENT_LENGTH: str(len(body)),
+            "X-Custom-Header": "should-be-excluded",
+        },
+    )
 
-    mock_context = MagicMock()
-    mock_context.__aenter__ = AsyncMock(return_value=mock_resp)
-    mock_context.__aexit__ = AsyncMock(return_value=False)
-    mock_session.get.return_value = mock_context
+    response, _, _ = await _get_picture(
+        _proxy_hass(), query={"width": "200"}, session=session
+    )
 
-    view = GrocyPictureView(mock_session, "https://grocy.local:9192", "api-key-123")
-
-    request = MagicMock()
-    request.query = {"width": "200"}
-
-    response = await view.get(request, "productpictures", "abc123")
-
-    mock_session.get.assert_called_once()
-    call_url = mock_session.get.call_args[0][0]
-    assert "/api/files/productpictures/abc123" in call_url
-    assert "best_fit_width=200" in call_url
-
-    call_headers = mock_session.get.call_args[1]["headers"]
-    assert call_headers["GROCY-API-KEY"] == "api-key-123"
-
-    assert response.body == response_body
+    call_url = session.get.call_args[0][0]
+    assert call_url == (
+        f"https://grocy.local:9192/api/files/productpictures/{PICTURE}"
+        "?force_serve_as=picture&best_fit_width=200"
+    )
+    assert session.get.call_args[1]["headers"]["GROCY-API-KEY"] == "key-1"
+    assert response.body == body
     assert hdrs.CONTENT_TYPE in response.headers
     assert "X-Custom-Header" not in response.headers
 
 
 @pytest.mark.feature("image_proxy")
 @pytest.mark.asyncio
-async def test_picture_view_uses_default_width() -> None:
-    """Verify default width=400."""
-    mock_session = MagicMock()
-    mock_resp = MagicMock()
-    mock_resp.headers = {}
-    mock_resp.read = AsyncMock(return_value=b"img")
-    mock_resp.raise_for_status = MagicMock()
+async def test_picture_view_uses_path_and_default_width() -> None:
+    """Verify URL path handling for subpath installations and width 400."""
+    hass = _proxy_hass(**{CONF_URL: "https://grocy.local/grocy", CONF_PORT: 443})
 
-    mock_context = MagicMock()
-    mock_context.__aenter__ = AsyncMock(return_value=mock_resp)
-    mock_context.__aexit__ = AsyncMock(return_value=False)
-    mock_session.get.return_value = mock_context
+    _, session, _ = await _get_picture(hass, "recipepictures")
 
-    view = GrocyPictureView(mock_session, "https://grocy.local:9192", "key")
+    assert session.get.call_args[0][0].startswith(
+        "https://grocy.local:443/grocy/api/files/recipepictures/"
+    )
+    assert session.get.call_args[0][0].endswith("best_fit_width=400")
 
-    request = MagicMock()
-    request.query = {}
 
-    await view.get(request, "recipepictures", "xyz")
+@pytest.mark.feature("image_proxy")
+@pytest.mark.asyncio
+async def test_picture_view_reads_the_current_entry() -> None:
+    """A changed URL or API key applies without a restart (#72)."""
+    hass = _proxy_hass()
+    await _get_picture(hass)
 
-    call_url = mock_session.get.call_args[0][0]
-    assert "best_fit_width=400" in call_url
+    hass.data[DOMAIN].config_entry.data = {
+        **hass.data[DOMAIN].config_entry.data,
+        CONF_URL: "https://new-grocy.local",
+        CONF_API_KEY: "key-2",
+    }
+    _, session, _ = await _get_picture(hass)
+
+    assert session.get.call_args[0][0].startswith("https://new-grocy.local:9192/")
+    assert session.get.call_args[1]["headers"]["GROCY-API-KEY"] == "key-2"
+
+
+@pytest.mark.feature("image_proxy")
+@pytest.mark.asyncio
+@pytest.mark.parametrize("verify_ssl", [True, False])
+async def test_picture_view_uses_verify_ssl(verify_ssl) -> None:
+    """The proxy honours verify_ssl, as the calendar does (#73)."""
+    _, _, get_session = await _get_picture(_proxy_hass(**{CONF_VERIFY_SSL: verify_ssl}))
+
+    assert get_session.call_args.kwargs["verify_ssl"] is verify_ssl
+
+
+@pytest.mark.feature("image_proxy")
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("picture_type", "filename"),
+    [
+        ("userfiles", PICTURE),
+        ("equipmentmanuals", PICTURE),
+        ("productpictures", "..%2F..%2Fapi%2Fobjects"),
+        ("productpictures", "not base64!"),
+        ("productpictures", "YS9iLmpwZw=="),  # base64 of "a/b.jpg"
+    ],
+)
+async def test_picture_view_rejects_other_groups_and_names(
+    picture_type, filename
+) -> None:
+    """Only pictures can be read, and only by a plain file name."""
+    session = _picture_session()
+
+    with pytest.raises(web.HTTPNotFound):
+        await _get_picture(_proxy_hass(), picture_type, filename, session=session)
+
+    session.get.assert_not_called()
+
+
+@pytest.mark.feature("image_proxy")
+@pytest.mark.asyncio
+async def test_picture_view_without_loaded_entry_is_not_found() -> None:
+    """After the entry is unloaded, the view answers 404."""
+    with pytest.raises(web.HTTPNotFound):
+        await _get_picture(SimpleNamespace(data={}))
+
+
+@pytest.mark.feature("image_proxy")
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("width", "expected"), [("foo", 400), ("99999", 2000), ("-5", 1)]
+)
+async def test_picture_view_reads_width_safely(width, expected) -> None:
+    """A bad width gives the default or the limit, not an error."""
+    _, session, _ = await _get_picture(_proxy_hass(), query={"width": width})
+
+    assert session.get.call_args[0][0].endswith(f"best_fit_width={expected}")
+
+
+@pytest.mark.feature("image_proxy")
+@pytest.mark.asyncio
+async def test_picture_view_maps_grocy_errors() -> None:
+    """A Grocy 404 is a 404; a connection error is a 502, not a traceback."""
+    with pytest.raises(web.HTTPNotFound):
+        await _get_picture(_proxy_hass(), session=_picture_session(status=404))
+
+    for error in (ClientError(), TimeoutError()):
+        session = MagicMock()
+        session.get.side_effect = error
+        with pytest.raises(web.HTTPBadGateway):
+            await _get_picture(_proxy_hass(), session=session)
+
+
+@pytest.mark.feature("image_proxy")
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        ("pizza.jpg", "/api/grocy/recipepictures/cGl6emEuanBn"),
+        ("борщ.jpg", "/api/grocy/recipepictures/0LHQvtGA0YkuanBn"),
+        ("Käsespätzle.jpg", "/api/grocy/recipepictures/S8Okc2VzcMOkdHpsZS5qcGc="),
+        ("проверка-ü 1.txt", None),  # base64 contains "/", Grocy cannot route it
+        (None, None),
+    ],
+)
+def test_recipe_picture_url_encodes_utf8(name, expected) -> None:
+    """Non-ASCII picture names no longer crash the attributes (#74)."""
+    assert recipe_picture_url(name) == expected
 
 
 @pytest.mark.feature("image_proxy")

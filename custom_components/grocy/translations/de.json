@@ -26,6 +26,7 @@
                     "api_key": "Grocy API Schlüssel",
                     "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
                     "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
+                    "chore_done_by": "In Home Assistant erledigte Hausarbeiten gelten als erledigt von",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "SSL-Zertifikat verifizieren"
@@ -38,6 +39,7 @@
                     "api_key": "Grocy API Schlüssel",
                     "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
                     "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
+                    "chore_done_by": "In Home Assistant erledigte Hausarbeiten gelten als erledigt von",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "SSL-Zertifikat verifizieren"
@@ -62,12 +64,21 @@
                     "api_key": "Grocy API Schlüssel",
                     "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
                     "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
+                    "chore_done_by": "In Home Assistant erledigte Hausarbeiten gelten als erledigt von",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "SSL-Zertifikat verifizieren"
                 },
                 "description": "Grocy-Integrationsoptionen konfigurieren.",
                 "title": "Grocy-Optionen"
+            }
+        }
+    },
+    "selector": {
+        "chore_done_by": {
+            "options": {
+                "api_key_owner": "Besitzer des API-Schlüssels",
+                "assigned_user": "Der Hausarbeit zugewiesener Benutzer"
             }
         }
     },

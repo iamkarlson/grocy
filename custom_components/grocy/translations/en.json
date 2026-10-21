@@ -22,7 +22,8 @@
                     "calendar_fix_timezone": "Fix timezone for calendar",
                     "port": "Port Number (9192)",
                     "url": "Grocy API URL",
-                    "verify_ssl": "Verify SSL Certificate"
+                    "verify_ssl": "Verify SSL Certificate",
+                    "chore_done_by": "Chores completed in Home Assistant are done by"
                 },
                 "description": "If you need help with the configuration have a look at the documentation on GitHub.",
                 "title": "Grocy"
@@ -34,7 +35,8 @@
                     "calendar_fix_timezone": "Fix timezone for calendar",
                     "port": "Port Number (9192)",
                     "url": "Grocy API URL",
-                    "verify_ssl": "Verify SSL Certificate"
+                    "verify_ssl": "Verify SSL Certificate",
+                    "chore_done_by": "Chores completed in Home Assistant are done by"
                 },
                 "description": "Update your Grocy connection settings.",
                 "title": "Reconfigure Grocy"
@@ -57,7 +59,8 @@
                     "calendar_fix_timezone": "Fix timezone for calendar",
                     "port": "Port Number (9192)",
                     "url": "Grocy API URL",
-                    "verify_ssl": "Verify SSL Certificate"
+                    "verify_ssl": "Verify SSL Certificate",
+                    "chore_done_by": "Chores completed in Home Assistant are done by"
                 },
                 "description": "Configure Grocy integration options.",
                 "title": "Grocy Options"
@@ -70,6 +73,14 @@
             "unknown": "Unexpected error",
             "ssl_error": "SSL certificate check failed. Turn off \"Verify SSL Certificate\", or use http if Grocy has no valid certificate.",
             "ingress_url": "This is the Home Assistant ingress address of the Grocy add-on. It cannot work with an API key. Expose a port in the add-on network settings and use that port."
+        }
+    },
+    "selector": {
+        "chore_done_by": {
+            "options": {
+                "api_key_owner": "The owner of the API key",
+                "assigned_user": "The user assigned to the chore"
+            }
         }
     }
 }

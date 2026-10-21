@@ -26,6 +26,7 @@
                     "api_key": "Grocy API nyckel",
                     "calendar_fix_timezone": "Åtgärda tidszon för kalender",
                     "calendar_sync_interval": "Kalendersynkroniseringsintervall (minuter)",
+                    "chore_done_by": "Sysslor som slutförs i Home Assistant utförs av",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Verifiera SSL certifikat"
@@ -38,6 +39,7 @@
                     "api_key": "Grocy API nyckel",
                     "calendar_fix_timezone": "Åtgärda tidszon för kalender",
                     "calendar_sync_interval": "Kalendersynkroniseringsintervall (minuter)",
+                    "chore_done_by": "Sysslor som slutförs i Home Assistant utförs av",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Verifiera SSL certifikat"
@@ -62,12 +64,21 @@
                     "api_key": "Grocy API nyckel",
                     "calendar_fix_timezone": "Åtgärda tidszon för kalender",
                     "calendar_sync_interval": "Kalendersynkroniseringsintervall (minuter)",
+                    "chore_done_by": "Sysslor som slutförs i Home Assistant utförs av",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Verifiera SSL certifikat"
                 },
                 "description": "Konfigurera Grocy-integrationsalternativ.",
                 "title": "Grocy-alternativ"
+            }
+        }
+    },
+    "selector": {
+        "chore_done_by": {
+            "options": {
+                "api_key_owner": "Ägaren till API-nyckeln",
+                "assigned_user": "Användaren som är tilldelad sysslan"
             }
         }
     },

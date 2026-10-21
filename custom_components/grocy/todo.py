@@ -16,11 +16,13 @@ from homeassistant.components.todo import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from grocy.data_models.battery import Battery
 from grocy.data_models.chore import Chore
+from grocy.data_models.generic import EntityType
 from grocy.data_models.meal_items import MealPlanItem
 from grocy.data_models.product import Product, ShoppingListProduct
 from grocy.data_models.task import Task
@@ -32,6 +34,8 @@ from .const import (
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
+    CHORE_DONE_BY_ASSIGNED_USER,
+    CONF_CHORE_DONE_BY,
     DOMAIN,
 )
 from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
@@ -57,6 +61,7 @@ from .services import (
     async_execute_chore_service,
     async_mark_shopping_list_item_done,
     async_track_battery_service,
+    async_update_generic_service,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -170,7 +175,7 @@ class GrocyTodoItem(TodoItem):
             summary = (
                 recipe.name
                 if (recipe and getattr(recipe, "name", None))
-                else "Unknown recipe"
+                else getattr(item, "note", None) or "Unknown recipe"
             )
             description = (
                 recipe.description
@@ -181,7 +186,11 @@ class GrocyTodoItem(TodoItem):
                 uid=item.id.__str__(),
                 summary=summary,
                 due=due,
-                status=TodoItemStatus.NEEDS_ACTION,
+                status=(
+                    TodoItemStatus.COMPLETED
+                    if getattr(item, "done", False)
+                    else TodoItemStatus.NEEDS_ACTION
+                ),
                 description=description,
             )
         elif isinstance(item, MealPlanItemWrapper):
@@ -191,7 +200,7 @@ class GrocyTodoItem(TodoItem):
             summary = (
                 recipe.name
                 if (recipe and getattr(recipe, "name", None))
-                else "Unknown recipe"
+                else getattr(mp, "note", None) or "Unknown recipe"
             )
             description = (
                 recipe.description
@@ -202,7 +211,11 @@ class GrocyTodoItem(TodoItem):
                 uid=mp.id.__str__(),
                 summary=summary,
                 due=due,
-                status=TodoItemStatus.NEEDS_ACTION,
+                status=(
+                    TodoItemStatus.COMPLETED
+                    if getattr(mp, "done", False)
+                    else TodoItemStatus.NEEDS_ACTION
+                ),
                 description=description,
             )
         elif isinstance(item, Product):
@@ -261,13 +274,65 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
         super().__init__(coordinator, description, config_entry)
 
     def _get_grocy_item(self, item_id: str):
-        entity_data = self.coordinator.data[self.entity_description.key]
-        return [
-            item
-            for item in entity_data
-            if (item.id if hasattr(item, "id") else item.meal_plan.id).__str__()
-            == item_id
-        ][0] or None
+        entity_data = self.coordinator.data[self.entity_description.key] or []
+        item = next(
+            (
+                item
+                for item in entity_data
+                if str(item.id if hasattr(item, "id") else item.meal_plan.id) == item_id
+            ),
+            None,
+        )
+        if item is None:
+            raise HomeAssistantError(
+                f"Grocy item {item_id} is not in the last data from Grocy. "
+                "It was probably removed in Grocy. Wait for the next update."
+            )
+        return item
+
+    async def _async_consume_meal_plan_entry(self, meal_plan: MealPlanItem) -> None:
+        """
+        Consume a meal plan entry from stock, as the Grocy meal plan page does.
+
+        A recipe entry consumes the copy of the recipe that Grocy makes for the
+        entry ("YYYY-MM-DD#<entry id>"), which has the servings of the entry. A
+        product entry consumes its amount. A note consumes nothing.
+        """
+        if meal_plan.recipe_id:
+            name = f"{meal_plan.day.isoformat()}#{meal_plan.id}"
+            shadow_recipes = await self.hass.async_add_executor_job(
+                self.coordinator.grocy_api.generic.list,
+                EntityType.RECIPES,
+                [f"name={name}"],
+            )
+            if not shadow_recipes:
+                msg = f"Grocy has no meal plan recipe {name}"
+                raise HomeAssistantError(msg)
+            await async_consume_recipe_service(
+                self.hass,
+                self.coordinator,
+                {SERVICE_RECIPE_ID: shadow_recipes[0]["id"]},
+            )
+        elif meal_plan.product_id:
+            await async_consume_product_service(
+                self.hass,
+                self.coordinator,
+                {
+                    SERVICE_PRODUCT_ID: meal_plan.product_id,
+                    SERVICE_AMOUNT: meal_plan.product_amount,
+                },
+            )
+
+    def _chore_done_by(self, chore_id: str) -> int | None:
+        """
+        Return the Grocy user to log the chore for.
+
+        None lets Grocy use the owner of the API key.
+        """
+        option = self.coordinator.config_entry.data.get(CONF_CHORE_DONE_BY)
+        if option != CHORE_DONE_BY_ASSIGNED_USER:
+            return None
+        return self._get_grocy_item(chore_id).next_execution_assigned_to_user_id
 
     @property
     def todo_items(self) -> list[TodoItem] | None:
@@ -345,32 +410,31 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
             if item.status == TodoItemStatus.COMPLETED:
                 data: dict[str, Any] = {
                     SERVICE_CHORE_ID: item.uid,
-                    SERVICE_DONE_BY: 1,
                     SERVICE_SKIPPED: False,
                 }
+                done_by = self._chore_done_by(item.uid)
+                if done_by is not None:
+                    data[SERVICE_DONE_BY] = done_by
                 await async_execute_chore_service(self.hass, self.coordinator, data)
             else:
                 # I Probably need to cache the chore completion, so that I can undo it...
                 raise NotImplementedError(self.entity_description.key)
         elif self.entity_description.key == ATTR_MEAL_PLAN:
-            if item.status == TodoItemStatus.COMPLETED:
-                grocy_item = self._get_grocy_item(item.uid)
-                await async_consume_recipe_service(
-                    self.hass,
-                    self.coordinator,
-                    {SERVICE_RECIPE_ID: grocy_item.meal_plan.recipe.id},
-                )
-                await async_delete_generic_service(
-                    self.hass,
-                    self.coordinator,
-                    {
-                        SERVICE_ENTITY_TYPE: "meal_plan",
-                        SERVICE_OBJECT_ID: item.uid,
-                    },
-                )
-            else:
-                # I Probably need to cache the chore completion, so that I can undo it...
-                raise NotImplementedError(self.entity_description.key)
+            # As on the Grocy meal plan page: consume, then mark the entry done.
+            # The entry stays in Grocy (#77).
+            meal_plan = self._get_grocy_item(item.uid).meal_plan
+            done = item.status == TodoItemStatus.COMPLETED
+            if done:
+                await self._async_consume_meal_plan_entry(meal_plan)
+            await async_update_generic_service(
+                self.hass,
+                self.coordinator,
+                {
+                    SERVICE_ENTITY_TYPE: "meal_plan",
+                    SERVICE_OBJECT_ID: item.uid,
+                    SERVICE_DATA: {"done": int(done)},
+                },
+            )
         elif self.entity_description.key == ATTR_SHOPPING_LIST:
             await async_mark_shopping_list_item_done(
                 self.hass,

@@ -7,20 +7,30 @@ See: docs/FEATURES.md#10-configuration-setup
 
 from __future__ import annotations
 
+import logging
 from http import HTTPStatus
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import requests
+import voluptuous as vol
 from grocy.errors import GrocyError
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.grocy.config_flow import GrocyFlowHandler, async_migrate_entry
+from custom_components.grocy.config_flow import (
+    GrocyFlowHandler,
+    _get_user_data_schema,
+    _normalize_url_and_port,
+    async_migrate_entry,
+)
 from custom_components.grocy.const import (
+    CHORE_DONE_BY_API_KEY_OWNER,
+    CHORE_DONE_BY_ASSIGNED_USER,
     CONF_API_KEY,
     CONF_CALENDAR_FIX_TIMEZONE,
     CONF_CALENDAR_SYNC_INTERVAL,
+    CONF_CHORE_DONE_BY,
     CONF_PORT,
     CONF_URL,
     CONF_VERIFY_SSL,
@@ -431,6 +441,41 @@ async def test_migrate_entry_v2_1_moves_port_from_url(hass, config_entry_data) -
     assert entry.data[CONF_CALENDAR_SYNC_INTERVAL] == 42
 
 
+def test_chore_done_by_defaults_to_the_api_key_owner(config_entry_data) -> None:
+    """A new entry logs chores for the API key owner, as Grocy does (#81)."""
+    data = _get_user_data_schema()(config_entry_data)
+
+    assert data[CONF_CHORE_DONE_BY] == CHORE_DONE_BY_API_KEY_OWNER
+
+
+@pytest.mark.parametrize(("interval", "valid"), [(0, False), (-1, False), (1, True)])
+def test_calendar_sync_interval_must_be_at_least_one_minute(
+    config_entry_data, interval, valid
+) -> None:
+    """0 would schedule the calendar sync in a tight loop (#76)."""
+    schema = _get_user_data_schema()
+    data = {**config_entry_data, CONF_CALENDAR_SYNC_INTERVAL: interval}
+
+    if valid:
+        assert schema(data)[CONF_CALENDAR_SYNC_INTERVAL] == interval
+    else:
+        with pytest.raises(vol.Invalid):
+            schema(data)
+
+
+def test_url_with_password_is_logged_only_at_debug(caplog) -> None:
+    """The URL can carry user:password@, so it goes to the log only at DEBUG (#82)."""
+    user_input = {CONF_URL: "http://user:s3cret@192.168.1.10:9283", CONF_PORT: 9192}
+
+    caplog.set_level(logging.INFO, logger="custom_components.grocy")
+    _normalize_url_and_port(user_input)
+    assert "s3cret" not in caplog.text
+
+    caplog.set_level(logging.DEBUG, logger="custom_components.grocy")
+    _normalize_url_and_port(user_input)
+    assert "s3cret" in caplog.text
+
+
 async def test_user_step_moves_port_from_url(hass, config_entry_data) -> None:
     """A port typed into the URL is used as the port and stripped from the URL."""
     flow = GrocyFlowHandler()
@@ -621,6 +666,7 @@ async def test_options_step_saves_and_reloads(
         CONF_URL: "http://192.168.1.10:9283",
         CONF_CALENDAR_SYNC_INTERVAL: 15,
         CONF_CALENDAR_FIX_TIMEZONE: False,
+        CONF_CHORE_DONE_BY: CHORE_DONE_BY_ASSIGNED_USER,
     }
 
     with (
@@ -635,4 +681,5 @@ async def test_options_step_saves_and_reloads(
     assert mock_config_entry.data[CONF_PORT] == 9283
     assert mock_config_entry.data[CONF_CALENDAR_SYNC_INTERVAL] == 15
     assert mock_config_entry.data[CONF_CALENDAR_FIX_TIMEZONE] is False
+    assert mock_config_entry.data[CONF_CHORE_DONE_BY] == CHORE_DONE_BY_ASSIGNED_USER
     reload.assert_awaited_once_with(mock_config_entry.entry_id)

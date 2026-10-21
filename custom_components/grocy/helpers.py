@@ -9,6 +9,21 @@ from urllib.parse import urlparse, urlunparse
 from grocy.data_models.meal_items import MealPlanItem
 
 
+def recipe_picture_url(picture_file_name: str | None) -> str | None:
+    """
+    Return the proxy URL of a recipe picture, or None.
+
+    Grocy expects the file name as base64 of its UTF-8 bytes (#74). When the
+    base64 form contains "/", neither Home Assistant nor Grocy can route it.
+    """
+    if not picture_file_name:
+        return None
+    encoded = base64.b64encode(picture_file_name.encode("utf-8")).decode("ascii")
+    if "/" in encoded:
+        return None
+    return f"/api/grocy/recipepictures/{encoded}"
+
+
 def extract_base_url_and_path(url: str) -> tuple[str, str]:
     """Extract the base url and path from a given URL."""
     parsed_url = urlparse(url)
@@ -68,11 +83,7 @@ class RecipeWrapper:
     @property
     def picture_url(self) -> str | None:
         """Proxy URL to the picture."""
-        picture_file_name = self._recipe.get("picture_file_name")
-        if picture_file_name:
-            b64name = base64.b64encode(picture_file_name.encode("ascii"))
-            return f"/api/grocy/recipepictures/{str(b64name, 'utf-8')}"
-        return None
+        return recipe_picture_url(self._recipe.get("picture_file_name"))
 
     @property
     def url(self) -> str | None:
@@ -108,10 +119,7 @@ class MealPlanItemWrapper:
     def picture_url(self) -> str | None:
         """Proxy URL to the picture."""
         recipe = self.meal_plan.recipe
-        if recipe and recipe.picture_file_name:
-            b64name = base64.b64encode(recipe.picture_file_name.encode("ascii"))
-            return f"/api/grocy/recipepictures/{str(b64name, 'utf-8')}"
-        return None
+        return recipe_picture_url(recipe.picture_file_name if recipe else None)
 
     def as_dict(self) -> dict[str, Any]:
         """Return serialized attributes including the proxy picture URL."""

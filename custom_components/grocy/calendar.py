@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import icalendar
 from homeassistant.components.calendar import (
@@ -14,6 +14,7 @@ from homeassistant.components.calendar import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
@@ -68,9 +69,7 @@ class GrocyCalendarEntity(CalendarEntity):
         self._config_entry = config_entry
         self._ical_url: str | None = None
         self._events: list[CalendarEvent] = []
-        self._sync_interval_minutes: int = config_entry.data.get(
-            CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
-        )
+        self._sync_interval_minutes = self._read_sync_interval()
         self._fix_timezone: bool = config_entry.data.get(
             CONF_CALENDAR_FIX_TIMEZONE, True
         )
@@ -105,20 +104,19 @@ class GrocyCalendarEntity(CalendarEntity):
     def event(self) -> CalendarEvent | None:
         """Return the next upcoming event."""
         now = dt_util.now()
-        # Find events that are currently happening or upcoming
-        # An event is "current" if now is between start and end (inclusive)
-        # An event is "upcoming" if start is in the future
-        # For all-day events, start is 00:00:00 and end is 23:59:59 of the day
+        # Current: started and not ended. Upcoming: starts later. All-day events
+        # have date values with an exclusive end, so compare local datetimes.
         current_or_upcoming = [
             event
             for event in self._events
-            if event.start <= now <= event.end or event.start > now
+            if event.start_datetime_local <= now < event.end_datetime_local
+            or event.start_datetime_local > now
         ]
 
         if not current_or_upcoming:
             return None
         # Return the earliest event (current or upcoming)
-        return min(current_or_upcoming, key=lambda e: e.start)
+        return min(current_or_upcoming, key=lambda e: e.start_datetime_local)
 
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
@@ -136,14 +134,25 @@ class GrocyCalendarEntity(CalendarEntity):
             self._unsub_update()
             self._unsub_update = None
 
+    def _read_sync_interval(self) -> int:
+        """
+        Return the sync interval in minutes from the config entry.
+
+        At least 1: an interval of 0 schedules the next sync at once, in a loop.
+        Entries saved before the form had a minimum can still have 0.
+        """
+        return max(
+            1,
+            self._config_entry.data.get(
+                CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
+            ),
+        )
+
     def _schedule_update(self) -> None:
         """Schedule the next update."""
         if self._unsub_update:
             self._unsub_update()
-        # Get current sync interval from config entry
-        self._sync_interval_minutes = self._config_entry.data.get(
-            CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
-        )
+        self._sync_interval_minutes = self._read_sync_interval()
         interval = timedelta(minutes=self._sync_interval_minutes)
         self._unsub_update = async_track_time_interval(
             self.hass, self._async_update_calendar, interval
@@ -217,9 +226,13 @@ class GrocyCalendarEntity(CalendarEntity):
             except Exception as error:
                 _LOGGER.error("Error fetching calendar events: %s", error)
 
-        # Filter events to requested time range
+        # Keep every event that overlaps the requested range, also one that
+        # started before it and is still in progress (#79).
         return [
-            event for event in self._events if start_date <= event.start <= end_date
+            event
+            for event in self._events
+            if event.start_datetime_local < end_date
+            and event.end_datetime_local >= start_date
         ]
 
     async def _fetch_ical_url(self) -> None:
@@ -261,200 +274,168 @@ class GrocyCalendarEntity(CalendarEntity):
         if not self._ical_url:
             return
 
-        try:
-            api_key = self._config_entry.data[CONF_API_KEY]
-            verify_ssl = self._config_entry.data.get(CONF_VERIFY_SSL, False)
-            headers = {"GROCY-API-KEY": api_key}
+        # Errors go to the caller, so the events of the last good fetch stay (#78).
+        api_key = self._config_entry.data[CONF_API_KEY]
+        verify_ssl = self._config_entry.data.get(CONF_VERIFY_SSL, False)
+        headers = {"GROCY-API-KEY": api_key}
 
-            session = async_get_clientsession(self.hass, verify_ssl=verify_ssl)
-            async with session.get(self._ical_url, headers=headers) as response:
-                if response.status != HTTP_OK:
-                    _LOGGER.error("Failed to fetch iCal data: HTTP %s", response.status)
-                    return
+        session = async_get_clientsession(self.hass, verify_ssl=verify_ssl)
+        async with session.get(self._ical_url, headers=headers) as response:
+            if response.status != HTTP_OK:
+                msg = f"Grocy answered the iCal request with HTTP {response.status}"
+                raise HomeAssistantError(msg)
 
-                ical_data = await response.text()
-                # Run icalendar parsing in executor to avoid blocking I/O
-                calendar = await self.hass.async_add_executor_job(
-                    icalendar.Calendar.from_ical, ical_data
-                )
+            ical_data = await response.text()
+            # Run icalendar parsing in executor to avoid blocking I/O
+            calendar = await self.hass.async_add_executor_job(
+                icalendar.Calendar.from_ical, ical_data
+            )
 
-                events: list[CalendarEvent] = []
+            events: list[CalendarEvent] = []
 
-                for component in calendar.walk():
-                    if component.name == "VEVENT":
-                        summary = str(component.get("summary", ""))
-                        start = component.get("dtstart")
-                        end = component.get("dtend")
-                        description = str(component.get("description", ""))
-                        location = str(component.get("location", ""))
-                        uid = str(component.get("uid", ""))
+            for component in calendar.walk():
+                if component.name == "VEVENT":
+                    summary = str(component.get("summary", ""))
+                    start = component.get("dtstart")
+                    end = component.get("dtend")
+                    description = str(component.get("description", ""))
+                    location = str(component.get("location", ""))
+                    uid = str(component.get("uid", ""))
 
-                        _LOGGER.debug(
-                            "Parsing event '%s': fix_timezone=%s",
-                            summary,
-                            self._fix_timezone,
-                        )
+                    _LOGGER.debug(
+                        "Parsing event '%s': fix_timezone=%s",
+                        summary,
+                        self._fix_timezone,
+                    )
 
-                        if start:
-                            # Check if this is a date-only (all-day) event
-                            is_all_day = not isinstance(start.dt, datetime)
+                    if start:
+                        # Check if this is a date-only (all-day) event
+                        is_all_day = not isinstance(start.dt, datetime)
 
-                            # Get local timezone
-                            local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
+                        # Get local timezone
+                        local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
 
-                            # Handle both date and datetime
-                            if isinstance(start.dt, datetime):
-                                event_start = start.dt
+                        # Handle both date and datetime
+                        if isinstance(start.dt, datetime):
+                            event_start = start.dt
+                            # Ensure timezone-aware
+                            if event_start.tzinfo is None:
+                                # Naive datetime from iCal - typically UTC in iCal format
+                                # Convert from UTC to local timezone
+                                event_start_utc = event_start.replace(tzinfo=UTC)
+                                event_start = dt_util.as_local(event_start_utc)
+                            else:
+                                # Has timezone info - convert to local timezone
+                                # This handles UTC or other timezones from Grocy
+                                # Grocy addon sends local times marked as UTC, so we fix it
+                                original_start = event_start
+                                original_tz = event_start.tzinfo
+                                is_utc = (
+                                    event_start.tzinfo == UTC
+                                    or str(event_start.tzinfo) == "UTC"
+                                    or (
+                                        hasattr(event_start.tzinfo, "zone")
+                                        and event_start.tzinfo.zone == "UTC"
+                                    )
+                                )
+                                if self._fix_timezone and is_utc:
+                                    # Fix for Grocy addon: Grocy is sending local times marked as UTC
+                                    # Treat the UTC time as if it's already in local timezone
+                                    event_start = event_start.replace(tzinfo=local_tz)
+                                    _LOGGER.debug(
+                                        "Event '%s': Fix timezone enabled - treating UTC as local: %s (tz: %s) -> %s (tz: %s), fix_timezone=%s",
+                                        summary,
+                                        original_start,
+                                        original_tz,
+                                        event_start,
+                                        event_start.tzinfo,
+                                        self._fix_timezone,
+                                    )
+                                else:
+                                    event_start = dt_util.as_local(event_start)
+                                    _LOGGER.debug(
+                                        "Event '%s': Standard timezone conversion: %s (tz: %s) -> %s (tz: %s), fix_timezone=%s",
+                                        summary,
+                                        original_start,
+                                        original_tz,
+                                        event_start,
+                                        event_start.tzinfo,
+                                        self._fix_timezone,
+                                    )
+                        else:
+                            # All-day event: Home Assistant expects date values.
+                            event_start = start.dt
+
+                        # Don't filter here - cache all events, filter when needed
+                        if end:
+                            if isinstance(end.dt, datetime):
+                                event_end = end.dt
                                 # Ensure timezone-aware
-                                if event_start.tzinfo is None:
+                                if event_end.tzinfo is None:
                                     # Naive datetime from iCal - typically UTC in iCal format
                                     # Convert from UTC to local timezone
-                                    event_start_utc = event_start.replace(tzinfo=UTC)
-                                    event_start = dt_util.as_local(event_start_utc)
+                                    event_end_utc = event_end.replace(tzinfo=UTC)
+                                    event_end = dt_util.as_local(event_end_utc)
                                 else:
                                     # Has timezone info - convert to local timezone
                                     # This handles UTC or other timezones from Grocy
                                     # Grocy addon sends local times marked as UTC, so we fix it
-                                    original_start = event_start
-                                    original_tz = event_start.tzinfo
-                                    is_utc = (
-                                        event_start.tzinfo == UTC
-                                        or str(event_start.tzinfo) == "UTC"
+                                    original_end = event_end
+                                    original_end_tz = event_end.tzinfo
+                                    is_end_utc = (
+                                        event_end.tzinfo == UTC
+                                        or str(event_end.tzinfo) == "UTC"
                                         or (
-                                            hasattr(event_start.tzinfo, "zone")
-                                            and event_start.tzinfo.zone == "UTC"
+                                            hasattr(event_end.tzinfo, "zone")
+                                            and event_end.tzinfo.zone == "UTC"
                                         )
                                     )
-                                    if self._fix_timezone and is_utc:
+                                    if self._fix_timezone and is_end_utc:
                                         # Fix for Grocy addon: Grocy is sending local times marked as UTC
                                         # Treat the UTC time as if it's already in local timezone
-                                        event_start = event_start.replace(
-                                            tzinfo=local_tz
-                                        )
+                                        event_end = event_end.replace(tzinfo=local_tz)
                                         _LOGGER.debug(
-                                            "Event '%s': Fix timezone enabled - treating UTC as local: %s (tz: %s) -> %s (tz: %s), fix_timezone=%s",
+                                            "Event '%s' (end): Fix timezone enabled - treating UTC as local: %s (tz: %s) -> %s (tz: %s), fix_timezone=%s",
                                             summary,
-                                            original_start,
-                                            original_tz,
-                                            event_start,
-                                            event_start.tzinfo,
+                                            original_end,
+                                            original_end_tz,
+                                            event_end,
+                                            event_end.tzinfo,
                                             self._fix_timezone,
                                         )
                                     else:
-                                        event_start = dt_util.as_local(event_start)
+                                        event_end = dt_util.as_local(event_end)
                                         _LOGGER.debug(
-                                            "Event '%s': Standard timezone conversion: %s (tz: %s) -> %s (tz: %s), fix_timezone=%s",
+                                            "Event '%s' (end): Standard timezone conversion: %s (tz: %s) -> %s (tz: %s), fix_timezone=%s",
                                             summary,
-                                            original_start,
-                                            original_tz,
-                                            event_start,
-                                            event_start.tzinfo,
+                                            original_end,
+                                            original_end_tz,
+                                            event_end,
+                                            event_end.tzinfo,
                                             self._fix_timezone,
                                         )
                             else:
-                                # Date-only events (all-day) - convert to datetime at start of day in local timezone
-                                event_start = datetime.combine(
-                                    start.dt, datetime.min.time(), tzinfo=local_tz
-                                )
+                                # Date end: exclusive in iCal and in Home Assistant.
+                                event_end = end.dt
+                        elif is_all_day:
+                            # Grocy sends all-day events without an end.
+                            event_end = start.dt + timedelta(days=1)
+                        else:
+                            # If no end time, assume 1 hour duration
+                            event_end = event_start + timedelta(hours=1)
 
-                            # Don't filter here - cache all events, filter when needed
-                            if end:
-                                if isinstance(end.dt, datetime):
-                                    event_end = end.dt
-                                    # Ensure timezone-aware
-                                    if event_end.tzinfo is None:
-                                        # Naive datetime from iCal - typically UTC in iCal format
-                                        # Convert from UTC to local timezone
-                                        event_end_utc = event_end.replace(tzinfo=UTC)
-                                        event_end = dt_util.as_local(event_end_utc)
-                                    else:
-                                        # Has timezone info - convert to local timezone
-                                        # This handles UTC or other timezones from Grocy
-                                        # Grocy addon sends local times marked as UTC, so we fix it
-                                        original_end = event_end
-                                        original_end_tz = event_end.tzinfo
-                                        is_end_utc = (
-                                            event_end.tzinfo == UTC
-                                            or str(event_end.tzinfo) == "UTC"
-                                            or (
-                                                hasattr(event_end.tzinfo, "zone")
-                                                and event_end.tzinfo.zone == "UTC"
-                                            )
-                                        )
-                                        if self._fix_timezone and is_end_utc:
-                                            # Fix for Grocy addon: Grocy is sending local times marked as UTC
-                                            # Treat the UTC time as if it's already in local timezone
-                                            event_end = event_end.replace(
-                                                tzinfo=local_tz
-                                            )
-                                            _LOGGER.debug(
-                                                "Event '%s' (end): Fix timezone enabled - treating UTC as local: %s (tz: %s) -> %s (tz: %s), fix_timezone=%s",
-                                                summary,
-                                                original_end,
-                                                original_end_tz,
-                                                event_end,
-                                                event_end.tzinfo,
-                                                self._fix_timezone,
-                                            )
-                                        else:
-                                            event_end = dt_util.as_local(event_end)
-                                            _LOGGER.debug(
-                                                "Event '%s' (end): Standard timezone conversion: %s (tz: %s) -> %s (tz: %s), fix_timezone=%s",
-                                                summary,
-                                                original_end,
-                                                original_end_tz,
-                                                event_end,
-                                                event_end.tzinfo,
-                                                self._fix_timezone,
-                                            )
-                                else:
-                                    # Date-only end - for all-day events, end date is exclusive
-                                    # In iCal, if an event is on Dec 21, end date is Dec 22
-                                    # So we subtract 1 day and set to end of that day
-                                    end_date = end.dt
-                                    if isinstance(end_date, date):
-                                        # End date is exclusive, so subtract 1 day for the actual end
-                                        # Then set to end of that day (23:59:59.999999) in local timezone
-                                        actual_end_date = end_date - timedelta(days=1)
-                                        event_end = datetime.combine(
-                                            actual_end_date,
-                                            datetime.max.time(),
-                                            tzinfo=local_tz,
-                                        )
-                                    else:
-                                        # Shouldn't happen, but handle it
-                                        event_end = datetime.combine(
-                                            end_date,
-                                            datetime.max.time(),
-                                            tzinfo=local_tz,
-                                        )
-                            elif is_all_day:
-                                # All-day event with no end - ends at end of start day in local timezone
-                                event_end = datetime.combine(
-                                    start.dt,
-                                    datetime.max.time(),
-                                    tzinfo=local_tz,
-                                )
-                            else:
-                                # If no end time, assume 1 hour duration
-                                event_end = event_start + timedelta(hours=1)
-
-                            events.append(
-                                CalendarEvent(
-                                    summary=summary,
-                                    start=event_start,
-                                    end=event_end,
-                                    description=description,
-                                    location=location,
-                                    uid=uid,
-                                )
+                        events.append(
+                            CalendarEvent(
+                                summary=summary,
+                                start=event_start,
+                                end=event_end,
+                                description=description,
+                                location=location,
+                                uid=uid,
                             )
+                        )
 
-                # Sort events by start time for better performance
-                events.sort(key=lambda e: e.start)
-                self._events = events
-                _LOGGER.debug("Fetched %d calendar events", len(events))
-
-        except Exception as error:
-            _LOGGER.error("Error parsing iCal data: %s", error)
-            self._events = []
+            # Sort events by start time for better performance
+            events.sort(key=lambda e: e.start_datetime_local)
+            self._events = events
+            _LOGGER.debug("Fetched %d calendar events", len(events))

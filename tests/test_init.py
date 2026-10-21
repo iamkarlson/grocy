@@ -10,7 +10,9 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.exceptions import ConfigEntryNotReady
+import requests
+from grocy.errors import GrocyError
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
 from custom_components.grocy import (
     _async_get_available_entities,
@@ -324,4 +326,50 @@ async def test_async_setup_entry_raises_not_ready_on_os_error(
         mock_cls.return_value = coordinator
 
         with pytest.raises(ConfigEntryNotReady):
+            await async_setup_entry(hass, mock_config_entry)
+
+
+def _grocy_error(status: int, body: bytes = b"") -> GrocyError:
+    response = requests.Response()
+    response.status_code = status
+    response._content = body
+    return GrocyError(response)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [
+        (401, ConfigEntryAuthFailed),
+        (403, ConfigEntryAuthFailed),
+        (500, ConfigEntryNotReady),
+        (200, ConfigEntryNotReady),  # the empty HTML page of an unknown route
+    ],
+)
+async def test_async_setup_entry_maps_grocy_errors(
+    hass, mock_config_entry, status, expected
+) -> None:
+    """A Grocy error at setup starts re-authentication or a retry (#75)."""
+    with (
+        patch("custom_components.grocy.GrocyDataUpdateCoordinator") as mock_cls,
+        patch(
+            "custom_components.grocy._async_get_available_entities",
+            new_callable=AsyncMock,
+            side_effect=_grocy_error(status),
+        ),
+        patch(
+            "custom_components.grocy.async_setup_services",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "custom_components.grocy.async_setup_endpoint_for_image_proxy",
+            new_callable=AsyncMock,
+        ),
+    ):
+        coordinator = MagicMock()
+        coordinator.grocy_data = MagicMock()
+        coordinator.async_config_entry_first_refresh = AsyncMock()
+        mock_cls.return_value = coordinator
+
+        with pytest.raises(expected):
             await async_setup_entry(hass, mock_config_entry)
