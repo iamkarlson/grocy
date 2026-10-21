@@ -193,8 +193,12 @@ features:
           - test_todo_item_from_meal_plan_item_wrapper
           - test_todo_item_from_meal_plan_item_missing_recipe
           - test_todo_item_from_meal_plan_item_any_type
-          - test_async_update_todo_item_complete_meal_plan
-          - test_async_update_todo_item_meal_plan_needs_action_raises
+          - test_complete_meal_plan_recipe_consumes_the_meal_plan_recipe
+          - test_complete_meal_plan_product_consumes_its_amount
+          - test_complete_meal_plan_note_only_marks_it_done
+          - test_uncomplete_meal_plan_marks_it_not_done
+          - test_complete_meal_plan_without_meal_plan_recipe_raises
+          - test_meal_plan_item_shows_done_state_and_note
       - file: tests/test_grocy_data.py
         functions:
           - test_async_update_meal_plan_sorts_by_day

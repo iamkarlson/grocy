@@ -391,7 +391,7 @@ Requires Grocy feature flag: `FEATURE_FLAG_RECIPES`
 
 | Entity ID | Supports | Update behavior | Delete behavior |
 |-----------|----------|----------------|-----------------|
-| `todo.grocy_meal_plan` | UPDATE, DELETE | Marking complete **consumes the recipe** (removes ingredients from stock) and deletes the meal plan entry | Deletes meal plan entry |
+| `todo.grocy_meal_plan` | UPDATE, DELETE | Marking complete **consumes** the entry as the Grocy meal plan page does (a recipe with the servings of the entry, a product with its amount, a note nothing) and marks it done. The entry stays in Grocy. Unchecking marks it not done | Deletes meal plan entry |
 
 **Note:** Meal plan todo items cannot be created through Home Assistant. Use the Grocy UI to plan meals.
 
@@ -414,8 +414,12 @@ Consume a recipe (deduct all ingredients from stock).
 | tests/test_services.py | `test_dispatcher_routes_consume_recipe` | Dispatcher routes consume_recipe |
 | tests/test_todo.py | `test_todo_item_from_meal_plan_item` | Meal plan item converts to todo |
 | tests/test_todo.py | `test_todo_item_from_meal_plan_item_wrapper` | MealPlanItemWrapper converts to todo |
-| tests/test_todo.py | `test_async_update_todo_item_complete_meal_plan` | Completing meal plan consumes recipe and deletes entry |
-| tests/test_todo.py | `test_async_update_todo_item_meal_plan_needs_action_raises` | Uncompleting meal plan raises NotImplementedError |
+| tests/test_todo.py | `test_complete_meal_plan_recipe_consumes_the_meal_plan_recipe` | Completing a recipe entry consumes its meal plan recipe and marks it done |
+| tests/test_todo.py | `test_complete_meal_plan_product_consumes_its_amount` | Completing a product entry consumes its amount and marks it done |
+| tests/test_todo.py | `test_complete_meal_plan_note_only_marks_it_done` | Completing a note only marks it done |
+| tests/test_todo.py | `test_uncomplete_meal_plan_marks_it_not_done` | Unchecking an entry marks it not done |
+| tests/test_todo.py | `test_complete_meal_plan_without_meal_plan_recipe_raises` | A missing meal plan recipe gives a clear error |
+| tests/test_todo.py | `test_meal_plan_item_shows_done_state_and_note` | Done entries show as completed; notes show their text |
 | tests/test_entities.py | `test_sensor_recipes_counts` | Recipes sensor counts correctly |
 | tests/test_grocy_data.py | `test_async_update_meal_plan_sorts_by_day` | Meal plan sorted by date, filters from yesterday |
 | tests/test_grocy_data.py | `test_async_update_meal_plan_empty` | Empty meal plan handled |
