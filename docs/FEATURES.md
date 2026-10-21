@@ -249,6 +249,7 @@ After execution, the chores sensor is force-refreshed.
 | tests/test_todo.py | `test_remove_completed_items_keeps_items_not_due_yet` | Clear completed keeps chores, tasks and batteries that are due later |
 | tests/test_todo.py | `test_async_create_todo_item_chore` | Creating chore todo sets period_type=manually |
 | tests/test_todo.py | `test_async_update_todo_item_complete_chore` | Completing chore todo executes chore |
+| tests/test_todo.py | `test_complete_chore_done_by_follows_the_option` | The chore is logged for the API key owner or the assigned user |
 | tests/test_todo.py | `test_async_update_todo_item_chore_needs_action_raises` | Uncompleting chore raises NotImplementedError |
 | tests/test_grocy_data.py | `test_async_update_chores` | Chores data fetching with details |
 | tests/test_grocy_data.py | `test_async_update_overdue_chores` | Overdue chores filtering with query |
@@ -601,6 +602,7 @@ All entities (except calendar) are updated every 30 seconds via the data coordin
 | tests/test_config_flow.py | `test_reauth_confirm_handles_error` | Error during reauth |
 | tests/test_config_flow.py | `test_url_with_password_is_logged_only_at_debug` | A URL with a password goes to the log only at DEBUG |
 | tests/test_config_flow.py | `test_calendar_sync_interval_must_be_at_least_one_minute` | The form accepts a calendar sync interval of 1 minute or more |
+| tests/test_config_flow.py | `test_chore_done_by_defaults_to_the_api_key_owner` | New entries log chores for the API key owner |
 | tests/test_init.py | `test_async_setup_entry_initializes_integration` | Full setup flow: coordinator, services, proxy, platforms |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready` | Connection failure raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready_on_timeout` | Timeout raises ConfigEntryNotReady |

@@ -25,9 +25,12 @@ from custom_components.grocy.config_flow import (
     async_migrate_entry,
 )
 from custom_components.grocy.const import (
+    CHORE_DONE_BY_API_KEY_OWNER,
+    CHORE_DONE_BY_ASSIGNED_USER,
     CONF_API_KEY,
     CONF_CALENDAR_FIX_TIMEZONE,
     CONF_CALENDAR_SYNC_INTERVAL,
+    CONF_CHORE_DONE_BY,
     CONF_PORT,
     CONF_URL,
     CONF_VERIFY_SSL,
@@ -438,6 +441,13 @@ async def test_migrate_entry_v2_1_moves_port_from_url(hass, config_entry_data) -
     assert entry.data[CONF_CALENDAR_SYNC_INTERVAL] == 42
 
 
+def test_chore_done_by_defaults_to_the_api_key_owner(config_entry_data) -> None:
+    """A new entry logs chores for the API key owner, as Grocy does (#81)."""
+    data = _get_user_data_schema()(config_entry_data)
+
+    assert data[CONF_CHORE_DONE_BY] == CHORE_DONE_BY_API_KEY_OWNER
+
+
 @pytest.mark.parametrize(("interval", "valid"), [(0, False), (-1, False), (1, True)])
 def test_calendar_sync_interval_must_be_at_least_one_minute(
     config_entry_data, interval, valid
@@ -656,6 +666,7 @@ async def test_options_step_saves_and_reloads(
         CONF_URL: "http://192.168.1.10:9283",
         CONF_CALENDAR_SYNC_INTERVAL: 15,
         CONF_CALENDAR_FIX_TIMEZONE: False,
+        CONF_CHORE_DONE_BY: CHORE_DONE_BY_ASSIGNED_USER,
     }
 
     with (
@@ -670,4 +681,5 @@ async def test_options_step_saves_and_reloads(
     assert mock_config_entry.data[CONF_PORT] == 9283
     assert mock_config_entry.data[CONF_CALENDAR_SYNC_INTERVAL] == 15
     assert mock_config_entry.data[CONF_CALENDAR_FIX_TIMEZONE] is False
+    assert mock_config_entry.data[CONF_CHORE_DONE_BY] == CHORE_DONE_BY_ASSIGNED_USER
     reload.assert_awaited_once_with(mock_config_entry.entry_id)

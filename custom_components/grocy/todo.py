@@ -33,6 +33,8 @@ from .const import (
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
+    CHORE_DONE_BY_ASSIGNED_USER,
+    CONF_CHORE_DONE_BY,
     DOMAIN,
 )
 from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
@@ -278,6 +280,17 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
             )
         return item
 
+    def _chore_done_by(self, chore_id: str) -> int | None:
+        """
+        Return the Grocy user to log the chore for.
+
+        None lets Grocy use the owner of the API key.
+        """
+        option = self.coordinator.config_entry.data.get(CONF_CHORE_DONE_BY)
+        if option != CHORE_DONE_BY_ASSIGNED_USER:
+            return None
+        return self._get_grocy_item(chore_id).next_execution_assigned_to_user_id
+
     @property
     def todo_items(self) -> list[TodoItem] | None:
         """Return the value reported by the todo."""
@@ -354,9 +367,11 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
             if item.status == TodoItemStatus.COMPLETED:
                 data: dict[str, Any] = {
                     SERVICE_CHORE_ID: item.uid,
-                    SERVICE_DONE_BY: 1,
                     SERVICE_SKIPPED: False,
                 }
+                done_by = self._chore_done_by(item.uid)
+                if done_by is not None:
+                    data[SERVICE_DONE_BY] = done_by
                 await async_execute_chore_service(self.hass, self.coordinator, data)
             else:
                 # I Probably need to cache the chore completion, so that I can undo it...

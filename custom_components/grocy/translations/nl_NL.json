@@ -26,6 +26,7 @@
                     "api_key": "Grocy API-sleutel",
                     "calendar_fix_timezone": "Tijdzone voor kalender corrigeren",
                     "calendar_sync_interval": "Kalendersynchronisatie-interval (minuten)",
+                    "chore_done_by": "Klusjes die in Home Assistant zijn afgerond, zijn gedaan door",
                     "port": "Poortnummer (9192)",
                     "url": "Grocy API-URL",
                     "verify_ssl": "SSL-certificaat verifiëren"
@@ -38,6 +39,7 @@
                     "api_key": "Grocy API-sleutel",
                     "calendar_fix_timezone": "Tijdzone voor kalender corrigeren",
                     "calendar_sync_interval": "Kalendersynchronisatie-interval (minuten)",
+                    "chore_done_by": "Klusjes die in Home Assistant zijn afgerond, zijn gedaan door",
                     "port": "Poortnummer (9192)",
                     "url": "Grocy API-URL",
                     "verify_ssl": "SSL-certificaat verifiëren"
@@ -62,12 +64,21 @@
                     "api_key": "Grocy API-sleutel",
                     "calendar_fix_timezone": "Tijdzone voor kalender corrigeren",
                     "calendar_sync_interval": "Kalendersynchronisatie-interval (minuten)",
+                    "chore_done_by": "Klusjes die in Home Assistant zijn afgerond, zijn gedaan door",
                     "port": "Poortnummer (9192)",
                     "url": "Grocy API-URL",
                     "verify_ssl": "SSL-certificaat verifiëren"
                 },
                 "description": "Configureer Grocy-integratieopties.",
                 "title": "Grocy-opties"
+            }
+        }
+    },
+    "selector": {
+        "chore_done_by": {
+            "options": {
+                "api_key_owner": "De eigenaar van de API-sleutel",
+                "assigned_user": "De gebruiker aan wie het klusje is toegewezen"
             }
         }
     },

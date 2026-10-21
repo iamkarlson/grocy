@@ -29,6 +29,9 @@ from custom_components.grocy.const import (
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
     ATTR_TASKS,
+    CHORE_DONE_BY_API_KEY_OWNER,
+    CHORE_DONE_BY_ASSIGNED_USER,
+    CONF_CHORE_DONE_BY,
 )
 from custom_components.grocy.coordinator import GrocyCoordinatorData
 from custom_components.grocy.helpers import MealPlanItemWrapper
@@ -315,13 +318,14 @@ def test_todo_item_raises_for_unknown_type() -> None:
 # ─── GrocyTodoListEntity supported features ──────────────────────────────────
 
 
-def _build_todo(key: str, data) -> GrocyTodoListEntity:
+def _build_todo(key: str, data, entry_data: dict | None = None) -> GrocyTodoListEntity:
     description = next(d for d in TODOS if d.key == key)
     entity = GrocyTodoListEntity.__new__(GrocyTodoListEntity)
     entity.entity_description = description
     entity.coordinator = SimpleNamespace(
         data=GrocyCoordinatorData(),
         async_refresh=AsyncMock(),
+        config_entry=SimpleNamespace(data=entry_data or {}),
     )
     entity.coordinator.data[key] = data
     entity.hass = SimpleNamespace()
@@ -467,7 +471,35 @@ async def test_async_update_todo_item_complete_chore() -> None:
     mock_exec.assert_awaited_once()
     call_data = mock_exec.call_args[0][2]
     assert call_data["chore_id"] == "5"
-    assert call_data["done_by"] == 1
+    # Without done_by, Grocy logs the chore for the owner of the API key (#81).
+    assert "done_by" not in call_data
+
+
+@pytest.mark.feature("chore_management")
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("option", "assigned_user", "expected"),
+    [
+        (CHORE_DONE_BY_API_KEY_OWNER, 3, None),
+        (CHORE_DONE_BY_ASSIGNED_USER, 3, 3),
+        (CHORE_DONE_BY_ASSIGNED_USER, None, None),
+    ],
+)
+async def test_complete_chore_done_by_follows_the_option(
+    option, assigned_user, expected
+) -> None:
+    """The chore is logged for the API key owner or the assigned user (#81)."""
+    chore = SimpleNamespace(id=5, next_execution_assigned_to_user_id=assigned_user)
+    entity = _build_todo(ATTR_CHORES, [chore], {CONF_CHORE_DONE_BY: option})
+    todo_item = SimpleNamespace(uid="5", status=TodoItemStatus.COMPLETED)
+
+    with patch(
+        "custom_components.grocy.todo.async_execute_chore_service",
+        new_callable=AsyncMock,
+    ) as mock_exec:
+        await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
+
+    assert mock_exec.call_args[0][2].get("done_by") == expected
 
 
 @pytest.mark.feature("task_management")

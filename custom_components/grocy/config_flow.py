@@ -13,14 +13,22 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
 
 from grocy import Grocy
 from grocy.errors import GrocyError
 
 from .const import (
+    CHORE_DONE_BY_API_KEY_OWNER,
+    CHORE_DONE_BY_ASSIGNED_USER,
     CONF_API_KEY,
     CONF_CALENDAR_FIX_TIMEZONE,
     CONF_CALENDAR_SYNC_INTERVAL,
+    CONF_CHORE_DONE_BY,
     CONF_PORT,
     CONF_URL,
     CONF_VERIFY_SSL,
@@ -171,6 +179,16 @@ def _get_user_data_schema(
                 CONF_CALENDAR_FIX_TIMEZONE,
                 default=defaults.get(CONF_CALENDAR_FIX_TIMEZONE, True),
             ): bool,
+            vol.Optional(
+                CONF_CHORE_DONE_BY,
+                default=defaults.get(CONF_CHORE_DONE_BY, CHORE_DONE_BY_API_KEY_OWNER),
+            ): SelectSelector(
+                SelectSelectorConfig(
+                    options=[CHORE_DONE_BY_API_KEY_OWNER, CHORE_DONE_BY_ASSIGNED_USER],
+                    translation_key=CONF_CHORE_DONE_BY,
+                    mode=SelectSelectorMode.DROPDOWN,
+                )
+            ),
         }
     )
 
@@ -363,6 +381,9 @@ class GrocyOptionsFlowHandler(config_entries.OptionsFlow):
             ]
             new_data[CONF_CALENDAR_FIX_TIMEZONE] = user_input.get(
                 CONF_CALENDAR_FIX_TIMEZONE, True
+            )
+            new_data[CONF_CHORE_DONE_BY] = user_input.get(
+                CONF_CHORE_DONE_BY, CHORE_DONE_BY_API_KEY_OWNER
             )
 
             # Update the config entry

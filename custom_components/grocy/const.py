@@ -21,6 +21,10 @@ CONF_API_KEY: Final = "api_key"
 CONF_VERIFY_SSL: Final = "verify_ssl"
 CONF_CALENDAR_SYNC_INTERVAL: Final = "calendar_sync_interval"
 CONF_CALENDAR_FIX_TIMEZONE: Final = "calendar_fix_timezone"
+# Which Grocy user a chore completed in Home Assistant is logged for.
+CONF_CHORE_DONE_BY: Final = "chore_done_by"
+CHORE_DONE_BY_API_KEY_OWNER: Final = "api_key_owner"
+CHORE_DONE_BY_ASSIGNED_USER: Final = "assigned_user"
 
 STARTUP_MESSAGE: Final = f"""
 -------------------------------------------------------------------

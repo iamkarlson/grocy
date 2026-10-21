@@ -114,6 +114,7 @@ features:
           - test_remove_completed_items_keeps_items_not_due_yet
           - test_async_create_todo_item_chore
           - test_async_update_todo_item_complete_chore
+          - test_complete_chore_done_by_follows_the_option
           - test_async_update_todo_item_chore_needs_action_raises
       - file: tests/test_grocy_data.py
         functions:
@@ -288,6 +289,7 @@ features:
           - test_user_step_moves_port_from_url
           - test_url_with_password_is_logged_only_at_debug
           - test_calendar_sync_interval_must_be_at_least_one_minute
+          - test_chore_done_by_defaults_to_the_api_key_owner
           - test_user_step_maps_each_failure_to_its_message
           - test_html_error_page_maps_to_cannot_connect
           - test_user_step_rejects_ingress_url
