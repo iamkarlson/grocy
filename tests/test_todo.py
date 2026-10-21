@@ -646,8 +646,9 @@ async def test_complete_meal_plan_without_meal_plan_recipe_raises() -> None:
 @pytest.mark.feature("meal_planning")
 def test_meal_plan_item_shows_done_state_and_note() -> None:
     """A done entry shows as completed, and a note shows its text (#77)."""
-    meal_plan = SimpleNamespace(
-        id=5, day=dt.date(2026, 10, 21), recipe=None, note="Pizza night", done=True
+    # The real model: grocy-py before 1.5.0 has no "done" field.
+    meal_plan = MealPlanItem(
+        id=5, day=dt.date(2026, 10, 21), type="note", note="Pizza night", done=True
     )
 
     item = GrocyTodoItem(MealPlanItemWrapper(meal_plan), ATTR_MEAL_PLAN)
