@@ -116,6 +116,39 @@ async def test_async_update_stock_empty(grocy_data) -> None:
     assert result == []
 
 
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_async_update_stock_adds_picture_file_names(grocy_data) -> None:
+    """Verify stock products are given the picture file name of their product."""
+    grocy_data.api.stock.current.return_value = [
+        DummyProduct(id=1),
+        DummyProduct(id=2),
+    ]
+    # Grocy returns entity ids as strings.
+    grocy_data.api.generic.list.return_value = [
+        {"id": "1", "picture_file_name": "apple.jpg"},
+        {"id": "3", "picture_file_name": "pear.jpg"},
+    ]
+
+    result = await grocy_data.async_update_stock()
+
+    assert result[0].picture_file_name == "apple.jpg"
+    assert result[1].picture_file_name is None
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_async_update_stock_survives_a_failed_picture_lookup(grocy_data) -> None:
+    """Verify stock is still returned when the product entities cannot be read."""
+    grocy_data.api.stock.current.return_value = [DummyProduct(id=1)]
+    grocy_data.api.generic.list.side_effect = RuntimeError("boom")
+
+    result = await grocy_data.async_update_stock()
+
+    assert len(result) == 1
+    assert result[0].picture_file_name is None
+
+
 # ─── async_update_chores ──────────────────────────────────────────────────────
 
 

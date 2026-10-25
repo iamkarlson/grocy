@@ -97,6 +97,7 @@ class DummyProduct:
     available_amount: float = 1.0
     description: str | None = "Product description"
     best_before_date: dt.datetime | None = None
+    picture_file_name: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -105,6 +106,7 @@ class DummyProduct:
             "available_amount": self.available_amount,
             "description": self.description,
             "best_before_date": self.best_before_date,
+            "picture_file_name": self.picture_file_name,
         }
 
     def get_details(self, api_client) -> None:

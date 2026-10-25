@@ -1,7 +1,7 @@
 """
 Helper function tests.
 
-Features: meal_planning, cross_cutting
+Features: meal_planning, stock_management, cross_cutting
 See: docs/FEATURES.md
 """
 
@@ -21,11 +21,14 @@ from custom_components.grocy.helpers import (
     MealPlanItemWrapper,
     extract_base_url_and_path,
     model_to_dict,
+    product_picture_url,
+    product_to_dict,
     split_url_and_port,
 )
 from custom_components.grocy.json_encoder import CustomJSONEncoder
 from tests.factories import (
     DummyMealPlanItem,
+    DummyProduct,
     DummyRecipe,
 )
 
@@ -178,3 +181,35 @@ def test_model_to_dict_suppresses_userfields_warning() -> None:
 
     assert result["name"] == "test"
     assert result["userfields"] == []
+
+
+@pytest.mark.feature("stock_management")
+def test_product_picture_url_points_at_the_product_pictures_group() -> None:
+    """A product picture is proxied from the product pictures group."""
+    encoded = base64.b64encode("sødmælk.jpg".encode()).decode("ascii")
+    assert product_picture_url("sødmælk.jpg") == f"/api/grocy/productpictures/{encoded}"
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.parametrize("picture_file_name", [None, ""])
+def test_product_picture_url_without_a_picture(picture_file_name: str | None) -> None:
+    """A product without a picture has no URL."""
+    assert product_picture_url(picture_file_name) is None
+
+
+@pytest.mark.feature("stock_management")
+def test_product_to_dict_adds_the_picture_url() -> None:
+    """The serialized product carries the proxy URL of its picture."""
+    product = DummyProduct(picture_file_name="apple.jpg")
+    payload = product_to_dict(product)
+
+    assert payload["picture_url"] == product_picture_url("apple.jpg")
+    assert payload["name"] == product.name
+
+
+@pytest.mark.feature("stock_management")
+def test_product_to_dict_without_a_picture() -> None:
+    """A product without a picture still carries the key, set to None."""
+    payload = product_to_dict(DummyProduct())
+
+    assert payload["picture_url"] is None
