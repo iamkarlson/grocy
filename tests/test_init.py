@@ -13,6 +13,7 @@ import pytest
 import requests
 from grocy.errors import GrocyError
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers import entity_registry as er
 
 from custom_components.grocy import (
     _async_get_available_entities,
@@ -38,6 +39,7 @@ from custom_components.grocy.const import (
     DOMAIN,
     PLATFORMS,
 )
+from custom_components.grocy.coordinator import GrocyCoordinatorData
 
 pytestmark = pytest.mark.feature("configuration_setup")
 
@@ -311,3 +313,48 @@ async def test_async_setup_entry_maps_grocy_errors(
 
         with pytest.raises(expected):
             await async_setup_entry(hass, mock_config_entry)
+
+
+async def test_entities_are_named_by_translations(
+    hass, enable_custom_integrations, mock_config_entry
+) -> None:
+    """Names come from the translations, and the entity IDs stay as before."""
+    hass.config.components.add("http")
+    hass.http = MagicMock()
+    mock_config_entry.add_to_hass(hass)
+    with (
+        patch(
+            "custom_components.grocy._async_get_available_entities",
+            new_callable=AsyncMock,
+            return_value=[ATTR_CHORES, ATTR_OVERDUE_CHORES],
+        ),
+        patch(
+            "custom_components.grocy.coordinator.GrocyDataUpdateCoordinator._async_update_data",
+            new_callable=AsyncMock,
+            return_value=GrocyCoordinatorData(),
+        ),
+        patch(
+            "custom_components.grocy.calendar.GrocyCalendarEntity._fetch_ical_url",
+            new_callable=AsyncMock,
+        ),
+        patch("custom_components.grocy.calendar.GrocyCalendarEntity._schedule_update"),
+    ):
+        assert await hass.config_entries.async_setup(mock_config_entry.entry_id)
+        await hass.async_block_till_done()
+
+    registry = er.async_get(hass)
+    expected = {
+        "sensor.grocy_chores": ("chores", "Chores"),
+        "todo.grocy_chores": ("chores", "Chores"),
+        "binary_sensor.grocy_overdue_chores": ("overdue_chores", "Overdue chores"),
+        "calendar.grocy_calendar": ("calendar", "Calendar"),
+    }
+    for entity_id, (key, name) in expected.items():
+        entry = registry.async_get(entity_id)
+        assert entry is not None, entity_id
+        assert entry.unique_id == f"{mock_config_entry.entry_id}{key}"
+        assert entry.has_entity_name
+        assert entry.original_name == name
+    assert hass.states.get("calendar.grocy_calendar").name == "Grocy Calendar"
+
+    assert await hass.config_entries.async_unload(mock_config_entry.entry_id)

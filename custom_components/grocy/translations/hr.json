@@ -49,6 +49,79 @@
             }
         }
     },
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Istekli proizvodi"
+            },
+            "expiring_products": {
+                "name": "Proizvodi kojima uskoro istječe rok"
+            },
+            "missing_products": {
+                "name": "Proizvodi ispod minimalne zalihe"
+            },
+            "overdue_batteries": {
+                "name": "Zakašnjele baterije"
+            },
+            "overdue_chores": {
+                "name": "Zakašnjeli kućanski poslovi"
+            },
+            "overdue_products": {
+                "name": "Proizvodi s prekoračenim rokom"
+            },
+            "overdue_tasks": {
+                "name": "Zakašnjeli zadaci"
+            }
+        },
+        "calendar": {
+            "calendar": {
+                "name": "Kalendar"
+            }
+        },
+        "sensor": {
+            "batteries": {
+                "name": "Baterije"
+            },
+            "chores": {
+                "name": "Kućanski poslovi"
+            },
+            "meal_plan": {
+                "name": "Plan obroka"
+            },
+            "recipes": {
+                "name": "Recepti"
+            },
+            "shopping_list": {
+                "name": "Popis za kupnju"
+            },
+            "stock": {
+                "name": "Zaliha"
+            },
+            "tasks": {
+                "name": "Zadaci"
+            }
+        },
+        "todo": {
+            "batteries": {
+                "name": "Baterije"
+            },
+            "chores": {
+                "name": "Kućanski poslovi"
+            },
+            "meal_plan": {
+                "name": "Plan obroka"
+            },
+            "shopping_list": {
+                "name": "Popis za kupnju"
+            },
+            "stock": {
+                "name": "Zaliha"
+            },
+            "tasks": {
+                "name": "Zadaci"
+            }
+        }
+    },
     "options": {
         "error": {
             "cannot_connect": "Povezivanje s Grocy poslužiteljem nije uspjelo.",

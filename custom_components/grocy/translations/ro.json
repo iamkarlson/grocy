@@ -49,6 +49,79 @@
             }
         }
     },
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Produse expirate"
+            },
+            "expiring_products": {
+                "name": "Produse care expiră în curând"
+            },
+            "missing_products": {
+                "name": "Produse sub stocul minim"
+            },
+            "overdue_batteries": {
+                "name": "Baterii restante"
+            },
+            "overdue_chores": {
+                "name": "Activități restante"
+            },
+            "overdue_products": {
+                "name": "Produse cu termen depășit"
+            },
+            "overdue_tasks": {
+                "name": "Sarcini restante"
+            }
+        },
+        "calendar": {
+            "calendar": {
+                "name": "Calendar"
+            }
+        },
+        "sensor": {
+            "batteries": {
+                "name": "Baterii"
+            },
+            "chores": {
+                "name": "Activități"
+            },
+            "meal_plan": {
+                "name": "Plan de masă"
+            },
+            "recipes": {
+                "name": "Rețete"
+            },
+            "shopping_list": {
+                "name": "Listă de cumpărături"
+            },
+            "stock": {
+                "name": "Stoc"
+            },
+            "tasks": {
+                "name": "Sarcini"
+            }
+        },
+        "todo": {
+            "batteries": {
+                "name": "Baterii"
+            },
+            "chores": {
+                "name": "Activități"
+            },
+            "meal_plan": {
+                "name": "Plan de masă"
+            },
+            "shopping_list": {
+                "name": "Listă de cumpărături"
+            },
+            "stock": {
+                "name": "Stoc"
+            },
+            "tasks": {
+                "name": "Sarcini"
+            }
+        }
+    },
     "options": {
         "error": {
             "cannot_connect": "Nu s-a putut conecta la serverul Grocy.",

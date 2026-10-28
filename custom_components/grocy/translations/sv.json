@@ -49,6 +49,79 @@
             }
         }
     },
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Utgångna produkter"
+            },
+            "expiring_products": {
+                "name": "Produkter som förfaller snart"
+            },
+            "missing_products": {
+                "name": "Produkter under minsta lagersaldo"
+            },
+            "overdue_batteries": {
+                "name": "Förfallna batterier"
+            },
+            "overdue_chores": {
+                "name": "Förfallna sysslor"
+            },
+            "overdue_products": {
+                "name": "Förfallna produkter"
+            },
+            "overdue_tasks": {
+                "name": "Förfallna uppgifter"
+            }
+        },
+        "calendar": {
+            "calendar": {
+                "name": "Kalender"
+            }
+        },
+        "sensor": {
+            "batteries": {
+                "name": "Batterier"
+            },
+            "chores": {
+                "name": "Sysslor"
+            },
+            "meal_plan": {
+                "name": "Måltidsplan"
+            },
+            "recipes": {
+                "name": "Recept"
+            },
+            "shopping_list": {
+                "name": "Inköpslista"
+            },
+            "stock": {
+                "name": "Lager"
+            },
+            "tasks": {
+                "name": "Uppgifter"
+            }
+        },
+        "todo": {
+            "batteries": {
+                "name": "Batterier"
+            },
+            "chores": {
+                "name": "Sysslor"
+            },
+            "meal_plan": {
+                "name": "Måltidsplan"
+            },
+            "shopping_list": {
+                "name": "Inköpslista"
+            },
+            "stock": {
+                "name": "Lager"
+            },
+            "tasks": {
+                "name": "Uppgifter"
+            }
+        }
+    },
     "options": {
         "error": {
             "cannot_connect": "Kunde inte ansluta till Grocy-servern.",

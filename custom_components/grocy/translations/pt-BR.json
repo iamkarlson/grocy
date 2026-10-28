@@ -49,6 +49,79 @@
             }
         }
     },
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Produtos estragados"
+            },
+            "expiring_products": {
+                "name": "Produtos vencendo em breve"
+            },
+            "missing_products": {
+                "name": "Produtos abaixo da quantidade mínima"
+            },
+            "overdue_batteries": {
+                "name": "Baterias atrasadas"
+            },
+            "overdue_chores": {
+                "name": "Tarefas domésticas atrasadas"
+            },
+            "overdue_products": {
+                "name": "Produtos vencidos"
+            },
+            "overdue_tasks": {
+                "name": "Atividades atrasadas"
+            }
+        },
+        "calendar": {
+            "calendar": {
+                "name": "Agenda"
+            }
+        },
+        "sensor": {
+            "batteries": {
+                "name": "Baterias"
+            },
+            "chores": {
+                "name": "Tarefas domésticas"
+            },
+            "meal_plan": {
+                "name": "Plano alimentar"
+            },
+            "recipes": {
+                "name": "Receitas"
+            },
+            "shopping_list": {
+                "name": "Lista de compras"
+            },
+            "stock": {
+                "name": "Estoque"
+            },
+            "tasks": {
+                "name": "Atividades"
+            }
+        },
+        "todo": {
+            "batteries": {
+                "name": "Baterias"
+            },
+            "chores": {
+                "name": "Tarefas domésticas"
+            },
+            "meal_plan": {
+                "name": "Plano alimentar"
+            },
+            "shopping_list": {
+                "name": "Lista de compras"
+            },
+            "stock": {
+                "name": "Estoque"
+            },
+            "tasks": {
+                "name": "Atividades"
+            }
+        }
+    },
     "options": {
         "error": {
             "cannot_connect": "Falha ao conectar ao servidor Grocy.",

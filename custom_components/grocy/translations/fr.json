@@ -49,6 +49,79 @@
             }
         }
     },
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Produits périmés"
+            },
+            "expiring_products": {
+                "name": "Produits bientôt périmés"
+            },
+            "missing_products": {
+                "name": "Produits sous le stock minimum"
+            },
+            "overdue_batteries": {
+                "name": "Piles en retard"
+            },
+            "overdue_chores": {
+                "name": "Corvées en retard"
+            },
+            "overdue_products": {
+                "name": "Produits en retard"
+            },
+            "overdue_tasks": {
+                "name": "Tâches en retard"
+            }
+        },
+        "calendar": {
+            "calendar": {
+                "name": "Calendrier"
+            }
+        },
+        "sensor": {
+            "batteries": {
+                "name": "Piles"
+            },
+            "chores": {
+                "name": "Corvées"
+            },
+            "meal_plan": {
+                "name": "Prévisions des menus"
+            },
+            "recipes": {
+                "name": "Recettes"
+            },
+            "shopping_list": {
+                "name": "Liste de courses"
+            },
+            "stock": {
+                "name": "Stock"
+            },
+            "tasks": {
+                "name": "Tâches"
+            }
+        },
+        "todo": {
+            "batteries": {
+                "name": "Piles"
+            },
+            "chores": {
+                "name": "Corvées"
+            },
+            "meal_plan": {
+                "name": "Prévisions des menus"
+            },
+            "shopping_list": {
+                "name": "Liste de courses"
+            },
+            "stock": {
+                "name": "Stock"
+            },
+            "tasks": {
+                "name": "Tâches"
+            }
+        }
+    },
     "options": {
         "error": {
             "cannot_connect": "Impossible de se connecter au serveur Grocy.",

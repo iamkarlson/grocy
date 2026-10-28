@@ -626,6 +626,7 @@ All entities (except calendar) are updated every 30 seconds via the data coordin
 | tests/test_init.py | `test_async_setup_entry_maps_grocy_errors` | Grocy 401 or 403 at setup starts re-authentication; other errors retry |
 | tests/test_init.py | `test_async_unload_entry_unloads_platforms` | Unload unloads the platforms and returns their result |
 | tests/test_init.py | `test_async_setup_registers_actions_and_picture_view` | `async_setup` registers the actions and the picture view once per run |
+| tests/test_init.py | `test_entities_are_named_by_translations` | Entity names come from the translations; entity IDs stay `sensor.grocy_chores` and so on |
 | tests/test_init.py | `test_available_entities_all_features` | All features enabled creates all entities |
 | tests/test_init.py | `test_available_entities_stock_only` | Stock-only creates stock entities |
 | tests/test_init.py | `test_available_entities_tasks_only` | Tasks-only creates task entities |

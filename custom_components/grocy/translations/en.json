@@ -82,5 +82,78 @@
                 "assigned_user": "The user assigned to the chore"
             }
         }
+    },
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Expired products"
+            },
+            "expiring_products": {
+                "name": "Expiring products"
+            },
+            "overdue_products": {
+                "name": "Overdue products"
+            },
+            "missing_products": {
+                "name": "Missing products"
+            },
+            "overdue_chores": {
+                "name": "Overdue chores"
+            },
+            "overdue_tasks": {
+                "name": "Overdue tasks"
+            },
+            "overdue_batteries": {
+                "name": "Overdue batteries"
+            }
+        },
+        "calendar": {
+            "calendar": {
+                "name": "Calendar"
+            }
+        },
+        "sensor": {
+            "chores": {
+                "name": "Chores"
+            },
+            "meal_plan": {
+                "name": "Meal plan"
+            },
+            "shopping_list": {
+                "name": "Shopping list"
+            },
+            "stock": {
+                "name": "Stock"
+            },
+            "tasks": {
+                "name": "Tasks"
+            },
+            "batteries": {
+                "name": "Batteries"
+            },
+            "recipes": {
+                "name": "Recipes"
+            }
+        },
+        "todo": {
+            "chores": {
+                "name": "Chores"
+            },
+            "meal_plan": {
+                "name": "Meal plan"
+            },
+            "shopping_list": {
+                "name": "Shopping list"
+            },
+            "stock": {
+                "name": "Stock"
+            },
+            "tasks": {
+                "name": "Tasks"
+            },
+            "batteries": {
+                "name": "Batteries"
+            }
+        }
     }
 }

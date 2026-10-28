@@ -321,6 +321,7 @@ features:
           - test_async_setup_entry_maps_grocy_errors
           - test_async_unload_entry_unloads_platforms
           - test_async_setup_registers_actions_and_picture_view
+          - test_entities_are_named_by_translations
           - test_available_entities_all_features
           - test_available_entities_stock_only
           - test_available_entities_tasks_only

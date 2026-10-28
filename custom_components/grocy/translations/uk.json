@@ -49,6 +49,79 @@
             }
         }
     },
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Зіпсовані продукти"
+            },
+            "expiring_products": {
+                "name": "Продукти, що скоро зіпсуються"
+            },
+            "missing_products": {
+                "name": "Продукти нижче мінімального запасу"
+            },
+            "overdue_batteries": {
+                "name": "Прострочені акумулятори"
+            },
+            "overdue_chores": {
+                "name": "Прострочені хатні справи"
+            },
+            "overdue_products": {
+                "name": "Прострочені продукти"
+            },
+            "overdue_tasks": {
+                "name": "Прострочені завдання"
+            }
+        },
+        "calendar": {
+            "calendar": {
+                "name": "Календар"
+            }
+        },
+        "sensor": {
+            "batteries": {
+                "name": "Акумулятори"
+            },
+            "chores": {
+                "name": "Хатні справи"
+            },
+            "meal_plan": {
+                "name": "План харчування"
+            },
+            "recipes": {
+                "name": "Рецепти"
+            },
+            "shopping_list": {
+                "name": "Список покупок"
+            },
+            "stock": {
+                "name": "Запаси"
+            },
+            "tasks": {
+                "name": "Завдання"
+            }
+        },
+        "todo": {
+            "batteries": {
+                "name": "Акумулятори"
+            },
+            "chores": {
+                "name": "Хатні справи"
+            },
+            "meal_plan": {
+                "name": "План харчування"
+            },
+            "shopping_list": {
+                "name": "Список покупок"
+            },
+            "stock": {
+                "name": "Запаси"
+            },
+            "tasks": {
+                "name": "Завдання"
+            }
+        }
+    },
     "options": {
         "error": {
             "cannot_connect": "Не вдалося підключитися до сервера Grocy.",

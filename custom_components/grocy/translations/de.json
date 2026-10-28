@@ -49,6 +49,79 @@
             }
         }
     },
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Abgelaufene Produkte"
+            },
+            "expiring_products": {
+                "name": "Bald fällige Produkte"
+            },
+            "missing_products": {
+                "name": "Produkte unter Mindestbestand"
+            },
+            "overdue_batteries": {
+                "name": "Überfällige Batterien"
+            },
+            "overdue_chores": {
+                "name": "Überfällige Hausarbeiten"
+            },
+            "overdue_products": {
+                "name": "Überfällige Produkte"
+            },
+            "overdue_tasks": {
+                "name": "Überfällige Aufgaben"
+            }
+        },
+        "calendar": {
+            "calendar": {
+                "name": "Kalender"
+            }
+        },
+        "sensor": {
+            "batteries": {
+                "name": "Batterien"
+            },
+            "chores": {
+                "name": "Hausarbeiten"
+            },
+            "meal_plan": {
+                "name": "Speiseplan"
+            },
+            "recipes": {
+                "name": "Rezepte"
+            },
+            "shopping_list": {
+                "name": "Einkaufszettel"
+            },
+            "stock": {
+                "name": "Bestand"
+            },
+            "tasks": {
+                "name": "Aufgaben"
+            }
+        },
+        "todo": {
+            "batteries": {
+                "name": "Batterien"
+            },
+            "chores": {
+                "name": "Hausarbeiten"
+            },
+            "meal_plan": {
+                "name": "Speiseplan"
+            },
+            "shopping_list": {
+                "name": "Einkaufszettel"
+            },
+            "stock": {
+                "name": "Bestand"
+            },
+            "tasks": {
+                "name": "Aufgaben"
+            }
+        }
+    },
     "options": {
         "error": {
             "cannot_connect": "Verbindung zum Grocy-Server fehlgeschlagen.",

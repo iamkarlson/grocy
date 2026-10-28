@@ -67,7 +67,7 @@ class GrocyBinarySensorEntityDescription(BinarySensorEntityDescription):
 BINARY_SENSORS: tuple[GrocyBinarySensorEntityDescription, ...] = (
     GrocyBinarySensorEntityDescription(
         key=ATTR_EXPIRED_PRODUCTS,
-        name="Grocy expired products",
+        translation_key=ATTR_EXPIRED_PRODUCTS,
         icon="mdi:delete-alert-outline",
         exists_fn=lambda entities: ATTR_EXPIRED_PRODUCTS in entities,
         attributes_fn=lambda data: {
@@ -77,7 +77,7 @@ BINARY_SENSORS: tuple[GrocyBinarySensorEntityDescription, ...] = (
     ),
     GrocyBinarySensorEntityDescription(
         key=ATTR_EXPIRING_PRODUCTS,
-        name="Grocy expiring products",
+        translation_key=ATTR_EXPIRING_PRODUCTS,
         icon="mdi:clock-fast",
         exists_fn=lambda entities: ATTR_EXPIRING_PRODUCTS in entities,
         attributes_fn=lambda data: {
@@ -87,7 +87,7 @@ BINARY_SENSORS: tuple[GrocyBinarySensorEntityDescription, ...] = (
     ),
     GrocyBinarySensorEntityDescription(
         key=ATTR_OVERDUE_PRODUCTS,
-        name="Grocy overdue products",
+        translation_key=ATTR_OVERDUE_PRODUCTS,
         icon="mdi:alert-circle-check-outline",
         exists_fn=lambda entities: ATTR_OVERDUE_PRODUCTS in entities,
         attributes_fn=lambda data: {
@@ -97,7 +97,7 @@ BINARY_SENSORS: tuple[GrocyBinarySensorEntityDescription, ...] = (
     ),
     GrocyBinarySensorEntityDescription(
         key=ATTR_MISSING_PRODUCTS,
-        name="Grocy missing products",
+        translation_key=ATTR_MISSING_PRODUCTS,
         icon="mdi:flask-round-bottom-empty-outline",
         exists_fn=lambda entities: ATTR_MISSING_PRODUCTS in entities,
         attributes_fn=lambda data: {
@@ -107,7 +107,7 @@ BINARY_SENSORS: tuple[GrocyBinarySensorEntityDescription, ...] = (
     ),
     GrocyBinarySensorEntityDescription(
         key=ATTR_OVERDUE_CHORES,
-        name="Grocy overdue chores",
+        translation_key=ATTR_OVERDUE_CHORES,
         icon="mdi:alert-circle-check-outline",
         exists_fn=lambda entities: ATTR_OVERDUE_CHORES in entities,
         attributes_fn=lambda data: {
@@ -117,7 +117,7 @@ BINARY_SENSORS: tuple[GrocyBinarySensorEntityDescription, ...] = (
     ),
     GrocyBinarySensorEntityDescription(
         key=ATTR_OVERDUE_TASKS,
-        name="Grocy overdue tasks",
+        translation_key=ATTR_OVERDUE_TASKS,
         icon="mdi:alert-circle-check-outline",
         exists_fn=lambda entities: ATTR_OVERDUE_TASKS in entities,
         attributes_fn=lambda data: {
@@ -127,7 +127,7 @@ BINARY_SENSORS: tuple[GrocyBinarySensorEntityDescription, ...] = (
     ),
     GrocyBinarySensorEntityDescription(
         key=ATTR_OVERDUE_BATTERIES,
-        name="Grocy overdue batteries",
+        translation_key=ATTR_OVERDUE_BATTERIES,
         icon="mdi:battery-charging-10",
         exists_fn=lambda entities: ATTR_OVERDUE_BATTERIES in entities,
         attributes_fn=lambda data: {

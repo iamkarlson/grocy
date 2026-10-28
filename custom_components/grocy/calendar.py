@@ -77,7 +77,7 @@ class GrocyCalendarEntity(CalendarEntity):
         self._last_update: datetime | None = None
 
         # Entity attributes
-        self._attr_name = "Grocy calendar"
+        self._attr_has_entity_name = True
         self._attr_unique_id = f"{config_entry.entry_id}calendar"
         self._attr_available = True
         self._attr_icon = "mdi:calendar"
@@ -86,7 +86,7 @@ class GrocyCalendarEntity(CalendarEntity):
         # (even though calendar doesn't use coordinator data)
         self.entity_description = CalendarEntityDescription(
             key="calendar",
-            name="Grocy calendar",
+            translation_key="calendar",
         )
 
     @property
