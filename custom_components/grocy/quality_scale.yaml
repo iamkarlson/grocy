@@ -6,9 +6,7 @@ rules:
     status: todo
     comment: The logo is in home-assistant/brands under custom_integrations/grocy. It moves to core_integrations with the core pull request.
   common-modules: done
-  config-flow:
-    status: todo
-    comment: The options flow edits the connection settings and writes all settings to ConfigEntry.data.
+  config-flow: done
   config-flow-test-coverage: done
   dependency-transparency: done
   docs-actions:

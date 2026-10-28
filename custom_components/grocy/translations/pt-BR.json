@@ -27,18 +27,12 @@
             "reconfigure": {
                 "data": {
                     "api_key": "Chave de API do Grocy",
-                    "calendar_fix_timezone": "Corrigir fuso horário para calendário",
-                    "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
-                    "chore_done_by": "Tarefas concluídas no Home Assistant são feitas por",
                     "port": "Número da porta (9192)",
                     "url": "URL da API do Grocy",
                     "verify_ssl": "Verificar certificado SSL"
                 },
                 "data_description": {
                     "api_key": "Crie uma chave no Grocy: Configurações (ícone de chave inglesa) → \"Organizar Chaves do API\".",
-                    "calendar_fix_timezone": "Ative se os eventos da agenda aparecerem na hora errada. Então os horários do Grocy são lidos como hora local.",
-                    "calendar_sync_interval": "Com que frequência a agenda do Grocy é lida, em minutos.",
-                    "chore_done_by": "Usuário do Grocy para as tarefas domésticas que você conclui no Home Assistant. Uma tarefa doméstica sem usuário atribuído é feita pelo dono da chave de API.",
                     "port": "Porta do Grocy. Se o endereço acima tiver uma porta, essa porta é usada.",
                     "url": "Endereço do seu servidor Grocy, por exemplo http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
                     "verify_ssl": "Verificar o certificado HTTPS do Grocy. Desative para um certificado autoassinado."
@@ -49,18 +43,12 @@
             "user": {
                 "data": {
                     "api_key": "Chave de API do Grocy",
-                    "calendar_fix_timezone": "Corrigir fuso horário para calendário",
-                    "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
-                    "chore_done_by": "Tarefas concluídas no Home Assistant são feitas por",
                     "port": "Número da porta (9192)",
                     "url": "URL da API do Grocy",
                     "verify_ssl": "Verificar certificado SSL"
                 },
                 "data_description": {
                     "api_key": "Crie uma chave no Grocy: Configurações (ícone de chave inglesa) → \"Organizar Chaves do API\".",
-                    "calendar_fix_timezone": "Ative se os eventos da agenda aparecerem na hora errada. Então os horários do Grocy são lidos como hora local.",
-                    "calendar_sync_interval": "Com que frequência a agenda do Grocy é lida, em minutos.",
-                    "chore_done_by": "Usuário do Grocy para as tarefas domésticas que você conclui no Home Assistant. Uma tarefa doméstica sem usuário atribuído é feita pelo dono da chave de API.",
                     "port": "Porta do Grocy. Se o endereço acima tiver uma porta, essa porta é usada.",
                     "url": "Endereço do seu servidor Grocy, por exemplo http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
                     "verify_ssl": "Verificar o certificado HTTPS do Grocy. Desative para um certificado autoassinado."
@@ -144,35 +132,19 @@
         }
     },
     "options": {
-        "error": {
-            "cannot_connect": "Falha ao conectar ao servidor Grocy.",
-            "ingress_url": "Este é o endereço de ingress do Home Assistant do add-on Grocy. Ele não funciona com uma chave de API. Exponha uma porta nas configurações de rede do add-on e use essa porta.",
-            "invalid_auth": "Chave de API inválida ou falha na autenticação.",
-            "ssl_error": "Falha na verificação do certificado SSL. Desative \"Verificar certificado SSL\" ou use http se o Grocy não tiver um certificado válido.",
-            "timeout": "Tempo limite de conexão esgotado.",
-            "unknown": "Erro inesperado"
-        },
         "step": {
             "init": {
                 "data": {
-                    "api_key": "Chave de API do Grocy",
                     "calendar_fix_timezone": "Corrigir fuso horário para calendário",
                     "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
-                    "chore_done_by": "Tarefas concluídas no Home Assistant são feitas por",
-                    "port": "Número da porta (9192)",
-                    "url": "URL da API do Grocy",
-                    "verify_ssl": "Verificar certificado SSL"
+                    "chore_done_by": "Tarefas concluídas no Home Assistant são feitas por"
                 },
                 "data_description": {
-                    "api_key": "Crie uma chave no Grocy: Configurações (ícone de chave inglesa) → \"Organizar Chaves do API\".",
                     "calendar_fix_timezone": "Ative se os eventos da agenda aparecerem na hora errada. Então os horários do Grocy são lidos como hora local.",
                     "calendar_sync_interval": "Com que frequência a agenda do Grocy é lida, em minutos.",
-                    "chore_done_by": "Usuário do Grocy para as tarefas domésticas que você conclui no Home Assistant. Uma tarefa doméstica sem usuário atribuído é feita pelo dono da chave de API.",
-                    "port": "Porta do Grocy. Se o endereço acima tiver uma porta, essa porta é usada.",
-                    "url": "Endereço do seu servidor Grocy, por exemplo http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
-                    "verify_ssl": "Verificar o certificado HTTPS do Grocy. Desative para um certificado autoassinado."
+                    "chore_done_by": "Usuário do Grocy para as tarefas domésticas que você conclui no Home Assistant. Uma tarefa doméstica sem usuário atribuído é feita pelo dono da chave de API."
                 },
-                "description": "Configurar opções de integração do Grocy.",
+                "description": "Configurar opções de integração do Grocy. Para alterar o endereço ou a chave de API, use \"Reconfigurar\" no menu da entrada da integração.",
                 "title": "Opções do Grocy"
             }
         }

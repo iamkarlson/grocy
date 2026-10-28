@@ -70,7 +70,7 @@ class GrocyCalendarEntity(CalendarEntity):
         self._ical_url: str | None = None
         self._events: list[CalendarEvent] = []
         self._sync_interval_minutes = self._read_sync_interval()
-        self._fix_timezone: bool = config_entry.data.get(
+        self._fix_timezone: bool = config_entry.options.get(
             CONF_CALENDAR_FIX_TIMEZONE, True
         )
         self._unsub_update: Callable[[], None] | None = None
@@ -143,7 +143,7 @@ class GrocyCalendarEntity(CalendarEntity):
         """
         return max(
             1,
-            self._config_entry.data.get(
+            self._config_entry.options.get(
                 CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
             ),
         )

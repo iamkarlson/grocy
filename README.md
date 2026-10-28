@@ -80,6 +80,13 @@ If you use the [official Grocy add-on](https://github.com/hassio-addons/addon-gr
   - `80` for HTTP or `443` for HTTPS (or your custom port)
   - Make sure the port is open in your router, or use your internal Home Assistant address
 - **Verify SSL**: Check if using HTTPS with a valid certificate
+
+![Integration Configuration — URL, API Key, Port, and SSL settings](grocy-integration-config.png)
+
+#### Options
+
+After setup, select **"Configure"** on the Grocy integration to change these options:
+
 - **Calendar Sync Interval**: How often to sync calendar events from Grocy (in minutes)
   - Default: `5` minutes
   - Lower values provide more frequent updates but increase API usage
@@ -88,8 +95,9 @@ If you use the [official Grocy add-on](https://github.com/hassio-addons/addon-gr
   - Grocy may send local times marked as UTC in the iCal feed
   - When enabled, UTC times from Grocy are treated as local time (no conversion)
   - Disable this if your Grocy instance correctly sends UTC times
-
-![Integration Configuration — URL, API Key, Port, and SSL settings](grocy-integration-config.png)
+- **Chores completed in Home Assistant are done by**: The Grocy user that a chore completed in Home Assistant is logged for
+  - Default: the owner of the API key
+  - "The user assigned to the chore" uses the assigned user; a chore without an assigned user is done by the owner of the API key
 
 #### Editing Settings After Initial Setup
 
@@ -101,7 +109,7 @@ To change connection settings (URL, API Key, Port, etc.) after initial setup:
 4. Select **"Reconfigure"**
 5. Update any settings and click **"Submit"** — the integration will automatically reload
 
-**Note:** The "Edit" button only changes the integration name and area. Use "Configure" to edit connection settings.
+**Note:** The "Edit" button only changes the integration name and area. "Configure" changes only the options above.
 
 ---
 

@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Mapping
 from http import HTTPStatus
 from typing import Any
 
 import requests
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.config_entries import ConfigFlowResult
+from homeassistant.config_entries import ConfigFlowResult, OptionsFlowWithReload
 from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.selector import (
@@ -46,7 +47,16 @@ _INGRESS_PATH = re.compile(r"^(?:api/hassio_ingress/|[0-9a-f]{8}_[a-z0-9_]+(?:/|
 
 # Config entry schema version. Bump MINOR for additive, downgrade-safe changes.
 CONFIG_ENTRY_VERSION = 2
-CONFIG_ENTRY_MINOR_VERSION = 2
+MINOR_VERSION_PORT_FROM_URL = 2
+MINOR_VERSION_OPTIONS = 3
+CONFIG_ENTRY_MINOR_VERSION = MINOR_VERSION_OPTIONS
+
+# Settings in ConfigEntry.options. The connection settings are in ConfigEntry.data.
+OPTION_KEYS = (
+    CONF_CALENDAR_SYNC_INTERVAL,
+    CONF_CALENDAR_FIX_TIMEZONE,
+    CONF_CHORE_DONE_BY,
+)
 
 
 def _is_ingress_url(url: str) -> bool:
@@ -144,22 +154,39 @@ async def async_migrate_entry(
 
     if (
         config_entry.version == CONFIG_ENTRY_VERSION
-        and config_entry.minor_version < CONFIG_ENTRY_MINOR_VERSION
+        and config_entry.minor_version < MINOR_VERSION_PORT_FROM_URL
     ):
         # Migrate from 2.1 to 2.2: a port written into the URL wins over the
         # port field. Entries saved as ``http://host:9283`` + 9192 never worked.
         new_data = _normalize_url_and_port(dict(config_entry.data))
         hass.config_entries.async_update_entry(
-            config_entry, data=new_data, minor_version=CONFIG_ENTRY_MINOR_VERSION
+            config_entry, data=new_data, minor_version=MINOR_VERSION_PORT_FROM_URL
         )
         _LOGGER.info("Migrated config entry to version 2.2")
+
+    if (
+        config_entry.version == CONFIG_ENTRY_VERSION
+        and config_entry.minor_version < MINOR_VERSION_OPTIONS
+    ):
+        # Migrate from 2.2 to 2.3: the options move from data to options. The
+        # old options flow wrote all settings to data and a copy of the form,
+        # with the API key, to options. That copy was never read, so drop it.
+        new_data = dict(config_entry.data)
+        new_options = {key: new_data.pop(key) for key in OPTION_KEYS if key in new_data}
+        hass.config_entries.async_update_entry(
+            config_entry,
+            data=new_data,
+            options=new_options,
+            minor_version=MINOR_VERSION_OPTIONS,
+        )
+        _LOGGER.info("Migrated config entry to version 2.3")
     return True
 
 
 def _get_user_data_schema(
     defaults: dict[str, Any] | None = None,
 ) -> vol.Schema:
-    """Return the schema for user configuration form."""
+    """Return the schema of the connection settings."""
     defaults = defaults or {}
     return vol.Schema(
         {
@@ -169,6 +196,14 @@ def _get_user_data_schema(
             vol.Optional(
                 CONF_VERIFY_SSL, default=defaults.get(CONF_VERIFY_SSL, False)
             ): bool,
+        }
+    )
+
+
+def _get_options_schema(defaults: Mapping[str, Any]) -> vol.Schema:
+    """Return the schema of the options."""
+    return vol.Schema(
+        {
             vol.Optional(
                 CONF_CALENDAR_SYNC_INTERVAL,
                 default=defaults.get(
@@ -328,82 +363,17 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return await _async_test_credentials(self.hass, url, api_key, port, verify_ssl)
 
 
-class GrocyOptionsFlowHandler(config_entries.OptionsFlow):
-    """Options flow for Grocy."""
-
-    def __init__(self) -> None:
-        """Initialize options flow."""
-        super().__init__()
-        self._errors: dict[str, str] = {}
+class GrocyOptionsFlowHandler(OptionsFlowWithReload):
+    """Options flow for Grocy. The connection is changed with reconfigure."""
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
-            user_input = _normalize_url_and_port(user_input)
-            # Validate credentials if URL or API key changed
-            url_changed = user_input[CONF_URL] != self.config_entry.data.get(CONF_URL)
-            api_key_changed = user_input[CONF_API_KEY] != self.config_entry.data.get(
-                CONF_API_KEY
-            )
-            port_changed = user_input[CONF_PORT] != self.config_entry.data.get(
-                CONF_PORT
-            )
-            verify_ssl_changed = user_input[
-                CONF_VERIFY_SSL
-            ] != self.config_entry.data.get(CONF_VERIFY_SSL, False)
-
-            if url_changed or api_key_changed or port_changed or verify_ssl_changed:
-                # Test credentials before saving
-                error = await self._test_credentials(
-                    user_input[CONF_URL],
-                    user_input[CONF_API_KEY],
-                    user_input[CONF_PORT],
-                    user_input[CONF_VERIFY_SSL],
-                )
-                if error is not None:
-                    self._errors["base"] = error
-                    return self.async_show_form(
-                        step_id="init",
-                        data_schema=_get_user_data_schema(user_input),
-                        errors=self._errors,
-                    )
-
-            # Update the config entry data with new options
-            new_data = {**self.config_entry.data}
-            new_data[CONF_URL] = user_input[CONF_URL]
-            new_data[CONF_API_KEY] = user_input[CONF_API_KEY]
-            new_data[CONF_PORT] = user_input[CONF_PORT]
-            new_data[CONF_VERIFY_SSL] = user_input[CONF_VERIFY_SSL]
-            new_data[CONF_CALENDAR_SYNC_INTERVAL] = user_input[
-                CONF_CALENDAR_SYNC_INTERVAL
-            ]
-            new_data[CONF_CALENDAR_FIX_TIMEZONE] = user_input.get(
-                CONF_CALENDAR_FIX_TIMEZONE, True
-            )
-            new_data[CONF_CHORE_DONE_BY] = user_input.get(
-                CONF_CHORE_DONE_BY, CHORE_DONE_BY_API_KEY_OWNER
-            )
-
-            # Update the config entry
-            self.hass.config_entries.async_update_entry(
-                self.config_entry, data=new_data
-            )
-
-            # Reload the integration to apply changes
-            await self.hass.config_entries.async_reload(self.config_entry.entry_id)
-
-            return self.async_create_entry(title="", data=user_input)
+            return self.async_create_entry(data=user_input)
 
         return self.async_show_form(
             step_id="init",
-            data_schema=_get_user_data_schema(dict(self.config_entry.data)),
-            errors=self._errors,
+            data_schema=_get_options_schema(self.config_entry.options),
         )
-
-    async def _test_credentials(
-        self, url: str, api_key: str, port: int, verify_ssl: bool
-    ) -> str | None:
-        """Test the credentials. Return None if valid, else an error key."""
-        return await _async_test_credentials(self.hass, url, api_key, port, verify_ssl)

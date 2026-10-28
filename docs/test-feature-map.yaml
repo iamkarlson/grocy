@@ -298,8 +298,9 @@ features:
           - test_reauth_confirm_updates_entry
           - test_reauth_confirm_handles_error
           - test_migrate_entry_v1_adds_calendar_defaults
-          - test_migrate_entry_v2_is_left_alone
+          - test_migrate_entry_v2_3_is_left_alone
           - test_migrate_entry_v2_1_moves_port_from_url
+          - test_migrate_entry_v2_2_moves_options
           - test_user_step_moves_port_from_url
           - test_url_with_password_is_logged_only_at_debug
           - test_calendar_sync_interval_must_be_at_least_one_minute
@@ -308,10 +309,7 @@ features:
           - test_html_error_page_maps_to_cannot_connect
           - test_user_step_rejects_ingress_url
           - test_user_step_accepts_normal_subpath
-          - test_options_step_shows_form
-          - test_options_step_shows_connection_error
-          - test_options_step_rejects_ingress_url
-          - test_options_step_saves_and_reloads
+          - test_options_flow_saves_options_and_reloads
           - test_user_flow_recovers_from_an_error
           - test_options_flow_starts_from_the_entry
       - file: tests/test_init.py

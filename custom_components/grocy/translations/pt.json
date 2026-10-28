@@ -27,18 +27,12 @@
             "reconfigure": {
                 "data": {
                     "api_key": "Grocy chave da API",
-                    "calendar_fix_timezone": "Corrigir fuso horário para calendário",
-                    "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
-                    "chore_done_by": "As tarefas concluídas no Home Assistant são feitas por",
                     "port": "Número da Porta (9192)",
                     "url": "URL da API do Grocy",
                     "verify_ssl": "Verificar o certificado SSL Certificate"
                 },
                 "data_description": {
                     "api_key": "Crie uma chave no Grocy: Definições (ícone de chave inglesa) → \"Gerir chaves da API\".",
-                    "calendar_fix_timezone": "Ative se os eventos do calendário aparecerem à hora errada. Assim, as horas do Grocy são lidas como hora local.",
-                    "calendar_sync_interval": "Frequência com que o calendário do Grocy é lido, em minutos.",
-                    "chore_done_by": "Utilizador do Grocy para as tarefas domésticas que conclui no Home Assistant. Uma tarefa doméstica sem utilizador atribuído é feita pelo dono da chave da API.",
                     "port": "Porta do Grocy. Se o endereço acima tiver uma porta, é usada essa porta.",
                     "url": "Endereço do seu servidor Grocy, por exemplo http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
                     "verify_ssl": "Verificar o certificado HTTPS do Grocy. Desative para um certificado autoassinado."
@@ -49,18 +43,12 @@
             "user": {
                 "data": {
                     "api_key": "Grocy chave da API",
-                    "calendar_fix_timezone": "Corrigir fuso horário para calendário",
-                    "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
-                    "chore_done_by": "As tarefas concluídas no Home Assistant são feitas por",
                     "port": "Número da Porta (9192)",
                     "url": "URL da API do Grocy",
                     "verify_ssl": "Verificar o certificado SSL Certificate"
                 },
                 "data_description": {
                     "api_key": "Crie uma chave no Grocy: Definições (ícone de chave inglesa) → \"Gerir chaves da API\".",
-                    "calendar_fix_timezone": "Ative se os eventos do calendário aparecerem à hora errada. Assim, as horas do Grocy são lidas como hora local.",
-                    "calendar_sync_interval": "Frequência com que o calendário do Grocy é lido, em minutos.",
-                    "chore_done_by": "Utilizador do Grocy para as tarefas domésticas que conclui no Home Assistant. Uma tarefa doméstica sem utilizador atribuído é feita pelo dono da chave da API.",
                     "port": "Porta do Grocy. Se o endereço acima tiver uma porta, é usada essa porta.",
                     "url": "Endereço do seu servidor Grocy, por exemplo http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
                     "verify_ssl": "Verificar o certificado HTTPS do Grocy. Desative para um certificado autoassinado."
@@ -144,35 +132,19 @@
         }
     },
     "options": {
-        "error": {
-            "cannot_connect": "Falha ao ligar ao servidor Grocy.",
-            "ingress_url": "Este é o endereço de ingress do Home Assistant do add-on Grocy. Não funciona com uma chave de API. Exponha uma porta nas definições de rede do add-on e use essa porta.",
-            "invalid_auth": "Chave de API inválida ou falha na autenticação.",
-            "ssl_error": "A verificação do certificado SSL falhou. Desative \"Verificar o certificado SSL Certificate\" ou use http se o Grocy não tiver um certificado válido.",
-            "timeout": "Tempo limite de ligação excedido.",
-            "unknown": "Erro inesperado"
-        },
         "step": {
             "init": {
                 "data": {
-                    "api_key": "Grocy chave da API",
                     "calendar_fix_timezone": "Corrigir fuso horário para calendário",
                     "calendar_sync_interval": "Intervalo de sincronização do calendário (minutos)",
-                    "chore_done_by": "As tarefas concluídas no Home Assistant são feitas por",
-                    "port": "Número da Porta (9192)",
-                    "url": "Link AP da Grocy",
-                    "verify_ssl": "Verificar o certificado SSL Certificate"
+                    "chore_done_by": "As tarefas concluídas no Home Assistant são feitas por"
                 },
                 "data_description": {
-                    "api_key": "Crie uma chave no Grocy: Definições (ícone de chave inglesa) → \"Gerir chaves da API\".",
                     "calendar_fix_timezone": "Ative se os eventos do calendário aparecerem à hora errada. Assim, as horas do Grocy são lidas como hora local.",
                     "calendar_sync_interval": "Frequência com que o calendário do Grocy é lido, em minutos.",
-                    "chore_done_by": "Utilizador do Grocy para as tarefas domésticas que conclui no Home Assistant. Uma tarefa doméstica sem utilizador atribuído é feita pelo dono da chave da API.",
-                    "port": "Porta do Grocy. Se o endereço acima tiver uma porta, é usada essa porta.",
-                    "url": "Endereço do seu servidor Grocy, por exemplo http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
-                    "verify_ssl": "Verificar o certificado HTTPS do Grocy. Desative para um certificado autoassinado."
+                    "chore_done_by": "Utilizador do Grocy para as tarefas domésticas que conclui no Home Assistant. Uma tarefa doméstica sem utilizador atribuído é feita pelo dono da chave da API."
                 },
-                "description": "Configurar opções de integração do Grocy.",
+                "description": "Configurar opções de integração do Grocy. Para alterar o endereço ou a chave da API, use \"Reconfigurar\" no menu da entrada da integração.",
                 "title": "Opções do Grocy"
             }
         }

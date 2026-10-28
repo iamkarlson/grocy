@@ -319,14 +319,14 @@ def test_todo_item_raises_for_unknown_type() -> None:
 # ─── GrocyTodoListEntity supported features ──────────────────────────────────
 
 
-def _build_todo(key: str, data, entry_data: dict | None = None) -> GrocyTodoListEntity:
+def _build_todo(key: str, data, options: dict | None = None) -> GrocyTodoListEntity:
     description = next(d for d in TODOS if d.key == key)
     entity = GrocyTodoListEntity.__new__(GrocyTodoListEntity)
     entity.entity_description = description
     entity.coordinator = SimpleNamespace(
         data=GrocyCoordinatorData(),
         async_refresh=AsyncMock(),
-        config_entry=SimpleNamespace(data=entry_data or {}),
+        config_entry=SimpleNamespace(options=options or {}),
     )
     entity.coordinator.data[key] = data
     entity.hass = SimpleNamespace()

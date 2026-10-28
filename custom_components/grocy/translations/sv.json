@@ -27,18 +27,12 @@
             "reconfigure": {
                 "data": {
                     "api_key": "Grocy API nyckel",
-                    "calendar_fix_timezone": "Åtgärda tidszon för kalender",
-                    "calendar_sync_interval": "Kalendersynkroniseringsintervall (minuter)",
-                    "chore_done_by": "Sysslor som slutförs i Home Assistant utförs av",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Verifiera SSL certifikat"
                 },
                 "data_description": {
                     "api_key": "Skapa en nyckel i Grocy: Inställningar (skiftnyckelikonen) → \"Hantera API-nycklar\".",
-                    "calendar_fix_timezone": "Slå på om kalenderhändelser visas vid fel timme. Då läses tiderna från Grocy som lokal tid.",
-                    "calendar_sync_interval": "Hur ofta Grocy-kalendern läses, i minuter.",
-                    "chore_done_by": "Grocy-användare för sysslor som du slutför i Home Assistant. En syssla utan tilldelad användare utförs av ägaren till API-nyckeln.",
                     "port": "Grocys port. Om adressen ovan har en port används den porten.",
                     "url": "Adress till din Grocy-server, till exempel http:\/\/192.168.1.10 eller https:\/\/grocy.example.com.",
                     "verify_ssl": "Kontrollera Grocys HTTPS-certifikat. Stäng av för ett självsignerat certifikat."
@@ -49,18 +43,12 @@
             "user": {
                 "data": {
                     "api_key": "Grocy API nyckel",
-                    "calendar_fix_timezone": "Åtgärda tidszon för kalender",
-                    "calendar_sync_interval": "Kalendersynkroniseringsintervall (minuter)",
-                    "chore_done_by": "Sysslor som slutförs i Home Assistant utförs av",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Verifiera SSL certifikat"
                 },
                 "data_description": {
                     "api_key": "Skapa en nyckel i Grocy: Inställningar (skiftnyckelikonen) → \"Hantera API-nycklar\".",
-                    "calendar_fix_timezone": "Slå på om kalenderhändelser visas vid fel timme. Då läses tiderna från Grocy som lokal tid.",
-                    "calendar_sync_interval": "Hur ofta Grocy-kalendern läses, i minuter.",
-                    "chore_done_by": "Grocy-användare för sysslor som du slutför i Home Assistant. En syssla utan tilldelad användare utförs av ägaren till API-nyckeln.",
                     "port": "Grocys port. Om adressen ovan har en port används den porten.",
                     "url": "Adress till din Grocy-server, till exempel http:\/\/192.168.1.10 eller https:\/\/grocy.example.com.",
                     "verify_ssl": "Kontrollera Grocys HTTPS-certifikat. Stäng av för ett självsignerat certifikat."
@@ -144,35 +132,19 @@
         }
     },
     "options": {
-        "error": {
-            "cannot_connect": "Kunde inte ansluta till Grocy-servern.",
-            "ingress_url": "Detta är Home Assistants ingress-adress för Grocy-tillägget. Den fungerar inte med en API-nyckel. Öppna en port i tilläggets nätverksinställningar och använd den porten.",
-            "invalid_auth": "Ogiltig API-nyckel eller autentisering misslyckades.",
-            "ssl_error": "Kontrollen av SSL-certifikatet misslyckades. Stäng av \"Verifiera SSL certifikat\" eller använd http om Grocy saknar ett giltigt certifikat.",
-            "timeout": "Anslutningstiden överskreds.",
-            "unknown": "Oväntat fel"
-        },
         "step": {
             "init": {
                 "data": {
-                    "api_key": "Grocy API nyckel",
                     "calendar_fix_timezone": "Åtgärda tidszon för kalender",
                     "calendar_sync_interval": "Kalendersynkroniseringsintervall (minuter)",
-                    "chore_done_by": "Sysslor som slutförs i Home Assistant utförs av",
-                    "port": "Portnummer (9192)",
-                    "url": "Grocy API URL",
-                    "verify_ssl": "Verifiera SSL certifikat"
+                    "chore_done_by": "Sysslor som slutförs i Home Assistant utförs av"
                 },
                 "data_description": {
-                    "api_key": "Skapa en nyckel i Grocy: Inställningar (skiftnyckelikonen) → \"Hantera API-nycklar\".",
                     "calendar_fix_timezone": "Slå på om kalenderhändelser visas vid fel timme. Då läses tiderna från Grocy som lokal tid.",
                     "calendar_sync_interval": "Hur ofta Grocy-kalendern läses, i minuter.",
-                    "chore_done_by": "Grocy-användare för sysslor som du slutför i Home Assistant. En syssla utan tilldelad användare utförs av ägaren till API-nyckeln.",
-                    "port": "Grocys port. Om adressen ovan har en port används den porten.",
-                    "url": "Adress till din Grocy-server, till exempel http:\/\/192.168.1.10 eller https:\/\/grocy.example.com.",
-                    "verify_ssl": "Kontrollera Grocys HTTPS-certifikat. Stäng av för ett självsignerat certifikat."
+                    "chore_done_by": "Grocy-användare för sysslor som du slutför i Home Assistant. En syssla utan tilldelad användare utförs av ägaren till API-nyckeln."
                 },
-                "description": "Konfigurera Grocy-integrationsalternativ.",
+                "description": "Konfigurera Grocy-integrationsalternativ. Ändra adressen eller API-nyckeln med \"Konfigurera om\" i menyn för integrationsposten.",
                 "title": "Grocy-alternativ"
             }
         }

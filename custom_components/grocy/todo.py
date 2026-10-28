@@ -332,7 +332,7 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
 
         None lets Grocy use the owner of the API key.
         """
-        option = self.coordinator.config_entry.data.get(CONF_CHORE_DONE_BY)
+        option = self.coordinator.config_entry.options.get(CONF_CHORE_DONE_BY)
         if option != CHORE_DONE_BY_ASSIGNED_USER:
             return None
         return self._get_grocy_item(chore_id).next_execution_assigned_to_user_id
