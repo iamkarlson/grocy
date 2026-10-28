@@ -36,9 +36,12 @@ from .const import (
     ATTR_TASKS,
     CHORE_DONE_BY_ASSIGNED_USER,
     CONF_CHORE_DONE_BY,
-    DOMAIN,
 )
-from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
+from .coordinator import (
+    GrocyConfigEntry,
+    GrocyCoordinatorData,
+    GrocyDataUpdateCoordinator,
+)
 from .entity import GrocyEntity
 from .helpers import MealPlanItemWrapper
 from .services import (
@@ -69,11 +72,11 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    config_entry: GrocyConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ):
     """Do setup todo platform."""
-    coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
+    coordinator = config_entry.runtime_data
     entities = []
     for description in TODOS:
         if description.exists_fn(coordinator.available_entities):
@@ -101,37 +104,37 @@ class GrocyTodoListEntityDescription(EntityDescription):
 TODOS: tuple[GrocyTodoListEntityDescription, ...] = (
     GrocyTodoListEntityDescription(
         key=ATTR_BATTERIES,
-        name="Grocy batteries",
+        translation_key=ATTR_BATTERIES,
         icon="mdi:battery",
         exists_fn=lambda entities: ATTR_BATTERIES in entities,
     ),
     GrocyTodoListEntityDescription(
         key=ATTR_CHORES,
-        name="Grocy chores",
+        translation_key=ATTR_CHORES,
         icon="mdi:broom",
         exists_fn=lambda entities: ATTR_CHORES in entities,
     ),
     GrocyTodoListEntityDescription(
         key=ATTR_MEAL_PLAN,
-        name="Grocy meal plan",
+        translation_key=ATTR_MEAL_PLAN,
         icon="mdi:silverware-variant",
         exists_fn=lambda entities: ATTR_MEAL_PLAN in entities,
     ),
     GrocyTodoListEntityDescription(
         key=ATTR_SHOPPING_LIST,
-        name="Grocy shopping list",
+        translation_key=ATTR_SHOPPING_LIST,
         icon="mdi:cart-outline",
         exists_fn=lambda entities: ATTR_SHOPPING_LIST in entities,
     ),
     GrocyTodoListEntityDescription(
         key=ATTR_STOCK,
-        name="Grocy stock",
+        translation_key=ATTR_STOCK,
         icon="mdi:fridge-outline",
         exists_fn=lambda entities: ATTR_STOCK in entities,
     ),
     GrocyTodoListEntityDescription(
         key=ATTR_TASKS,
-        name="Grocy tasks",
+        translation_key=ATTR_TASKS,
         icon="mdi:checkbox-marked-circle-outline",
         exists_fn=lambda entities: ATTR_TASKS in entities,
     ),
@@ -329,7 +332,7 @@ class GrocyTodoListEntity(GrocyEntity, TodoListEntity):
 
         None lets Grocy use the owner of the API key.
         """
-        option = self.coordinator.config_entry.data.get(CONF_CHORE_DONE_BY)
+        option = self.coordinator.config_entry.options.get(CONF_CHORE_DONE_BY)
         if option != CHORE_DONE_BY_ASSIGNED_USER:
             return None
         return self._get_grocy_item(chore_id).next_execution_assigned_to_user_id

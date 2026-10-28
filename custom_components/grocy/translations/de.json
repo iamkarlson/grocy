@@ -18,18 +18,24 @@
                 "data": {
                     "api_key": "Grocy API Schlüssel"
                 },
+                "data_description": {
+                    "api_key": "Erstelle einen Schlüssel in Grocy: Einstellungen (Schraubenschlüssel-Symbol) → „API-Schlüssel verwalten“."
+                },
                 "description": "Bitte gib den API-Schlüssel für {host} erneut ein.",
                 "title": "Grocy erneut authentifizieren"
             },
             "reconfigure": {
                 "data": {
                     "api_key": "Grocy API Schlüssel",
-                    "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
-                    "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
-                    "chore_done_by": "In Home Assistant erledigte Hausarbeiten gelten als erledigt von",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "SSL-Zertifikat verifizieren"
+                },
+                "data_description": {
+                    "api_key": "Erstelle einen Schlüssel in Grocy: Einstellungen (Schraubenschlüssel-Symbol) → „API-Schlüssel verwalten“.",
+                    "port": "Port von Grocy. Hat die Adresse oben einen Port, wird dieser verwendet.",
+                    "url": "Adresse deines Grocy-Servers, zum Beispiel http:\/\/192.168.1.10 oder https:\/\/grocy.example.com.",
+                    "verify_ssl": "Das HTTPS-Zertifikat von Grocy prüfen. Bei einem selbstsignierten Zertifikat ausschalten."
                 },
                 "description": "Aktualisiere deine Grocy-Verbindungseinstellungen.",
                 "title": "Grocy neu konfigurieren"
@@ -37,39 +43,108 @@
             "user": {
                 "data": {
                     "api_key": "Grocy API Schlüssel",
-                    "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
-                    "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
-                    "chore_done_by": "In Home Assistant erledigte Hausarbeiten gelten als erledigt von",
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "SSL-Zertifikat verifizieren"
+                },
+                "data_description": {
+                    "api_key": "Erstelle einen Schlüssel in Grocy: Einstellungen (Schraubenschlüssel-Symbol) → „API-Schlüssel verwalten“.",
+                    "port": "Port von Grocy. Hat die Adresse oben einen Port, wird dieser verwendet.",
+                    "url": "Adresse deines Grocy-Servers, zum Beispiel http:\/\/192.168.1.10 oder https:\/\/grocy.example.com.",
+                    "verify_ssl": "Das HTTPS-Zertifikat von Grocy prüfen. Bei einem selbstsignierten Zertifikat ausschalten."
                 },
                 "description": "Wenn du Hilfe mit den Einstellungen brauchst, schau in die Dokumentation auf GitHub.",
                 "title": "Grocy"
             }
         }
     },
-    "options": {
-        "error": {
-            "cannot_connect": "Verbindung zum Grocy-Server fehlgeschlagen.",
-            "ingress_url": "Dies ist die Home-Assistant-Ingress-Adresse des Grocy-Add-ons. Sie funktioniert nicht mit einem API-Schlüssel. Gib in den Netzwerkeinstellungen des Add-ons einen Port frei und verwende diesen Port.",
-            "invalid_auth": "Ungültiger API-Schlüssel oder Authentifizierung fehlgeschlagen.",
-            "ssl_error": "SSL-Zertifikatsprüfung fehlgeschlagen. Deaktiviere \"SSL-Zertifikat verifizieren\" oder verwende http, wenn Grocy kein gültiges Zertifikat hat.",
-            "timeout": "Verbindungszeitüberschreitung.",
-            "unknown": "Unerwarteter Fehler"
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Abgelaufene Produkte"
+            },
+            "expiring_products": {
+                "name": "Bald fällige Produkte"
+            },
+            "missing_products": {
+                "name": "Produkte unter Mindestbestand"
+            },
+            "overdue_batteries": {
+                "name": "Überfällige Batterien"
+            },
+            "overdue_chores": {
+                "name": "Überfällige Hausarbeiten"
+            },
+            "overdue_products": {
+                "name": "Überfällige Produkte"
+            },
+            "overdue_tasks": {
+                "name": "Überfällige Aufgaben"
+            }
         },
+        "calendar": {
+            "calendar": {
+                "name": "Kalender"
+            }
+        },
+        "sensor": {
+            "batteries": {
+                "name": "Batterien"
+            },
+            "chores": {
+                "name": "Hausarbeiten"
+            },
+            "meal_plan": {
+                "name": "Speiseplan"
+            },
+            "recipes": {
+                "name": "Rezepte"
+            },
+            "shopping_list": {
+                "name": "Einkaufszettel"
+            },
+            "stock": {
+                "name": "Bestand"
+            },
+            "tasks": {
+                "name": "Aufgaben"
+            }
+        },
+        "todo": {
+            "batteries": {
+                "name": "Batterien"
+            },
+            "chores": {
+                "name": "Hausarbeiten"
+            },
+            "meal_plan": {
+                "name": "Speiseplan"
+            },
+            "shopping_list": {
+                "name": "Einkaufszettel"
+            },
+            "stock": {
+                "name": "Bestand"
+            },
+            "tasks": {
+                "name": "Aufgaben"
+            }
+        }
+    },
+    "options": {
         "step": {
             "init": {
                 "data": {
-                    "api_key": "Grocy API Schlüssel",
                     "calendar_fix_timezone": "Zeitzone für Kalender korrigieren",
                     "calendar_sync_interval": "Kalender-Synchronisierungsintervall (Minuten)",
-                    "chore_done_by": "In Home Assistant erledigte Hausarbeiten gelten als erledigt von",
-                    "port": "Portnummer (9192)",
-                    "url": "Grocy API URL",
-                    "verify_ssl": "SSL-Zertifikat verifizieren"
+                    "chore_done_by": "In Home Assistant erledigte Hausarbeiten gelten als erledigt von"
                 },
-                "description": "Grocy-Integrationsoptionen konfigurieren.",
+                "data_description": {
+                    "calendar_fix_timezone": "Einschalten, wenn Kalendereinträge zur falschen Stunde erscheinen. Dann werden die Zeiten von Grocy als Ortszeit gelesen.",
+                    "calendar_sync_interval": "Wie oft der Grocy-Kalender gelesen wird, in Minuten.",
+                    "chore_done_by": "Grocy-Benutzer für Hausarbeiten, die du in Home Assistant erledigst. Eine Hausarbeit ohne zugewiesenen Benutzer erledigt der Besitzer des API-Schlüssels."
+                },
+                "description": "Grocy-Integrationsoptionen konfigurieren. Adresse oder API-Schlüssel änderst du über „Neu konfigurieren“ im Menü des Integrationseintrags.",
                 "title": "Grocy-Optionen"
             }
         }

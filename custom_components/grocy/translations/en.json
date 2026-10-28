@@ -18,35 +18,44 @@
             "user": {
                 "data": {
                     "api_key": "Grocy API Key",
-                    "calendar_sync_interval": "Calendar Sync Interval (minutes)",
-                    "calendar_fix_timezone": "Fix timezone for calendar",
                     "port": "Port Number (9192)",
                     "url": "Grocy API URL",
-                    "verify_ssl": "Verify SSL Certificate",
-                    "chore_done_by": "Chores completed in Home Assistant are done by"
+                    "verify_ssl": "Verify SSL Certificate"
                 },
                 "description": "If you need help with the configuration have a look at the documentation on GitHub.",
-                "title": "Grocy"
+                "title": "Grocy",
+                "data_description": {
+                    "url": "Address of your Grocy server, for example http://192.168.1.10 or https://grocy.example.com.",
+                    "api_key": "Create a key in Grocy: Settings (wrench icon) → \"Manage API keys\".",
+                    "port": "Port of Grocy. If the address above has a port, that port is used.",
+                    "verify_ssl": "Check the HTTPS certificate of Grocy. Turn it off for a self-signed certificate."
+                }
             },
             "reconfigure": {
                 "data": {
                     "api_key": "Grocy API Key",
-                    "calendar_sync_interval": "Calendar Sync Interval (minutes)",
-                    "calendar_fix_timezone": "Fix timezone for calendar",
                     "port": "Port Number (9192)",
                     "url": "Grocy API URL",
-                    "verify_ssl": "Verify SSL Certificate",
-                    "chore_done_by": "Chores completed in Home Assistant are done by"
+                    "verify_ssl": "Verify SSL Certificate"
                 },
                 "description": "Update your Grocy connection settings.",
-                "title": "Reconfigure Grocy"
+                "title": "Reconfigure Grocy",
+                "data_description": {
+                    "url": "Address of your Grocy server, for example http://192.168.1.10 or https://grocy.example.com.",
+                    "api_key": "Create a key in Grocy: Settings (wrench icon) → \"Manage API keys\".",
+                    "port": "Port of Grocy. If the address above has a port, that port is used.",
+                    "verify_ssl": "Check the HTTPS certificate of Grocy. Turn it off for a self-signed certificate."
+                }
             },
             "reauth_confirm": {
                 "data": {
                     "api_key": "Grocy API Key"
                 },
                 "description": "Please re-enter the API key for {host}.",
-                "title": "Re-authenticate Grocy"
+                "title": "Re-authenticate Grocy",
+                "data_description": {
+                    "api_key": "Create a key in Grocy: Settings (wrench icon) → \"Manage API keys\"."
+                }
             }
         }
     },
@@ -54,25 +63,18 @@
         "step": {
             "init": {
                 "data": {
-                    "api_key": "Grocy API Key",
                     "calendar_sync_interval": "Calendar Sync Interval (minutes)",
                     "calendar_fix_timezone": "Fix timezone for calendar",
-                    "port": "Port Number (9192)",
-                    "url": "Grocy API URL",
-                    "verify_ssl": "Verify SSL Certificate",
                     "chore_done_by": "Chores completed in Home Assistant are done by"
                 },
-                "description": "Configure Grocy integration options.",
-                "title": "Grocy Options"
+                "description": "Configure Grocy integration options. To change the address or the API key, use Reconfigure in the menu of the integration entry.",
+                "title": "Grocy Options",
+                "data_description": {
+                    "calendar_sync_interval": "How often to read the Grocy calendar, in minutes.",
+                    "calendar_fix_timezone": "Turn it on if calendar events show at the wrong hour. Then the times from Grocy are read as local time.",
+                    "chore_done_by": "Grocy user for the chores that you complete in Home Assistant. A chore without an assigned user is done by the owner of the API key."
+                }
             }
-        },
-        "error": {
-            "invalid_auth": "Invalid API key or authentication failed.",
-            "cannot_connect": "Failed to connect to the Grocy server.",
-            "timeout": "Connection timed out.",
-            "unknown": "Unexpected error",
-            "ssl_error": "SSL certificate check failed. Turn off \"Verify SSL Certificate\", or use http if Grocy has no valid certificate.",
-            "ingress_url": "This is the Home Assistant ingress address of the Grocy add-on. It cannot work with an API key. Expose a port in the add-on network settings and use that port."
         }
     },
     "selector": {
@@ -80,6 +82,79 @@
             "options": {
                 "api_key_owner": "The owner of the API key",
                 "assigned_user": "The user assigned to the chore"
+            }
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Expired products"
+            },
+            "expiring_products": {
+                "name": "Expiring products"
+            },
+            "overdue_products": {
+                "name": "Overdue products"
+            },
+            "missing_products": {
+                "name": "Missing products"
+            },
+            "overdue_chores": {
+                "name": "Overdue chores"
+            },
+            "overdue_tasks": {
+                "name": "Overdue tasks"
+            },
+            "overdue_batteries": {
+                "name": "Overdue batteries"
+            }
+        },
+        "calendar": {
+            "calendar": {
+                "name": "Calendar"
+            }
+        },
+        "sensor": {
+            "chores": {
+                "name": "Chores"
+            },
+            "meal_plan": {
+                "name": "Meal plan"
+            },
+            "shopping_list": {
+                "name": "Shopping list"
+            },
+            "stock": {
+                "name": "Stock"
+            },
+            "tasks": {
+                "name": "Tasks"
+            },
+            "batteries": {
+                "name": "Batteries"
+            },
+            "recipes": {
+                "name": "Recipes"
+            }
+        },
+        "todo": {
+            "chores": {
+                "name": "Chores"
+            },
+            "meal_plan": {
+                "name": "Meal plan"
+            },
+            "shopping_list": {
+                "name": "Shopping list"
+            },
+            "stock": {
+                "name": "Stock"
+            },
+            "tasks": {
+                "name": "Tasks"
+            },
+            "batteries": {
+                "name": "Batteries"
             }
         }
     }

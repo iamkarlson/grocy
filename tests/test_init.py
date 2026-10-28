@@ -13,9 +13,11 @@ import pytest
 import requests
 from grocy.errors import GrocyError
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers import entity_registry as er
 
 from custom_components.grocy import (
     _async_get_available_entities,
+    async_setup,
     async_setup_entry,
     async_unload_entry,
 )
@@ -37,18 +39,11 @@ from custom_components.grocy.const import (
     DOMAIN,
     PLATFORMS,
 )
+from custom_components.grocy.coordinator import GrocyCoordinatorData
 
 pytestmark = pytest.mark.feature("configuration_setup")
 
 
-@patch(
-    "custom_components.grocy.async_setup_endpoint_for_image_proxy",
-    new_callable=AsyncMock,
-)
-@patch(
-    "custom_components.grocy.async_setup_services",
-    new_callable=AsyncMock,
-)
 @patch(
     "custom_components.grocy._async_get_available_entities",
     new_callable=AsyncMock,
@@ -57,8 +52,6 @@ pytestmark = pytest.mark.feature("configuration_setup")
 async def test_async_setup_entry_initializes_integration(
     mock_coordinator_cls,
     mock_available_entities,
-    mock_setup_services,
-    mock_setup_proxy,
     hass,
     mock_config_entry,
 ) -> None:
@@ -78,19 +71,9 @@ async def test_async_setup_entry_initializes_integration(
     hass.config_entries.async_forward_entry_setups.assert_awaited_once_with(
         mock_config_entry, PLATFORMS
     )
-    mock_setup_services.assert_awaited_once_with(hass, mock_config_entry)
-    mock_setup_proxy.assert_awaited_once()
-    assert hass.data[DOMAIN] is coordinator
+    assert mock_config_entry.runtime_data is coordinator
 
 
-@patch(
-    "custom_components.grocy.async_setup_endpoint_for_image_proxy",
-    new_callable=AsyncMock,
-)
-@patch(
-    "custom_components.grocy.async_setup_services",
-    new_callable=AsyncMock,
-)
 @patch(
     "custom_components.grocy._async_get_available_entities",
     new_callable=AsyncMock,
@@ -100,8 +83,6 @@ async def test_async_setup_entry_initializes_integration(
 async def test_async_setup_entry_raises_not_ready(
     mock_coordinator_cls,
     mock_available_entities,
-    mock_setup_services,
-    mock_setup_proxy,
     hass,
     mock_config_entry,
 ) -> None:
@@ -115,46 +96,29 @@ async def test_async_setup_entry_raises_not_ready(
     with pytest.raises(ConfigEntryNotReady):
         await async_setup_entry(hass, mock_config_entry)
 
-    mock_setup_services.assert_not_called()
-    mock_setup_proxy.assert_not_called()
-    assert DOMAIN not in hass.data
+    assert not hasattr(mock_config_entry, "runtime_data")
 
 
-@patch(
-    "custom_components.grocy.async_unload_services",
-    new_callable=AsyncMock,
-)
-async def test_async_unload_entry_cleans_up(
-    mock_unload_services, hass, mock_config_entry
+@pytest.mark.parametrize("unloaded", [True, False])
+async def test_async_unload_entry_unloads_platforms(
+    hass, mock_config_entry, unloaded
 ) -> None:
-    hass.data[DOMAIN] = MagicMock()
-    hass.config_entries.async_unload_platforms = AsyncMock(return_value=True)
+    hass.config_entries.async_unload_platforms = AsyncMock(return_value=unloaded)
 
-    result = await async_unload_entry(hass, mock_config_entry)
-
-    assert result is True
+    assert await async_unload_entry(hass, mock_config_entry) is unloaded
     hass.config_entries.async_unload_platforms.assert_awaited_once_with(
         mock_config_entry, PLATFORMS
     )
-    mock_unload_services.assert_awaited_once_with(hass)
-    assert DOMAIN not in hass.data
 
 
-@patch(
-    "custom_components.grocy.async_unload_services",
-    new_callable=AsyncMock,
-)
-async def test_async_unload_entry_platform_failure(
-    mock_unload_services, hass, mock_config_entry
-) -> None:
-    hass.data[DOMAIN] = MagicMock()
-    hass.config_entries.async_unload_platforms = AsyncMock(return_value=False)
+async def test_async_setup_registers_actions_and_picture_view(hass) -> None:
+    """Actions and the picture view are registered once per run, not per entry."""
+    hass.http = MagicMock()
 
-    result = await async_unload_entry(hass, mock_config_entry)
+    assert await async_setup(hass, {}) is True
 
-    assert result is False
-    assert DOMAIN in hass.data
-    mock_unload_services.assert_awaited_once_with(hass)
+    assert hass.services.async_services().get(DOMAIN)
+    hass.http.register_view.assert_called_once()
 
 
 # ─── _async_get_available_entities ────────────────────────────────────────────
@@ -282,14 +246,6 @@ async def test_async_setup_entry_raises_not_ready_on_timeout(
             new_callable=AsyncMock,
             side_effect=TimeoutError,
         ),
-        patch(
-            "custom_components.grocy.async_setup_services",
-            new_callable=AsyncMock,
-        ),
-        patch(
-            "custom_components.grocy.async_setup_endpoint_for_image_proxy",
-            new_callable=AsyncMock,
-        ),
     ):
         coordinator = MagicMock()
         coordinator.grocy_data = MagicMock()
@@ -310,14 +266,6 @@ async def test_async_setup_entry_raises_not_ready_on_os_error(
             "custom_components.grocy._async_get_available_entities",
             new_callable=AsyncMock,
             side_effect=OSError("Network unreachable"),
-        ),
-        patch(
-            "custom_components.grocy.async_setup_services",
-            new_callable=AsyncMock,
-        ),
-        patch(
-            "custom_components.grocy.async_setup_endpoint_for_image_proxy",
-            new_callable=AsyncMock,
         ),
     ):
         coordinator = MagicMock()
@@ -357,14 +305,6 @@ async def test_async_setup_entry_maps_grocy_errors(
             new_callable=AsyncMock,
             side_effect=_grocy_error(status),
         ),
-        patch(
-            "custom_components.grocy.async_setup_services",
-            new_callable=AsyncMock,
-        ),
-        patch(
-            "custom_components.grocy.async_setup_endpoint_for_image_proxy",
-            new_callable=AsyncMock,
-        ),
     ):
         coordinator = MagicMock()
         coordinator.grocy_data = MagicMock()
@@ -373,3 +313,48 @@ async def test_async_setup_entry_maps_grocy_errors(
 
         with pytest.raises(expected):
             await async_setup_entry(hass, mock_config_entry)
+
+
+async def test_entities_are_named_by_translations(
+    hass, enable_custom_integrations, mock_config_entry
+) -> None:
+    """Names come from the translations, and the entity IDs stay as before."""
+    hass.config.components.add("http")
+    hass.http = MagicMock()
+    mock_config_entry.add_to_hass(hass)
+    with (
+        patch(
+            "custom_components.grocy._async_get_available_entities",
+            new_callable=AsyncMock,
+            return_value=[ATTR_CHORES, ATTR_OVERDUE_CHORES],
+        ),
+        patch(
+            "custom_components.grocy.coordinator.GrocyDataUpdateCoordinator._async_update_data",
+            new_callable=AsyncMock,
+            return_value=GrocyCoordinatorData(),
+        ),
+        patch(
+            "custom_components.grocy.calendar.GrocyCalendarEntity._fetch_ical_url",
+            new_callable=AsyncMock,
+        ),
+        patch("custom_components.grocy.calendar.GrocyCalendarEntity._schedule_update"),
+    ):
+        assert await hass.config_entries.async_setup(mock_config_entry.entry_id)
+        await hass.async_block_till_done()
+
+    registry = er.async_get(hass)
+    expected = {
+        "sensor.grocy_chores": ("chores", "Chores"),
+        "todo.grocy_chores": ("chores", "Chores"),
+        "binary_sensor.grocy_overdue_chores": ("overdue_chores", "Overdue chores"),
+        "calendar.grocy_calendar": ("calendar", "Calendar"),
+    }
+    for entity_id, (key, name) in expected.items():
+        entry = registry.async_get(entity_id)
+        assert entry is not None, entity_id
+        assert entry.unique_id == f"{mock_config_entry.entry_id}{key}"
+        assert entry.has_entity_name
+        assert entry.original_name == name
+    assert hass.states.get("calendar.grocy_calendar").name == "Grocy Calendar"
+
+    assert await hass.config_entries.async_unload(mock_config_entry.entry_id)

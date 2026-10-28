@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import voluptuous as vol
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.core import HomeAssistant, ServiceCall, callback
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.util import dt as dt_util
 
@@ -187,17 +187,22 @@ SERVICES_WITH_ACCOMPANYING_SCHEMA: list[tuple[str, vol.Schema]] = [
 ]
 
 
-async def async_setup_services(
-    hass: HomeAssistant,
-    config_entry: ConfigEntry,  # pylint: disable=unused-argument
-) -> None:
-    """Set up services for Grocy integration."""
-    coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
-    if hass.services.async_services().get(DOMAIN):
-        return
+def _async_get_coordinator(hass: HomeAssistant) -> GrocyDataUpdateCoordinator:
+    """Return the coordinator of the loaded Grocy entry."""
+    entries = hass.config_entries.async_loaded_entries(DOMAIN)
+    if not entries:
+        msg = "The Grocy integration is not loaded"
+        raise ServiceValidationError(msg)
+    return entries[0].runtime_data
+
+
+@callback
+def async_setup_services(hass: HomeAssistant) -> None:
+    """Register the Grocy actions. Call it once, from ``async_setup``."""
 
     async def async_call_grocy_service(service_call: ServiceCall) -> None:
         """Call correct Grocy service."""
+        coordinator = _async_get_coordinator(hass)
         service = service_call.service
         service_data = service_call.data
 
@@ -246,15 +251,6 @@ async def async_setup_services(
 
     for service, schema in SERVICES_WITH_ACCOMPANYING_SCHEMA:
         hass.services.async_register(DOMAIN, service, async_call_grocy_service, schema)
-
-
-async def async_unload_services(hass: HomeAssistant) -> None:
-    """Unload Grocy services."""
-    if not hass.services.async_services().get(DOMAIN):
-        return
-
-    for service, _ in SERVICES_WITH_ACCOMPANYING_SCHEMA:
-        hass.services.async_remove(DOMAIN, service)
 
 
 async def async_add_product_service(

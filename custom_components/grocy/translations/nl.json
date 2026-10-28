@@ -1,0 +1,161 @@
+{
+    "config": {
+        "abort": {
+            "reauth_successful": "Herauthenticatie was succesvol.",
+            "reconfigure_successful": "Herconfiguratie was succesvol.",
+            "single_instance_allowed": "Slechts één configuratie van Grocy is toegestaan."
+        },
+        "error": {
+            "cannot_connect": "Kon geen verbinding maken met de Grocy-server.",
+            "ingress_url": "Dit is het Home Assistant-ingressadres van de Grocy-add-on. Het werkt niet met een API-sleutel. Stel in de netwerkinstellingen van de add-on een poort open en gebruik die poort.",
+            "invalid_auth": "Ongeldige API-sleutel of authenticatie mislukt.",
+            "ssl_error": "Controle van het SSL-certificaat mislukt. Schakel \"SSL-certificaat verifiëren\" uit, of gebruik http als Grocy geen geldig certificaat heeft.",
+            "timeout": "Verbinding time-out.",
+            "unknown": "Onverwachte fout"
+        },
+        "step": {
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "Grocy API-sleutel"
+                },
+                "data_description": {
+                    "api_key": "Maak een sleutel in Grocy: Instellingen (moersleutelpictogram) → \"Beheer API sleutels\"."
+                },
+                "description": "Voer de API-sleutel voor {host} opnieuw in.",
+                "title": "Grocy opnieuw authenticeren"
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "Grocy API-sleutel",
+                    "port": "Poortnummer (9192)",
+                    "url": "Grocy API-URL",
+                    "verify_ssl": "SSL-certificaat verifiëren"
+                },
+                "data_description": {
+                    "api_key": "Maak een sleutel in Grocy: Instellingen (moersleutelpictogram) → \"Beheer API sleutels\".",
+                    "port": "Poort van Grocy. Als het adres hierboven een poort heeft, wordt die poort gebruikt.",
+                    "url": "Adres van je Grocy-server, bijvoorbeeld http:\/\/192.168.1.10 of https:\/\/grocy.example.com.",
+                    "verify_ssl": "Controleer het HTTPS-certificaat van Grocy. Zet dit uit voor een zelfondertekend certificaat."
+                },
+                "description": "Werk je Grocy-verbindingsinstellingen bij.",
+                "title": "Grocy herconfigureren"
+            },
+            "user": {
+                "data": {
+                    "api_key": "Grocy API-sleutel",
+                    "port": "Poortnummer (9192)",
+                    "url": "Grocy API-URL",
+                    "verify_ssl": "SSL-certificaat verifiëren"
+                },
+                "data_description": {
+                    "api_key": "Maak een sleutel in Grocy: Instellingen (moersleutelpictogram) → \"Beheer API sleutels\".",
+                    "port": "Poort van Grocy. Als het adres hierboven een poort heeft, wordt die poort gebruikt.",
+                    "url": "Adres van je Grocy-server, bijvoorbeeld http:\/\/192.168.1.10 of https:\/\/grocy.example.com.",
+                    "verify_ssl": "Controleer het HTTPS-certificaat van Grocy. Zet dit uit voor een zelfondertekend certificaat."
+                },
+                "description": "Als je hulp nodig hebt bij de configuratie, kijk dan in de documentatie op GitHub.",
+                "title": "Grocy"
+            }
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Producten over datum"
+            },
+            "expiring_products": {
+                "name": "Bijna verlopen producten"
+            },
+            "missing_products": {
+                "name": "Producten onder minimumvoorraad"
+            },
+            "overdue_batteries": {
+                "name": "Achterstallige batterijen"
+            },
+            "overdue_chores": {
+                "name": "Achterstallige klusjes"
+            },
+            "overdue_products": {
+                "name": "Achterstallige producten"
+            },
+            "overdue_tasks": {
+                "name": "Achterstallige taken"
+            }
+        },
+        "calendar": {
+            "calendar": {
+                "name": "Kalender"
+            }
+        },
+        "sensor": {
+            "batteries": {
+                "name": "Batterijen"
+            },
+            "chores": {
+                "name": "Klusjes"
+            },
+            "meal_plan": {
+                "name": "Maaltijdplan"
+            },
+            "recipes": {
+                "name": "Recepten"
+            },
+            "shopping_list": {
+                "name": "Boodschappenlijst"
+            },
+            "stock": {
+                "name": "Voorraad"
+            },
+            "tasks": {
+                "name": "Taken"
+            }
+        },
+        "todo": {
+            "batteries": {
+                "name": "Batterijen"
+            },
+            "chores": {
+                "name": "Klusjes"
+            },
+            "meal_plan": {
+                "name": "Maaltijdplan"
+            },
+            "shopping_list": {
+                "name": "Boodschappenlijst"
+            },
+            "stock": {
+                "name": "Voorraad"
+            },
+            "tasks": {
+                "name": "Taken"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "calendar_fix_timezone": "Tijdzone voor kalender corrigeren",
+                    "calendar_sync_interval": "Kalendersynchronisatie-interval (minuten)",
+                    "chore_done_by": "Klusjes die in Home Assistant zijn afgerond, zijn gedaan door"
+                },
+                "data_description": {
+                    "calendar_fix_timezone": "Zet dit aan als agenda-items op het verkeerde uur staan. Dan worden de tijden van Grocy als lokale tijd gelezen.",
+                    "calendar_sync_interval": "Hoe vaak de Grocy-kalender wordt gelezen, in minuten.",
+                    "chore_done_by": "Grocy-gebruiker voor de klusjes die je in Home Assistant afrondt. Een klusje zonder toegewezen gebruiker wordt gedaan door de eigenaar van de API-sleutel."
+                },
+                "description": "Configureer Grocy-integratieopties. Wijzig het adres of de API-sleutel via \"Herconfigureren\" in het menu van de integratie-invoer.",
+                "title": "Grocy-opties"
+            }
+        }
+    },
+    "selector": {
+        "chore_done_by": {
+            "options": {
+                "api_key_owner": "De eigenaar van de API-sleutel",
+                "assigned_user": "De gebruiker aan wie het klusje is toegewezen"
+            }
+        }
+    },
+    "title": "Grocy"
+}

@@ -250,7 +250,7 @@ features:
     tests:
       - file: tests/test_grocy_data.py
         functions:
-          - test_async_setup_endpoint_registers_view_once
+          - test_async_setup_endpoint_registers_view
           - test_picture_view_get_proxies_request
           - test_picture_view_uses_path_and_default_width
           - test_picture_view_reads_the_current_entry
@@ -298,8 +298,9 @@ features:
           - test_reauth_confirm_updates_entry
           - test_reauth_confirm_handles_error
           - test_migrate_entry_v1_adds_calendar_defaults
-          - test_migrate_entry_v2_is_left_alone
+          - test_migrate_entry_v2_3_is_left_alone
           - test_migrate_entry_v2_1_moves_port_from_url
+          - test_migrate_entry_v2_2_moves_options
           - test_user_step_moves_port_from_url
           - test_url_with_password_is_logged_only_at_debug
           - test_calendar_sync_interval_must_be_at_least_one_minute
@@ -308,10 +309,9 @@ features:
           - test_html_error_page_maps_to_cannot_connect
           - test_user_step_rejects_ingress_url
           - test_user_step_accepts_normal_subpath
-          - test_options_step_shows_form
-          - test_options_step_shows_connection_error
-          - test_options_step_rejects_ingress_url
-          - test_options_step_saves_and_reloads
+          - test_options_flow_saves_options_and_reloads
+          - test_user_flow_recovers_from_an_error
+          - test_options_flow_starts_from_the_entry
       - file: tests/test_init.py
         functions:
           - test_async_setup_entry_initializes_integration
@@ -319,8 +319,9 @@ features:
           - test_async_setup_entry_raises_not_ready_on_timeout
           - test_async_setup_entry_raises_not_ready_on_os_error
           - test_async_setup_entry_maps_grocy_errors
-          - test_async_unload_entry_cleans_up
-          - test_async_unload_entry_platform_failure
+          - test_async_unload_entry_unloads_platforms
+          - test_async_setup_registers_actions_and_picture_view
+          - test_entities_are_named_by_translations
           - test_available_entities_all_features
           - test_available_entities_stock_only
           - test_available_entities_tasks_only
@@ -364,9 +365,8 @@ cross_cutting:
     - file: tests/test_services.py
       functions:
         - test_async_setup_services_registers_all_services
-        - test_async_setup_services_skips_if_already_registered
-        - test_async_unload_services_removes_all
-        - test_async_unload_services_noop_if_not_registered
+        - test_action_without_loaded_entry_raises
+        - test_action_uses_the_current_coordinator
         - test_async_force_update_entity_updates_matching_entity
         - test_async_force_update_entity_ignores_missing
         - test_async_force_update_entity_skips_entity_without_hass

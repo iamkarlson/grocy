@@ -505,7 +505,7 @@ Proxies product and recipe images from Grocy through Home Assistant. This allows
 
 | Test File | Test Function | What It Validates |
 |-----------|---------------|-------------------|
-| tests/test_grocy_data.py | `test_async_setup_endpoint_registers_view_once` | The view is registered once, also after a reload |
+| tests/test_grocy_data.py | `test_async_setup_endpoint_registers_view` | The view is registered by `async_setup`, so once per run, also after a reload |
 | tests/test_grocy_data.py | `test_picture_view_get_proxies_request` | Image proxying with correct headers |
 | tests/test_grocy_data.py | `test_picture_view_uses_path_and_default_width` | URL path for subpath installations and default width 400 |
 | tests/test_grocy_data.py | `test_picture_view_reads_the_current_entry` | A changed URL or API key applies without a restart |
@@ -578,8 +578,9 @@ Integration setup, reconfiguration, reauthentication, and feature detection.
 
 ### Configuration Flow
 
-- **Initial setup**: URL, API Key, Port, Verify SSL, Calendar Sync Interval, Fix Timezone
-- **Reconfigure**: Change any setting after setup (triggers integration reload)
+- **Initial setup**: URL, API Key, Port, Verify SSL (stored in `ConfigEntry.data`)
+- **Options** ("Configure"): Calendar Sync Interval, Fix Timezone, who completes chores (stored in `ConfigEntry.options`, the integration reloads)
+- **Reconfigure**: Change the connection settings after setup (triggers integration reload)
 - **Reauthenticate**: Update API key when it expires or changes
 - **Single instance**: Only one Grocy integration per Home Assistant instance
 
@@ -619,13 +620,18 @@ All entities (except calendar) are updated every 30 seconds via the data coordin
 | tests/test_config_flow.py | `test_url_with_password_is_logged_only_at_debug` | A URL with a password goes to the log only at DEBUG |
 | tests/test_config_flow.py | `test_calendar_sync_interval_must_be_at_least_one_minute` | The form accepts a calendar sync interval of 1 minute or more |
 | tests/test_config_flow.py | `test_chore_done_by_defaults_to_the_api_key_owner` | New entries log chores for the API key owner |
-| tests/test_init.py | `test_async_setup_entry_initializes_integration` | Full setup flow: coordinator, services, proxy, platforms |
+| tests/test_config_flow.py | `test_user_flow_recovers_from_an_error` | Through the flow manager: form, an error, then the entry is created |
+| tests/test_config_flow.py | `test_options_flow_starts_from_the_entry` | The options form has only the options, with the stored values |
+| tests/test_config_flow.py | `test_options_flow_saves_options_and_reloads` | Options go to `ConfigEntry.options`, data stays, HA reloads |
+| tests/test_config_flow.py | `test_migrate_entry_v2_2_moves_options` | Migration 2.3 moves the options from data to options and drops the old copy |
+| tests/test_init.py | `test_async_setup_entry_initializes_integration` | Setup: first refresh, coordinator in `runtime_data`, platforms |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready` | Connection failure raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready_on_timeout` | Timeout raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready_on_os_error` | OS error raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_maps_grocy_errors` | Grocy 401 or 403 at setup starts re-authentication; other errors retry |
-| tests/test_init.py | `test_async_unload_entry_cleans_up` | Unload cleans up data and services |
-| tests/test_init.py | `test_async_unload_entry_platform_failure` | Partial cleanup on platform failure |
+| tests/test_init.py | `test_async_unload_entry_unloads_platforms` | Unload unloads the platforms and returns their result |
+| tests/test_init.py | `test_async_setup_registers_actions_and_picture_view` | `async_setup` registers the actions and the picture view once per run |
+| tests/test_init.py | `test_entities_are_named_by_translations` | Entity names come from the translations; entity IDs stay `sensor.grocy_chores` and so on |
 | tests/test_init.py | `test_available_entities_all_features` | All features enabled creates all entities |
 | tests/test_init.py | `test_available_entities_stock_only` | Stock-only creates stock entities |
 | tests/test_init.py | `test_available_entities_tasks_only` | Tasks-only creates task entities |
@@ -658,9 +664,8 @@ These tests validate infrastructure shared across all features.
 | tests/test_todo.py | `test_todo_exists_fn_checks_available_entities` | Todo exists_fn validation |
 | tests/test_todo.py | `test_async_create_todo_item_unsupported_raises` | Unsupported create raises error |
 | tests/test_services.py | `test_async_setup_services_registers_all_services` | All 13 services registered |
-| tests/test_services.py | `test_async_setup_services_skips_if_already_registered` | No duplicate registration |
-| tests/test_services.py | `test_async_unload_services_removes_all` | All services removed on unload |
-| tests/test_services.py | `test_async_unload_services_noop_if_not_registered` | Graceful no-op if not registered |
+| tests/test_services.py | `test_action_without_loaded_entry_raises` | An action with no loaded entry raises `ServiceValidationError` |
+| tests/test_services.py | `test_action_uses_the_current_coordinator` | After a reload, actions use the new coordinator |
 | tests/test_services.py | `test_async_force_update_entity_updates_matching_entity` | Force update targets correct entity |
 | tests/test_services.py | `test_async_force_update_entity_ignores_missing` | Force update handles missing entity |
 | tests/test_grocy_data.py | `test_async_update_data_dispatches_to_correct_method` | Data dispatch routing |

@@ -490,8 +490,19 @@ def _proxy_hass(**data) -> SimpleNamespace:
         CONF_VERIFY_SSL: False,
         **data,
     }
-    coordinator = SimpleNamespace(config_entry=SimpleNamespace(data=entry_data))
-    return SimpleNamespace(data={DOMAIN: coordinator})
+    return _hass_with_entries(SimpleNamespace(data=entry_data))
+
+
+def _hass_with_entries(*entries) -> SimpleNamespace:
+    """Return a hass whose loaded Grocy entries are the given ones."""
+
+    def async_loaded_entries(domain: str) -> list:
+        assert domain == DOMAIN
+        return list(entries)
+
+    return SimpleNamespace(
+        config_entries=SimpleNamespace(async_loaded_entries=async_loaded_entries)
+    )
 
 
 def _picture_session(status=200, body=b"img", headers=None) -> MagicMock:
@@ -523,12 +534,11 @@ async def _get_picture(
 
 @pytest.mark.feature("image_proxy")
 @pytest.mark.asyncio
-async def test_async_setup_endpoint_registers_view_once(hass) -> None:
-    """A reload must not add a second view that never answers (#72)."""
+async def test_async_setup_endpoint_registers_view(hass) -> None:
+    """The view is registered by async_setup, so once per run (#72)."""
     hass.http = MagicMock()
 
-    await async_setup_endpoint_for_image_proxy(hass)
-    await async_setup_endpoint_for_image_proxy(hass)
+    async_setup_endpoint_for_image_proxy(hass)
 
     hass.http.register_view.assert_called_once()
     assert isinstance(hass.http.register_view.call_args[0][0], GrocyPictureView)
@@ -584,8 +594,9 @@ async def test_picture_view_reads_the_current_entry() -> None:
     hass = _proxy_hass()
     await _get_picture(hass)
 
-    hass.data[DOMAIN].config_entry.data = {
-        **hass.data[DOMAIN].config_entry.data,
+    entry = hass.config_entries.async_loaded_entries(DOMAIN)[0]
+    entry.data = {
+        **entry.data,
         CONF_URL: "https://new-grocy.local",
         CONF_API_KEY: "key-2",
     }
@@ -634,7 +645,7 @@ async def test_picture_view_rejects_other_groups_and_names(
 async def test_picture_view_without_loaded_entry_is_not_found() -> None:
     """After the entry is unloaded, the view answers 404."""
     with pytest.raises(web.HTTPNotFound):
-        await _get_picture(SimpleNamespace(data={}))
+        await _get_picture(_hass_with_entries())
 
 
 @pytest.mark.feature("image_proxy")

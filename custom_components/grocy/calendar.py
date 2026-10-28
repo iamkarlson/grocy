@@ -35,7 +35,7 @@ from .const import (
     NAME,
     VERSION,
 )
-from .coordinator import GrocyDataUpdateCoordinator
+from .coordinator import GrocyConfigEntry, GrocyDataUpdateCoordinator
 from .helpers import extract_base_url_and_path
 
 _LOGGER = logging.getLogger(__name__)
@@ -44,11 +44,11 @@ HTTP_OK = 200
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    config_entry: GrocyConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up Grocy calendar platform."""
-    coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
+    coordinator = config_entry.runtime_data
 
     entity = GrocyCalendarEntity(coordinator, config_entry)
     async_add_entities([entity], True)
@@ -70,14 +70,14 @@ class GrocyCalendarEntity(CalendarEntity):
         self._ical_url: str | None = None
         self._events: list[CalendarEvent] = []
         self._sync_interval_minutes = self._read_sync_interval()
-        self._fix_timezone: bool = config_entry.data.get(
+        self._fix_timezone: bool = config_entry.options.get(
             CONF_CALENDAR_FIX_TIMEZONE, True
         )
         self._unsub_update: Callable[[], None] | None = None
         self._last_update: datetime | None = None
 
         # Entity attributes
-        self._attr_name = "Grocy calendar"
+        self._attr_has_entity_name = True
         self._attr_unique_id = f"{config_entry.entry_id}calendar"
         self._attr_available = True
         self._attr_icon = "mdi:calendar"
@@ -86,7 +86,7 @@ class GrocyCalendarEntity(CalendarEntity):
         # (even though calendar doesn't use coordinator data)
         self.entity_description = CalendarEntityDescription(
             key="calendar",
-            name="Grocy calendar",
+            translation_key="calendar",
         )
 
     @property
@@ -143,7 +143,7 @@ class GrocyCalendarEntity(CalendarEntity):
         """
         return max(
             1,
-            self._config_entry.data.get(
+            self._config_entry.options.get(
                 CONF_CALENDAR_SYNC_INTERVAL, DEFAULT_CALENDAR_SYNC_INTERVAL
             ),
         )

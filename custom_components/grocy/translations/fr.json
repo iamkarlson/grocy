@@ -18,18 +18,24 @@
                 "data": {
                     "api_key": "Clé API Grocy"
                 },
+                "data_description": {
+                    "api_key": "Créez une clé dans Grocy : Paramètres (icône de clé à molette) → « Gérer les clefs API »."
+                },
                 "description": "Entrez à nouveau la clé API pour le serveur {host}.",
                 "title": "Réauthentification à Grocy"
             },
             "reconfigure": {
                 "data": {
                     "api_key": "Clé API Grocy",
-                    "calendar_fix_timezone": "Fuseau horaire fixe pour le calendrier",
-                    "calendar_sync_interval": "Intervalle de synchronisation du calendrier (en minutes)",
-                    "chore_done_by": "Les corvées terminées dans Home Assistant sont faites par",
                     "port": "Numéro de port (9192)",
                     "url": "URL de l'API Grocy",
                     "verify_ssl": "Vérifier le certificat SSL"
+                },
+                "data_description": {
+                    "api_key": "Créez une clé dans Grocy : Paramètres (icône de clé à molette) → « Gérer les clefs API ».",
+                    "port": "Port de Grocy. Si l'adresse ci-dessus contient un port, ce port est utilisé.",
+                    "url": "Adresse de votre serveur Grocy, par exemple http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
+                    "verify_ssl": "Vérifier le certificat HTTPS de Grocy. Désactivez cette option pour un certificat auto-signé."
                 },
                 "description": "Mettre à jour votre configuration de connexion à Grocy.",
                 "title": "Reconfigurer Grocy"
@@ -37,39 +43,108 @@
             "user": {
                 "data": {
                     "api_key": "Clé API Grocy",
-                    "calendar_fix_timezone": "Fuseau horaire fixe pour le calendrier",
-                    "calendar_sync_interval": "Intervalle de synchronisation du calendrier (en minutes)",
-                    "chore_done_by": "Les corvées terminées dans Home Assistant sont faites par",
                     "port": "Numéro de port (9192)",
                     "url": "URL de l'API Grocy",
                     "verify_ssl": "Vérifier le certificat SSL"
+                },
+                "data_description": {
+                    "api_key": "Créez une clé dans Grocy : Paramètres (icône de clé à molette) → « Gérer les clefs API ».",
+                    "port": "Port de Grocy. Si l'adresse ci-dessus contient un port, ce port est utilisé.",
+                    "url": "Adresse de votre serveur Grocy, par exemple http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
+                    "verify_ssl": "Vérifier le certificat HTTPS de Grocy. Désactivez cette option pour un certificat auto-signé."
                 },
                 "description": "Si vous avez besoin d'aide pour la configuration, consultez la documentation sur GitHub.",
                 "title": "Grocy"
             }
         }
     },
-    "options": {
-        "error": {
-            "cannot_connect": "Impossible de se connecter au serveur Grocy.",
-            "ingress_url": "Ceci est l'adresse d'ingress Home Assistant de l'add-on Grocy. Elle ne fonctionne pas avec une clé API. Exposez un port dans les paramètres réseau de l'add-on et utilisez ce port.",
-            "invalid_auth": "Clé API invalide ou échec de l'authentification.",
-            "ssl_error": "La vérification du certificat SSL a échoué. Désactivez « Vérifier le certificat SSL » ou utilisez http si Grocy n'a pas de certificat valide.",
-            "timeout": "Temps d'attente dépassé.",
-            "unknown": "Quelque chose s'est mal passé."
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Produits périmés"
+            },
+            "expiring_products": {
+                "name": "Produits bientôt périmés"
+            },
+            "missing_products": {
+                "name": "Produits sous le stock minimum"
+            },
+            "overdue_batteries": {
+                "name": "Piles en retard"
+            },
+            "overdue_chores": {
+                "name": "Corvées en retard"
+            },
+            "overdue_products": {
+                "name": "Produits en retard"
+            },
+            "overdue_tasks": {
+                "name": "Tâches en retard"
+            }
         },
+        "calendar": {
+            "calendar": {
+                "name": "Calendrier"
+            }
+        },
+        "sensor": {
+            "batteries": {
+                "name": "Piles"
+            },
+            "chores": {
+                "name": "Corvées"
+            },
+            "meal_plan": {
+                "name": "Prévisions des menus"
+            },
+            "recipes": {
+                "name": "Recettes"
+            },
+            "shopping_list": {
+                "name": "Liste de courses"
+            },
+            "stock": {
+                "name": "Stock"
+            },
+            "tasks": {
+                "name": "Tâches"
+            }
+        },
+        "todo": {
+            "batteries": {
+                "name": "Piles"
+            },
+            "chores": {
+                "name": "Corvées"
+            },
+            "meal_plan": {
+                "name": "Prévisions des menus"
+            },
+            "shopping_list": {
+                "name": "Liste de courses"
+            },
+            "stock": {
+                "name": "Stock"
+            },
+            "tasks": {
+                "name": "Tâches"
+            }
+        }
+    },
+    "options": {
         "step": {
             "init": {
                 "data": {
-                    "api_key": "Clé API Grocy",
                     "calendar_fix_timezone": "Fuseau horaire fixe pour le calendrier",
                     "calendar_sync_interval": "Intervalle de synchronisation du calendrier (en minutes)",
-                    "chore_done_by": "Les corvées terminées dans Home Assistant sont faites par",
-                    "port": "Numéro de port (9192)",
-                    "url": "URL de l'API Grocy",
-                    "verify_ssl": "Vérifier le certificat SSL"
+                    "chore_done_by": "Les corvées terminées dans Home Assistant sont faites par"
                 },
-                "description": "Configurer les options de l'intégration Grocy.",
+                "data_description": {
+                    "calendar_fix_timezone": "Activez cette option si les événements du calendrier s'affichent à la mauvaise heure. Les heures de Grocy sont alors lues comme heure locale.",
+                    "calendar_sync_interval": "Fréquence de lecture du calendrier Grocy, en minutes.",
+                    "chore_done_by": "Utilisateur Grocy pour les corvées que vous terminez dans Home Assistant. Une corvée sans utilisateur assigné est faite par le propriétaire de la clé API."
+                },
+                "description": "Configurer les options de l'intégration Grocy. Pour changer l'adresse ou la clé API, utilisez « Reconfigurer » dans le menu de l'entrée de l'intégration.",
                 "title": "Options de Grocy"
             }
         }

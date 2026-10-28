@@ -15,12 +15,13 @@ import pytest
 import requests
 import voluptuous as vol
 from grocy.errors import GrocyError
+from homeassistant.config_entries import SOURCE_USER
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.grocy.config_flow import (
     GrocyFlowHandler,
-    _get_user_data_schema,
+    _get_options_schema,
     _normalize_url_and_port,
     async_migrate_entry,
 )
@@ -354,7 +355,7 @@ async def test_reauth_confirm_handles_error(hass, mock_config_entry) -> None:
 
 async def test_migrate_entry_v1_adds_calendar_defaults(hass, config_entry_data) -> None:
     """
-    A v1 entry gains the calendar options and becomes v2.
+    A v1 entry gains the calendar options and becomes 2.3.
 
     Entries created before ConfigFlow.VERSION was raised to 2 are still out in
     the wild. If this path breaks, an upgrade bricks those installs.
@@ -368,49 +369,42 @@ async def test_migrate_entry_v1_adds_calendar_defaults(hass, config_entry_data) 
     )
     entry.add_to_hass(hass)
 
-    assert CONF_CALENDAR_SYNC_INTERVAL not in entry.data
-    assert CONF_CALENDAR_FIX_TIMEZONE not in entry.data
-
     assert await async_migrate_entry(hass, entry) is True
 
     assert entry.version == 2
-    assert entry.minor_version == 2
-    assert entry.data[CONF_CALENDAR_SYNC_INTERVAL] == DEFAULT_CALENDAR_SYNC_INTERVAL
-    assert entry.data[CONF_CALENDAR_FIX_TIMEZONE] is True
-
-    # The original credentials must survive the migration untouched.
-    for key, value in config_entry_data.items():
-        assert entry.data[key] == value
-
-
-async def test_migrate_entry_v2_is_left_alone(hass, config_entry_data) -> None:
-    """Migration is idempotent: an already-migrated entry is not rewritten."""
-    data = {
-        **config_entry_data,
-        CONF_CALENDAR_SYNC_INTERVAL: 42,
-        CONF_CALENDAR_FIX_TIMEZONE: False,
+    assert entry.minor_version == 3
+    assert entry.options == {
+        CONF_CALENDAR_SYNC_INTERVAL: DEFAULT_CALENDAR_SYNC_INTERVAL,
+        CONF_CALENDAR_FIX_TIMEZONE: True,
     }
+    # The original credentials must survive the migration untouched.
+    assert entry.data == config_entry_data
+
+
+async def test_migrate_entry_v2_3_is_left_alone(hass, config_entry_data) -> None:
+    """Migration is idempotent: an already-migrated entry is not rewritten."""
+    options = {CONF_CALENDAR_SYNC_INTERVAL: 42, CONF_CALENDAR_FIX_TIMEZONE: False}
     entry = MockConfigEntry(
         domain=DOMAIN,
         title="Grocy",
-        data=data,
-        entry_id="v2-entry",
+        data=config_entry_data,
+        options=options,
+        entry_id="v2-3-entry",
         version=2,
-        minor_version=2,
+        minor_version=3,
     )
     entry.add_to_hass(hass)
 
     assert await async_migrate_entry(hass, entry) is True
 
-    assert entry.version == 2
-    assert entry.minor_version == 2
-    assert entry.data[CONF_CALENDAR_SYNC_INTERVAL] == 42
-    assert entry.data[CONF_CALENDAR_FIX_TIMEZONE] is False
+    assert entry.minor_version == 3
+    assert entry.data == config_entry_data
+    assert entry.options == options
 
 
 async def test_migrate_entry_v2_1_moves_port_from_url(hass, config_entry_data) -> None:
     """
-    A 2.1 entry whose URL carries a port is repaired and becomes 2.2.
+    A 2.1 entry whose URL carries a port is repaired and becomes 2.3.
 
     v1.16.0 appended the port field to such a URL and never connected (#68).
     """
@@ -434,27 +428,59 @@ async def test_migrate_entry_v2_1_moves_port_from_url(hass, config_entry_data) -
     assert await async_migrate_entry(hass, entry) is True
 
     assert entry.version == 2
-    assert entry.minor_version == 2
+    assert entry.minor_version == 3
     assert entry.data[CONF_URL] == "http://192.168.1.10"
     assert entry.data[CONF_PORT] == 9283
     assert entry.data[CONF_API_KEY] == config_entry_data[CONF_API_KEY]
-    assert entry.data[CONF_CALENDAR_SYNC_INTERVAL] == 42
+    assert entry.options[CONF_CALENDAR_SYNC_INTERVAL] == 42
 
 
-def test_chore_done_by_defaults_to_the_api_key_owner(config_entry_data) -> None:
+async def test_migrate_entry_v2_2_moves_options(hass, config_entry_data) -> None:
+    """
+    The options move from data to options. The old copy in options is dropped.
+
+    The old options flow saved its whole form, with the API key, to options.
+    """
+    data = {
+        **config_entry_data,
+        CONF_CALENDAR_SYNC_INTERVAL: 42,
+        CONF_CALENDAR_FIX_TIMEZONE: False,
+        CONF_CHORE_DONE_BY: CHORE_DONE_BY_ASSIGNED_USER,
+    }
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Grocy",
+        data=data,
+        options={**data, CONF_CALENDAR_SYNC_INTERVAL: 7},
+        entry_id="v2-2-entry",
+        version=2,
+        minor_version=2,
+    )
+    entry.add_to_hass(hass)
+
+    assert await async_migrate_entry(hass, entry) is True
+
+    assert entry.minor_version == 3
+    assert entry.data == config_entry_data
+    assert entry.options == {
+        CONF_CALENDAR_SYNC_INTERVAL: 42,
+        CONF_CALENDAR_FIX_TIMEZONE: False,
+        CONF_CHORE_DONE_BY: CHORE_DONE_BY_ASSIGNED_USER,
+    }
+
+
+def test_chore_done_by_defaults_to_the_api_key_owner() -> None:
     """A new entry logs chores for the API key owner, as Grocy does (#81)."""
-    data = _get_user_data_schema()(config_entry_data)
+    options = _get_options_schema({})({})
 
-    assert data[CONF_CHORE_DONE_BY] == CHORE_DONE_BY_API_KEY_OWNER
+    assert options[CONF_CHORE_DONE_BY] == CHORE_DONE_BY_API_KEY_OWNER
 
 
 @pytest.mark.parametrize(("interval", "valid"), [(0, False), (-1, False), (1, True)])
-def test_calendar_sync_interval_must_be_at_least_one_minute(
-    config_entry_data, interval, valid
-) -> None:
+def test_calendar_sync_interval_must_be_at_least_one_minute(interval, valid) -> None:
     """0 would schedule the calendar sync in a tight loop (#76)."""
-    schema = _get_user_data_schema()
-    data = {**config_entry_data, CONF_CALENDAR_SYNC_INTERVAL: interval}
+    schema = _get_options_schema({})
+    data = {CONF_CALENDAR_SYNC_INTERVAL: interval}
 
     if valid:
         assert schema(data)[CONF_CALENDAR_SYNC_INTERVAL] == interval
@@ -589,97 +615,89 @@ async def test_user_step_accepts_normal_subpath(hass, config_entry_data, url) ->
     mock_grocy.assert_called_once()
 
 
-def _options_flow(hass, entry: MockConfigEntry):
-    """Build the options flow for an entry, with executor jobs run inline."""
-    from custom_components.grocy.config_flow import GrocyOptionsFlowHandler
-
-    async def immediate_executor(func, *args):
-        return func(*args)
-
-    hass.async_add_executor_job = AsyncMock(side_effect=immediate_executor)
-    flow = GrocyOptionsFlowHandler()
-    flow.hass = hass
-    flow.handler = entry.entry_id
-    return flow
-
-
-async def test_options_step_shows_form(hass, mock_config_entry) -> None:
-    """Without input the options form opens with the stored values."""
-    mock_config_entry.add_to_hass(hass)
-
-    result = await _options_flow(hass, mock_config_entry).async_step_init()
-
-    assert result["type"] == FlowResultType.FORM
-    assert result["step_id"] == "init"
-
-
-async def test_options_step_shows_connection_error(
-    hass, mock_config_entry, config_entry_data
+async def test_user_flow_recovers_from_an_error(
+    hass, enable_custom_integrations, config_entry_data
 ) -> None:
-    """A changed URL is tested; an SSL failure reaches the form as ssl_error."""
-    mock_config_entry.add_to_hass(hass)
-    flow = _options_flow(hass, mock_config_entry)
-    user_input = {
-        **config_entry_data,
-        CONF_URL: "https://other.grocy.local",
-        CONF_CALENDAR_SYNC_INTERVAL: DEFAULT_CALENDAR_SYNC_INTERVAL,
-    }
+    """Through the flow manager: form, an error, then the entry is created."""
+    hass.config.components.add("http")
+    hass.http = MagicMock()
 
-    with patch("custom_components.grocy.config_flow.Grocy") as mock_grocy:
-        mock_grocy.return_value.system.info.side_effect = requests.exceptions.SSLError(
-            "certificate verify failed"
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "user"
+    assert result["errors"] == {}
+
+    with (
+        patch(
+            "custom_components.grocy.config_flow._async_test_credentials",
+            new_callable=AsyncMock,
+            side_effect=["cannot_connect", None],
+        ),
+        patch("custom_components.grocy.async_setup_entry", return_value=True),
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], config_entry_data
         )
-        result = await flow.async_step_init(user_input)
+        assert result["type"] is FlowResultType.FORM
+        assert result["errors"] == {"base": "cannot_connect"}
 
-    assert result["type"] == FlowResultType.FORM
-    assert result["errors"] == {"base": "ssl_error"}
-    assert mock_config_entry.data[CONF_URL] == config_entry_data[CONF_URL]
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], config_entry_data
+        )
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_URL] == config_entry_data[CONF_URL]
+    assert result["data"][CONF_API_KEY] == config_entry_data[CONF_API_KEY]
 
 
-async def test_options_step_rejects_ingress_url(
-    hass, mock_config_entry, config_entry_data
+async def test_options_flow_starts_from_the_entry(
+    hass, enable_custom_integrations, config_entry_data
 ) -> None:
-    """The options form also refuses the add-on ingress URL."""
-    mock_config_entry.add_to_hass(hass)
-    flow = _options_flow(hass, mock_config_entry)
-    user_input = {
-        **config_entry_data,
-        CONF_URL: "https://homeassistant.local:8123/a0d7b954_grocy",
-        CONF_CALENDAR_SYNC_INTERVAL: DEFAULT_CALENDAR_SYNC_INTERVAL,
+    """The options form has only the options, with the stored values."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data=config_entry_data,
+        options={CONF_CALENDAR_SYNC_INTERVAL: 15},
+        version=2,
+        minor_version=3,
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "init"
+    defaults = {key: key.default() for key in result["data_schema"].schema}
+    assert defaults == {
+        CONF_CALENDAR_SYNC_INTERVAL: 15,
+        CONF_CALENDAR_FIX_TIMEZONE: True,
+        CONF_CHORE_DONE_BY: CHORE_DONE_BY_API_KEY_OWNER,
     }
 
-    with patch("custom_components.grocy.config_flow.Grocy") as mock_grocy:
-        result = await flow.async_step_init(user_input)
 
-    assert result["errors"] == {"base": "ingress_url"}
-    mock_grocy.assert_not_called()
-
-
-async def test_options_step_saves_and_reloads(
-    hass, mock_config_entry, config_entry_data
+async def test_options_flow_saves_options_and_reloads(
+    hass, enable_custom_integrations, config_entry_data
 ) -> None:
-    """Valid new values are stored in the entry and the entry is reloaded."""
-    mock_config_entry.add_to_hass(hass)
-    flow = _options_flow(hass, mock_config_entry)
-    user_input = {
-        **config_entry_data,
-        CONF_URL: "http://192.168.1.10:9283",
+    """The options go to ConfigEntry.options, data stays, and HA reloads."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, data=config_entry_data, version=2, minor_version=3
+    )
+    entry.add_to_hass(hass)
+    new_options = {
         CONF_CALENDAR_SYNC_INTERVAL: 15,
         CONF_CALENDAR_FIX_TIMEZONE: False,
         CONF_CHORE_DONE_BY: CHORE_DONE_BY_ASSIGNED_USER,
     }
 
-    with (
-        patch("custom_components.grocy.config_flow.Grocy") as mock_grocy,
-        patch.object(hass.config_entries, "async_reload", AsyncMock()) as reload,
-    ):
-        mock_grocy.return_value.system.info.return_value = {"version": "4.7.1"}
-        result = await flow.async_step_init(user_input)
+    with patch.object(hass.config_entries, "async_schedule_reload") as reload:
+        result = await hass.config_entries.options.async_init(entry.entry_id)
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], new_options
+        )
 
-    assert result["type"] == FlowResultType.CREATE_ENTRY
-    assert mock_config_entry.data[CONF_URL] == "http://192.168.1.10"
-    assert mock_config_entry.data[CONF_PORT] == 9283
-    assert mock_config_entry.data[CONF_CALENDAR_SYNC_INTERVAL] == 15
-    assert mock_config_entry.data[CONF_CALENDAR_FIX_TIMEZONE] is False
-    assert mock_config_entry.data[CONF_CHORE_DONE_BY] == CHORE_DONE_BY_ASSIGNED_USER
-    reload.assert_awaited_once_with(mock_config_entry.entry_id)
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert entry.options == new_options
+    assert entry.data == config_entry_data
+    reload.assert_called_once_with(entry.entry_id)

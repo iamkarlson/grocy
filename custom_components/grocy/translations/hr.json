@@ -18,18 +18,24 @@
                 "data": {
                     "api_key": "Grocy API ključ"
                 },
+                "data_description": {
+                    "api_key": "Izradite ključ u Grocyju: „Settings” (ikona francuskog ključa) → „Manage API keys”."
+                },
                 "description": "Molimo ponovno unesite API ključ za {host}.",
                 "title": "Ponovno autentificiraj Grocy"
             },
             "reconfigure": {
                 "data": {
                     "api_key": "Grocy API ključ",
-                    "calendar_fix_timezone": "Popravi vremensku zonu za kalendar",
-                    "calendar_sync_interval": "Interval sinkronizacije kalendara (minute)",
-                    "chore_done_by": "Kućanske poslove dovršene u Home Assistantu obavlja",
                     "port": "Broj port-a (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Provjerite SSL certifikat."
+                },
+                "data_description": {
+                    "api_key": "Izradite ključ u Grocyju: „Settings” (ikona francuskog ključa) → „Manage API keys”.",
+                    "port": "Port Grocyja. Ako adresa iznad sadrži port, koristi se taj port.",
+                    "url": "Adresa vašeg Grocy poslužitelja, na primjer http:\/\/192.168.1.10 ili https:\/\/grocy.example.com.",
+                    "verify_ssl": "Provjera HTTPS certifikata Grocyja. Isključite za samopotpisani certifikat."
                 },
                 "description": "Ažurirajte postavke veze s Grocy-jem.",
                 "title": "Ponovno konfiguriraj Grocy"
@@ -37,39 +43,108 @@
             "user": {
                 "data": {
                     "api_key": "Grocy API ključ",
-                    "calendar_fix_timezone": "Popravi vremensku zonu za kalendar",
-                    "calendar_sync_interval": "Interval sinkronizacije kalendara (minute)",
-                    "chore_done_by": "Kućanske poslove dovršene u Home Assistantu obavlja",
                     "port": "Broj port-a (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Provjerite SSL certifikat."
+                },
+                "data_description": {
+                    "api_key": "Izradite ključ u Grocyju: „Settings” (ikona francuskog ključa) → „Manage API keys”.",
+                    "port": "Port Grocyja. Ako adresa iznad sadrži port, koristi se taj port.",
+                    "url": "Adresa vašeg Grocy poslužitelja, na primjer http:\/\/192.168.1.10 ili https:\/\/grocy.example.com.",
+                    "verify_ssl": "Provjera HTTPS certifikata Grocyja. Isključite za samopotpisani certifikat."
                 },
                 "description": "Ako vam je potrebna pomoć oko konfiguracije, pogledajte dokumentaciju na GitHubu.",
                 "title": "Grocy"
             }
         }
     },
-    "options": {
-        "error": {
-            "cannot_connect": "Povezivanje s Grocy poslužiteljem nije uspjelo.",
-            "ingress_url": "Ovo je Home Assistant ingress adresa Grocy dodatka. Ne radi s API ključem. Otvorite port u mrežnim postavkama dodatka i koristite taj port.",
-            "invalid_auth": "Nevažeći API ključ ili autentifikacija nije uspjela.",
-            "ssl_error": "Provjera SSL certifikata nije uspjela. Isključite \"Provjerite SSL certifikat\" ili koristite http ako Grocy nema valjani certifikat.",
-            "timeout": "Veza je istekla.",
-            "unknown": "Neočekivana greška"
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Istekli proizvodi"
+            },
+            "expiring_products": {
+                "name": "Proizvodi kojima uskoro istječe rok"
+            },
+            "missing_products": {
+                "name": "Proizvodi ispod minimalne zalihe"
+            },
+            "overdue_batteries": {
+                "name": "Zakašnjele baterije"
+            },
+            "overdue_chores": {
+                "name": "Zakašnjeli kućanski poslovi"
+            },
+            "overdue_products": {
+                "name": "Proizvodi s prekoračenim rokom"
+            },
+            "overdue_tasks": {
+                "name": "Zakašnjeli zadaci"
+            }
         },
+        "calendar": {
+            "calendar": {
+                "name": "Kalendar"
+            }
+        },
+        "sensor": {
+            "batteries": {
+                "name": "Baterije"
+            },
+            "chores": {
+                "name": "Kućanski poslovi"
+            },
+            "meal_plan": {
+                "name": "Plan obroka"
+            },
+            "recipes": {
+                "name": "Recepti"
+            },
+            "shopping_list": {
+                "name": "Popis za kupnju"
+            },
+            "stock": {
+                "name": "Zaliha"
+            },
+            "tasks": {
+                "name": "Zadaci"
+            }
+        },
+        "todo": {
+            "batteries": {
+                "name": "Baterije"
+            },
+            "chores": {
+                "name": "Kućanski poslovi"
+            },
+            "meal_plan": {
+                "name": "Plan obroka"
+            },
+            "shopping_list": {
+                "name": "Popis za kupnju"
+            },
+            "stock": {
+                "name": "Zaliha"
+            },
+            "tasks": {
+                "name": "Zadaci"
+            }
+        }
+    },
+    "options": {
         "step": {
             "init": {
                 "data": {
-                    "api_key": "Grocy API ključ",
                     "calendar_fix_timezone": "Popravi vremensku zonu za kalendar",
                     "calendar_sync_interval": "Interval sinkronizacije kalendara (minute)",
-                    "chore_done_by": "Kućanske poslove dovršene u Home Assistantu obavlja",
-                    "port": "Broj port-a (9192)",
-                    "url": "Grocy API URL",
-                    "verify_ssl": "Provjerite SSL certifikat."
+                    "chore_done_by": "Kućanske poslove dovršene u Home Assistantu obavlja"
                 },
-                "description": "Konfiguriraj opcije Grocy integracije.",
+                "data_description": {
+                    "calendar_fix_timezone": "Uključite ako se događaji u kalendaru prikazuju u krivi sat. Tada se vremena iz Grocyja čitaju kao lokalno vrijeme.",
+                    "calendar_sync_interval": "Koliko se često čita Grocy kalendar, u minutama.",
+                    "chore_done_by": "Grocy korisnik za kućanske poslove koje dovršite u Home Assistantu. Kućanski posao bez dodijeljenog korisnika obavlja vlasnik API ključa."
+                },
+                "description": "Konfiguriraj opcije Grocy integracije. Za promjenu adrese ili API ključa koristite „Ponovno konfiguriraj” u izborniku unosa integracije.",
                 "title": "Grocy opcije"
             }
         }

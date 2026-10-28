@@ -32,6 +32,8 @@ from .helpers import MealPlanItemWrapper, RecipeWrapper, extract_base_url_and_pa
 
 _LOGGER = logging.getLogger(__name__)
 
+type GrocyConfigEntry = ConfigEntry[GrocyDataUpdateCoordinator]
+
 
 @dataclass
 class GrocyCoordinatorData:
@@ -60,10 +62,12 @@ class GrocyCoordinatorData:
 class GrocyDataUpdateCoordinator(DataUpdateCoordinator[GrocyCoordinatorData]):
     """Grocy data update coordinator."""
 
+    config_entry: GrocyConfigEntry
+
     def __init__(
         self,
         hass: HomeAssistant,
-        config_entry: ConfigEntry,
+        config_entry: GrocyConfigEntry,
     ) -> None:
         """Initialize Grocy data update coordinator."""
         super().__init__(

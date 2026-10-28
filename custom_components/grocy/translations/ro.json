@@ -18,18 +18,24 @@
                 "data": {
                     "api_key": "Cheie API Grocy"
                 },
+                "data_description": {
+                    "api_key": "Creați o cheie în Grocy: Setări (pictograma cheie fixă) → „Gestionează cheile API”."
+                },
                 "description": "Vă rugăm să introduceți din nou cheia API pentru {host}.",
                 "title": "Re-autentificare Grocy"
             },
             "reconfigure": {
                 "data": {
                     "api_key": "Cheie API Grocy",
-                    "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
-                    "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
-                    "chore_done_by": "Treburile casnice finalizate în Home Assistant sunt făcute de",
                     "port": "Număr port (9192)",
                     "url": "Adresa URL a API-ului Grocy",
                     "verify_ssl": "Verificați certificatul SSL"
+                },
+                "data_description": {
+                    "api_key": "Creați o cheie în Grocy: Setări (pictograma cheie fixă) → „Gestionează cheile API”.",
+                    "port": "Portul Grocy. Dacă adresa de mai sus are un port, se folosește acel port.",
+                    "url": "Adresa serverului Grocy, de exemplu http:\/\/192.168.1.10 sau https:\/\/grocy.example.com.",
+                    "verify_ssl": "Verifică certificatul HTTPS al Grocy. Dezactivați pentru un certificat autosemnat."
                 },
                 "description": "Actualizați setările de conexiune Grocy.",
                 "title": "Reconfigurare Grocy"
@@ -37,39 +43,108 @@
             "user": {
                 "data": {
                     "api_key": "Cheie API Grocy",
-                    "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
-                    "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
-                    "chore_done_by": "Treburile casnice finalizate în Home Assistant sunt făcute de",
                     "port": "Număr port (9192)",
                     "url": "Adresa URL a API-ului Grocy",
                     "verify_ssl": "Verificați certificatul SSL"
+                },
+                "data_description": {
+                    "api_key": "Creați o cheie în Grocy: Setări (pictograma cheie fixă) → „Gestionează cheile API”.",
+                    "port": "Portul Grocy. Dacă adresa de mai sus are un port, se folosește acel port.",
+                    "url": "Adresa serverului Grocy, de exemplu http:\/\/192.168.1.10 sau https:\/\/grocy.example.com.",
+                    "verify_ssl": "Verifică certificatul HTTPS al Grocy. Dezactivați pentru un certificat autosemnat."
                 },
                 "description": "Dacă aveți nevoie de ajutor cu configurarea, consultați documentația de pe GitHub.",
                 "title": "Grocy"
             }
         }
     },
-    "options": {
-        "error": {
-            "cannot_connect": "Nu s-a putut conecta la serverul Grocy.",
-            "ingress_url": "Aceasta este adresa de ingress Home Assistant a add-on-ului Grocy. Nu funcționează cu o cheie API. Expuneți un port în setările de rețea ale add-on-ului și folosiți acel port.",
-            "invalid_auth": "Cheie API invalidă sau autentificare eșuată.",
-            "ssl_error": "Verificarea certificatului SSL a eșuat. Dezactivați „Verificați certificatul SSL” sau folosiți http dacă Grocy nu are un certificat valid.",
-            "timeout": "Conexiunea a expirat.",
-            "unknown": "Eroare neașteptată"
+    "entity": {
+        "binary_sensor": {
+            "expired_products": {
+                "name": "Produse expirate"
+            },
+            "expiring_products": {
+                "name": "Produse care expiră în curând"
+            },
+            "missing_products": {
+                "name": "Produse sub stocul minim"
+            },
+            "overdue_batteries": {
+                "name": "Baterii restante"
+            },
+            "overdue_chores": {
+                "name": "Activități restante"
+            },
+            "overdue_products": {
+                "name": "Produse cu termen depășit"
+            },
+            "overdue_tasks": {
+                "name": "Sarcini restante"
+            }
         },
+        "calendar": {
+            "calendar": {
+                "name": "Calendar"
+            }
+        },
+        "sensor": {
+            "batteries": {
+                "name": "Baterii"
+            },
+            "chores": {
+                "name": "Activități"
+            },
+            "meal_plan": {
+                "name": "Plan de masă"
+            },
+            "recipes": {
+                "name": "Rețete"
+            },
+            "shopping_list": {
+                "name": "Listă de cumpărături"
+            },
+            "stock": {
+                "name": "Stoc"
+            },
+            "tasks": {
+                "name": "Sarcini"
+            }
+        },
+        "todo": {
+            "batteries": {
+                "name": "Baterii"
+            },
+            "chores": {
+                "name": "Activități"
+            },
+            "meal_plan": {
+                "name": "Plan de masă"
+            },
+            "shopping_list": {
+                "name": "Listă de cumpărături"
+            },
+            "stock": {
+                "name": "Stoc"
+            },
+            "tasks": {
+                "name": "Sarcini"
+            }
+        }
+    },
+    "options": {
         "step": {
             "init": {
                 "data": {
-                    "api_key": "Cheie API Grocy",
                     "calendar_fix_timezone": "Corectează fusul orar pentru calendar",
                     "calendar_sync_interval": "Interval de sincronizare calendar (minute)",
-                    "chore_done_by": "Treburile casnice finalizate în Home Assistant sunt făcute de",
-                    "port": "Număr port (9192)",
-                    "url": "Adresa URL a API-ului Grocy",
-                    "verify_ssl": "Verificați certificatul SSL"
+                    "chore_done_by": "Treburile casnice finalizate în Home Assistant sunt făcute de"
                 },
-                "description": "Configurați opțiunile de integrare Grocy.",
+                "data_description": {
+                    "calendar_fix_timezone": "Activați dacă evenimentele din calendar apar la ora greșită. Atunci orele din Grocy sunt citite ca oră locală.",
+                    "calendar_sync_interval": "Cât de des se citește calendarul Grocy, în minute.",
+                    "chore_done_by": "Utilizatorul Grocy pentru treburile casnice pe care le finalizați în Home Assistant. O treabă casnică fără utilizator atribuit este făcută de proprietarul cheii API."
+                },
+                "description": "Configurați opțiunile de integrare Grocy. Pentru a schimba adresa sau cheia API, folosiți „Reconfigurare” din meniul intrării integrării.",
                 "title": "Opțiuni Grocy"
             }
         }

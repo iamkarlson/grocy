@@ -11,7 +11,6 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
@@ -25,14 +24,16 @@ from .const import (
     ATTR_STOCK,
     ATTR_TASKS,
     CHORES,
-    DOMAIN,
     ITEMS,
     MEAL_PLANS,
     PRODUCTS,
     RECIPES,
     TASKS,
 )
-from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
+from .coordinator import (
+    GrocyConfigEntry,
+    GrocyCoordinatorData,
+)
 from .entity import GrocyEntity
 from .helpers import model_to_dict
 
@@ -41,11 +42,11 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    config_entry: GrocyConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ):
     """Do setup sensor platform."""
-    coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
+    coordinator = config_entry.runtime_data
     entities = []
     for description in SENSORS:
         if description.exists_fn(coordinator.available_entities):
@@ -73,7 +74,7 @@ class GrocySensorEntityDescription(SensorEntityDescription):
 SENSORS: tuple[GrocySensorEntityDescription, ...] = (
     GrocySensorEntityDescription(
         key=ATTR_CHORES,
-        name="Grocy chores",
+        translation_key=ATTR_CHORES,
         native_unit_of_measurement=CHORES,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:broom",
@@ -85,7 +86,7 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
     ),
     GrocySensorEntityDescription(
         key=ATTR_MEAL_PLAN,
-        name="Grocy meal plan",
+        translation_key=ATTR_MEAL_PLAN,
         native_unit_of_measurement=MEAL_PLANS,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:silverware-variant",
@@ -97,7 +98,7 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
     ),
     GrocySensorEntityDescription(
         key=ATTR_SHOPPING_LIST,
-        name="Grocy shopping list",
+        translation_key=ATTR_SHOPPING_LIST,
         native_unit_of_measurement=PRODUCTS,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:cart-outline",
@@ -109,7 +110,7 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
     ),
     GrocySensorEntityDescription(
         key=ATTR_STOCK,
-        name="Grocy stock",
+        translation_key=ATTR_STOCK,
         native_unit_of_measurement=PRODUCTS,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:fridge-outline",
@@ -121,7 +122,7 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
     ),
     GrocySensorEntityDescription(
         key=ATTR_TASKS,
-        name="Grocy tasks",
+        translation_key=ATTR_TASKS,
         native_unit_of_measurement=TASKS,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:checkbox-marked-circle-outline",
@@ -133,7 +134,7 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
     ),
     GrocySensorEntityDescription(
         key=ATTR_BATTERIES,
-        name="Grocy batteries",
+        translation_key=ATTR_BATTERIES,
         native_unit_of_measurement=ITEMS,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:battery",
@@ -145,7 +146,7 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
     ),
     GrocySensorEntityDescription(
         key=ATTR_RECIPES,
-        name="Grocy recipes",
+        translation_key=ATTR_RECIPES,
         native_unit_of_measurement=RECIPES,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:book-open-variant",

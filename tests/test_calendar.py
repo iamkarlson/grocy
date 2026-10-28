@@ -78,8 +78,6 @@ def calendar_config_entry_data_fixture() -> dict[str, object]:
         CONF_API_KEY: "test-token",
         CONF_PORT: 9192,
         CONF_VERIFY_SSL: False,
-        CONF_CALENDAR_SYNC_INTERVAL: 5,
-        CONF_CALENDAR_FIX_TIMEZONE: True,
     }
 
 
@@ -92,6 +90,7 @@ def calendar_config_entry_fixture(
         domain=DOMAIN,
         title="Grocy",
         data=calendar_config_entry_data,
+        options={CONF_CALENDAR_SYNC_INTERVAL: 5, CONF_CALENDAR_FIX_TIMEZONE: True},
         entry_id="test-calendar-entry",
     )
 
@@ -276,6 +275,8 @@ class TestCalendarEntityTimezoneFixDisabled:
                 CONF_API_KEY: "test-token",
                 CONF_PORT: 9192,
                 CONF_VERIFY_SSL: False,
+            },
+            options={
                 CONF_CALENDAR_SYNC_INTERVAL: 5,
                 CONF_CALENDAR_FIX_TIMEZONE: False,
             },
@@ -847,6 +848,8 @@ class TestCalendarEntityTimezoneEdgeCases:
                 CONF_API_KEY: "test-token",
                 CONF_PORT: 9192,
                 CONF_VERIFY_SSL: False,
+            },
+            options={
                 CONF_CALENDAR_SYNC_INTERVAL: 5,
                 CONF_CALENDAR_FIX_TIMEZONE: True,
             },
@@ -928,6 +931,8 @@ class TestCalendarEntityConfiguration:
                 CONF_API_KEY: "test-token",
                 CONF_PORT: 9192,
                 CONF_VERIFY_SSL: False,
+            },
+            options={
                 CONF_CALENDAR_FIX_TIMEZONE: False,
             },
             entry_id="test-tz-disabled",
@@ -969,6 +974,8 @@ class TestCalendarEntityConfiguration:
                 CONF_API_KEY: "test-token",
                 CONF_PORT: 9192,
                 CONF_VERIFY_SSL: False,
+            },
+            options={
                 CONF_CALENDAR_SYNC_INTERVAL: 15,
             },
             entry_id="test-sync-custom",
@@ -992,6 +999,8 @@ class TestCalendarEntityConfiguration:
                 CONF_API_KEY: "test-token",
                 CONF_PORT: 9192,
                 CONF_VERIFY_SSL: False,
+            },
+            options={
                 CONF_CALENDAR_SYNC_INTERVAL: saved_interval,
             },
             entry_id="test-sync-zero",

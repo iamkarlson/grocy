@@ -17,6 +17,8 @@ from .json_encoder import CustomJSONEncoder
 class GrocyEntity(CoordinatorEntity[GrocyDataUpdateCoordinator]):
     """Grocy base entity definition."""
 
+    _attr_has_entity_name = True
+
     def __init__(
         self,
         coordinator: GrocyDataUpdateCoordinator,
@@ -25,7 +27,6 @@ class GrocyEntity(CoordinatorEntity[GrocyDataUpdateCoordinator]):
     ) -> None:
         """Initialize entity."""
         super().__init__(coordinator)
-        self._attr_name = description.name
         self._attr_unique_id = f"{config_entry.entry_id}{description.key.lower()}"
         self.entity_description = description
 
