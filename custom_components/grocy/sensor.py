@@ -11,7 +11,6 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
@@ -25,14 +24,16 @@ from .const import (
     ATTR_STOCK,
     ATTR_TASKS,
     CHORES,
-    DOMAIN,
     ITEMS,
     MEAL_PLANS,
     PRODUCTS,
     RECIPES,
     TASKS,
 )
-from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
+from .coordinator import (
+    GrocyConfigEntry,
+    GrocyCoordinatorData,
+)
 from .entity import GrocyEntity
 from .helpers import model_to_dict
 
@@ -41,11 +42,11 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    config_entry: GrocyConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ):
     """Do setup sensor platform."""
-    coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
+    coordinator = config_entry.runtime_data
     entities = []
     for description in SENSORS:
         if description.exists_fn(coordinator.available_entities):

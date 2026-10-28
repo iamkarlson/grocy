@@ -16,6 +16,8 @@ import pytest
 import voluptuous as vol
 from grocy.data_models.generic import EntityType
 from grocy.grocy_api_client import TransactionType
+from homeassistant.config_entries import ConfigEntryState
+from homeassistant.exceptions import ServiceValidationError
 
 from custom_components.grocy import services
 from custom_components.grocy.const import DOMAIN
@@ -384,15 +386,19 @@ async def test_async_force_update_entity_ignores_missing() -> None:
 # ─── async_setup_services ────────────────────────────────────────────────────
 
 
+def _setup_services(hass, entry, grocy_api, entities=()) -> None:
+    """Register the actions and load the entry, as async_setup and setup do."""
+    entry.add_to_hass(hass)
+    entry.mock_state(hass, ConfigEntryState.LOADED)
+    entry.runtime_data = SimpleNamespace(grocy_api=grocy_api, entities=list(entities))
+    services.async_setup_services(hass)
+
+
 @pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
-async def test_async_setup_services_registers_all_services(
-    hass, mock_config_entry, mock_grocy
-) -> None:
-    """Verify all 13 services are registered."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
-
-    await services.async_setup_services(hass, mock_config_entry)
+async def test_async_setup_services_registers_all_services(hass) -> None:
+    """Verify all 13 services are registered, also with no entry loaded."""
+    services.async_setup_services(hass)
 
     registered = hass.services.async_services().get(DOMAIN, {})
     for service_name, _schema in services.SERVICES_WITH_ACCOMPANYING_SCHEMA:
@@ -401,46 +407,33 @@ async def test_async_setup_services_registers_all_services(
 
 @pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
-async def test_async_setup_services_skips_if_already_registered(
-    hass, mock_config_entry, mock_grocy
-) -> None:
-    """Verify no duplicate registration."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
+async def test_action_without_loaded_entry_raises(hass, mock_config_entry) -> None:
+    """An action call with no loaded entry gives a clear error, not a traceback."""
+    mock_config_entry.add_to_hass(hass)
+    services.async_setup_services(hass)
 
-    await services.async_setup_services(hass, mock_config_entry)
-    count_before = len(hass.services.async_services().get(DOMAIN, {}))
-
-    await services.async_setup_services(hass, mock_config_entry)
-    count_after = len(hass.services.async_services().get(DOMAIN, {}))
-
-    assert count_before == count_after
-
-
-# ─── async_unload_services ───────────────────────────────────────────────────
+    with pytest.raises(ServiceValidationError, match="not loaded"):
+        await hass.services.async_call(
+            DOMAIN, services.SERVICE_COMPLETE_TASK, {"task_id": 1}, blocking=True
+        )
 
 
 @pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
-async def test_async_unload_services_removes_all(
+async def test_action_uses_the_current_coordinator(
     hass, mock_config_entry, mock_grocy
 ) -> None:
-    """Verify all services removed on unload."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
+    """After a reload, actions use the new coordinator, not the first one."""
+    _setup_services(hass, mock_config_entry, mock_grocy)
+    new_grocy = MagicMock()
+    mock_config_entry.runtime_data = SimpleNamespace(grocy_api=new_grocy, entities=[])
 
-    await services.async_setup_services(hass, mock_config_entry)
-    assert hass.services.async_services().get(DOMAIN)
+    await hass.services.async_call(
+        DOMAIN, services.SERVICE_COMPLETE_TASK, {"task_id": 1}, blocking=True
+    )
 
-    await services.async_unload_services(hass)
-
-    assert not hass.services.async_services().get(DOMAIN)
-
-
-@pytest.mark.feature("cross_cutting")
-@pytest.mark.asyncio
-async def test_async_unload_services_noop_if_not_registered(hass) -> None:
-    """Verify graceful no-op if not registered."""
-    # Should not raise
-    await services.async_unload_services(hass)
+    new_grocy.tasks.complete.assert_called_once_with(1)
+    mock_grocy.tasks.complete.assert_not_called()
 
 
 # ─── consume_product defaults to CONSUME transaction_type ─────────────────────
@@ -664,8 +657,7 @@ async def test_dispatcher_routes_add_product(
     hass, mock_config_entry, mock_grocy
 ) -> None:
     """Verify dispatcher routes add_product correctly."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
-    await services.async_setup_services(hass, mock_config_entry)
+    _setup_services(hass, mock_config_entry, mock_grocy)
 
     await hass.services.async_call(
         DOMAIN,
@@ -683,8 +675,7 @@ async def test_dispatcher_routes_open_product(
     hass, mock_config_entry, mock_grocy
 ) -> None:
     """Verify dispatcher routes open_product correctly."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
-    await services.async_setup_services(hass, mock_config_entry)
+    _setup_services(hass, mock_config_entry, mock_grocy)
 
     await hass.services.async_call(
         DOMAIN,
@@ -702,8 +693,7 @@ async def test_dispatcher_routes_consume_product(
     hass, mock_config_entry, mock_grocy
 ) -> None:
     """Verify dispatcher routes consume_product correctly."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
-    await services.async_setup_services(hass, mock_config_entry)
+    _setup_services(hass, mock_config_entry, mock_grocy)
 
     await hass.services.async_call(
         DOMAIN,
@@ -721,8 +711,7 @@ async def test_dispatcher_routes_execute_chore(
     hass, mock_config_entry, mock_grocy
 ) -> None:
     """Verify dispatcher routes execute_chore correctly."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
-    await services.async_setup_services(hass, mock_config_entry)
+    _setup_services(hass, mock_config_entry, mock_grocy)
 
     await hass.services.async_call(
         DOMAIN,
@@ -740,8 +729,7 @@ async def test_dispatcher_routes_complete_task(
     hass, mock_config_entry, mock_grocy
 ) -> None:
     """Verify dispatcher routes complete_task."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
-    await services.async_setup_services(hass, mock_config_entry)
+    _setup_services(hass, mock_config_entry, mock_grocy)
 
     await hass.services.async_call(
         DOMAIN,
@@ -759,8 +747,7 @@ async def test_dispatcher_routes_consume_recipe(
     hass, mock_config_entry, mock_grocy
 ) -> None:
     """Verify dispatcher routes consume_recipe."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
-    await services.async_setup_services(hass, mock_config_entry)
+    _setup_services(hass, mock_config_entry, mock_grocy)
 
     await hass.services.async_call(
         DOMAIN,
@@ -778,8 +765,7 @@ async def test_dispatcher_routes_track_battery(
     hass, mock_config_entry, mock_grocy
 ) -> None:
     """Verify dispatcher routes track_battery."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
-    await services.async_setup_services(hass, mock_config_entry)
+    _setup_services(hass, mock_config_entry, mock_grocy)
 
     await hass.services.async_call(
         DOMAIN,
@@ -797,8 +783,7 @@ async def test_dispatcher_routes_add_generic(
     hass, mock_config_entry, mock_grocy
 ) -> None:
     """Verify dispatcher routes add_generic."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
-    await services.async_setup_services(hass, mock_config_entry)
+    _setup_services(hass, mock_config_entry, mock_grocy)
 
     await hass.services.async_call(
         DOMAIN,
@@ -816,8 +801,7 @@ async def test_dispatcher_routes_update_generic(
     hass, mock_config_entry, mock_grocy
 ) -> None:
     """Verify dispatcher routes update_generic."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
-    await services.async_setup_services(hass, mock_config_entry)
+    _setup_services(hass, mock_config_entry, mock_grocy)
 
     await hass.services.async_call(
         DOMAIN,
@@ -839,8 +823,7 @@ async def test_dispatcher_routes_delete_generic(
     hass, mock_config_entry, mock_grocy
 ) -> None:
     """Verify dispatcher routes delete_generic."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
-    await services.async_setup_services(hass, mock_config_entry)
+    _setup_services(hass, mock_config_entry, mock_grocy)
 
     await hass.services.async_call(
         DOMAIN,
@@ -858,8 +841,7 @@ async def test_dispatcher_routes_add_missing_products(
     hass, mock_config_entry, mock_grocy
 ) -> None:
     """Verify dispatcher routes add_missing_products."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
-    await services.async_setup_services(hass, mock_config_entry)
+    _setup_services(hass, mock_config_entry, mock_grocy)
 
     await hass.services.async_call(
         DOMAIN,
@@ -877,8 +859,7 @@ async def test_dispatcher_routes_remove_product_in_shopping_list(
     hass, mock_config_entry, mock_grocy
 ) -> None:
     """Verify dispatcher routes remove_product."""
-    hass.data[DOMAIN] = SimpleNamespace(grocy_api=mock_grocy, entities=[])
-    await services.async_setup_services(hass, mock_config_entry)
+    _setup_services(hass, mock_config_entry, mock_grocy)
 
     await hass.services.async_call(
         DOMAIN,
@@ -930,10 +911,7 @@ async def test_dispatcher_routes_sync_calendar(
     mock_calendar_entity.entity_description = SimpleNamespace(key="calendar")
     mock_calendar_entity._async_update_calendar = AsyncMock()
 
-    hass.data[DOMAIN] = SimpleNamespace(
-        grocy_api=mock_grocy, entities=[mock_calendar_entity]
-    )
-    await services.async_setup_services(hass, mock_config_entry)
+    _setup_services(hass, mock_config_entry, mock_grocy, [mock_calendar_entity])
 
     await hass.services.async_call(
         DOMAIN,

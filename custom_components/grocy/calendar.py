@@ -35,7 +35,7 @@ from .const import (
     NAME,
     VERSION,
 )
-from .coordinator import GrocyDataUpdateCoordinator
+from .coordinator import GrocyConfigEntry, GrocyDataUpdateCoordinator
 from .helpers import extract_base_url_and_path
 
 _LOGGER = logging.getLogger(__name__)
@@ -44,11 +44,11 @@ HTTP_OK = 200
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    config_entry: GrocyConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up Grocy calendar platform."""
-    coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
+    coordinator = config_entry.runtime_data
 
     entity = GrocyCalendarEntity(coordinator, config_entry)
     async_add_entities([entity], True)

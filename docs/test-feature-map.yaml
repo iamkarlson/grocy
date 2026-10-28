@@ -250,7 +250,7 @@ features:
     tests:
       - file: tests/test_grocy_data.py
         functions:
-          - test_async_setup_endpoint_registers_view_once
+          - test_async_setup_endpoint_registers_view
           - test_picture_view_get_proxies_request
           - test_picture_view_uses_path_and_default_width
           - test_picture_view_reads_the_current_entry
@@ -319,8 +319,8 @@ features:
           - test_async_setup_entry_raises_not_ready_on_timeout
           - test_async_setup_entry_raises_not_ready_on_os_error
           - test_async_setup_entry_maps_grocy_errors
-          - test_async_unload_entry_cleans_up
-          - test_async_unload_entry_platform_failure
+          - test_async_unload_entry_unloads_platforms
+          - test_async_setup_registers_actions_and_picture_view
           - test_available_entities_all_features
           - test_available_entities_stock_only
           - test_available_entities_tasks_only
@@ -364,9 +364,8 @@ cross_cutting:
     - file: tests/test_services.py
       functions:
         - test_async_setup_services_registers_all_services
-        - test_async_setup_services_skips_if_already_registered
-        - test_async_unload_services_removes_all
-        - test_async_unload_services_noop_if_not_registered
+        - test_action_without_loaded_entry_raises
+        - test_action_uses_the_current_coordinator
         - test_async_force_update_entity_updates_matching_entity
         - test_async_force_update_entity_ignores_missing
         - test_async_force_update_entity_skips_entity_without_hass

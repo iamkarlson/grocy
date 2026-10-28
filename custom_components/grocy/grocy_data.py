@@ -11,7 +11,7 @@ from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from aiohttp import ClientError, hdrs, web
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.http import HomeAssistantView
 
@@ -289,7 +289,6 @@ class GrocyData:
 PICTURE_GROUPS = frozenset({"recipepictures", "productpictures"})
 DEFAULT_PICTURE_WIDTH = 400
 MAX_PICTURE_WIDTH = 2000
-_PICTURE_VIEW_REGISTERED = f"{DOMAIN}_picture_view_registered"
 _FORWARDED_HEADERS = (
     hdrs.CACHE_CONTROL,
     hdrs.CONTENT_DISPOSITION,
@@ -299,17 +298,15 @@ _FORWARDED_HEADERS = (
 )
 
 
-async def async_setup_endpoint_for_image_proxy(hass: HomeAssistant) -> None:
+@callback
+def async_setup_endpoint_for_image_proxy(hass: HomeAssistant) -> None:
     """
-    Register the picture proxy view once per Home Assistant run.
+    Register the picture proxy view. Call it once, from ``async_setup``.
 
     Home Assistant cannot remove a view, and a second registration never
     answers (#72). The view reads the settings of the entry on each request.
     """
-    if hass.data.get(_PICTURE_VIEW_REGISTERED):
-        return
     hass.http.register_view(GrocyPictureView(hass))
-    hass.data[_PICTURE_VIEW_REGISTERED] = True
 
 
 def _grocy_base_url(data: Mapping[str, Any]) -> str:
@@ -349,16 +346,16 @@ class GrocyPictureView(HomeAssistantView):
 
     async def get(self, request, picture_type: str, filename: str) -> web.Response:
         """GET request for the image."""
-        coordinator = self._hass.data.get(DOMAIN)
+        entries = self._hass.config_entries.async_loaded_entries(DOMAIN)
         if (
-            coordinator is None
+            not entries
             or picture_type not in PICTURE_GROUPS
             or not _is_file_name(filename)
         ):
             raise web.HTTPNotFound
 
         # Read the settings now, so that a changed URL or API key applies at once.
-        data = coordinator.config_entry.data
+        data = entries[0].data
         width = _picture_width(request.query.get("width"))
         url = f"{_grocy_base_url(data)}/api/files/{picture_type}/{filename}"
         url = f"{url}?force_serve_as=picture&best_fit_width={width}"

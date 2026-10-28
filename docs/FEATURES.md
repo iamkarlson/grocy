@@ -505,7 +505,7 @@ Proxies product and recipe images from Grocy through Home Assistant. This allows
 
 | Test File | Test Function | What It Validates |
 |-----------|---------------|-------------------|
-| tests/test_grocy_data.py | `test_async_setup_endpoint_registers_view_once` | The view is registered once, also after a reload |
+| tests/test_grocy_data.py | `test_async_setup_endpoint_registers_view` | The view is registered by `async_setup`, so once per run, also after a reload |
 | tests/test_grocy_data.py | `test_picture_view_get_proxies_request` | Image proxying with correct headers |
 | tests/test_grocy_data.py | `test_picture_view_uses_path_and_default_width` | URL path for subpath installations and default width 400 |
 | tests/test_grocy_data.py | `test_picture_view_reads_the_current_entry` | A changed URL or API key applies without a restart |
@@ -624,8 +624,8 @@ All entities (except calendar) are updated every 30 seconds via the data coordin
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready_on_timeout` | Timeout raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready_on_os_error` | OS error raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_maps_grocy_errors` | Grocy 401 or 403 at setup starts re-authentication; other errors retry |
-| tests/test_init.py | `test_async_unload_entry_cleans_up` | Unload cleans up data and services |
-| tests/test_init.py | `test_async_unload_entry_platform_failure` | Partial cleanup on platform failure |
+| tests/test_init.py | `test_async_unload_entry_unloads_platforms` | Unload unloads the platforms and returns their result |
+| tests/test_init.py | `test_async_setup_registers_actions_and_picture_view` | `async_setup` registers the actions and the picture view once per run |
 | tests/test_init.py | `test_available_entities_all_features` | All features enabled creates all entities |
 | tests/test_init.py | `test_available_entities_stock_only` | Stock-only creates stock entities |
 | tests/test_init.py | `test_available_entities_tasks_only` | Tasks-only creates task entities |
@@ -658,9 +658,8 @@ These tests validate infrastructure shared across all features.
 | tests/test_todo.py | `test_todo_exists_fn_checks_available_entities` | Todo exists_fn validation |
 | tests/test_todo.py | `test_async_create_todo_item_unsupported_raises` | Unsupported create raises error |
 | tests/test_services.py | `test_async_setup_services_registers_all_services` | All 13 services registered |
-| tests/test_services.py | `test_async_setup_services_skips_if_already_registered` | No duplicate registration |
-| tests/test_services.py | `test_async_unload_services_removes_all` | All services removed on unload |
-| tests/test_services.py | `test_async_unload_services_noop_if_not_registered` | Graceful no-op if not registered |
+| tests/test_services.py | `test_action_without_loaded_entry_raises` | An action with no loaded entry raises `ServiceValidationError` |
+| tests/test_services.py | `test_action_uses_the_current_coordinator` | After a reload, actions use the new coordinator |
 | tests/test_services.py | `test_async_force_update_entity_updates_matching_entity` | Force update targets correct entity |
 | tests/test_services.py | `test_async_force_update_entity_ignores_missing` | Force update handles missing entity |
 | tests/test_grocy_data.py | `test_async_update_data_dispatches_to_correct_method` | Data dispatch routing |

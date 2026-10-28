@@ -11,9 +11,10 @@ import logging
 from http import HTTPStatus
 
 from aiohttp import ClientConnectorError
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.typing import ConfigType
 
 from grocy.errors import GrocyError
 
@@ -37,16 +38,25 @@ from .const import (
     PLATFORMS,
     STARTUP_MESSAGE,
 )
-from .coordinator import GrocyDataUpdateCoordinator
+from .coordinator import GrocyConfigEntry, GrocyDataUpdateCoordinator
 from .grocy_data import GrocyData, async_setup_endpoint_for_image_proxy
-from .services import async_setup_services, async_unload_services
+from .services import async_setup_services
 
 __all__ = ["async_migrate_entry"]
 
 _LOGGER = logging.getLogger(__name__)
 
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
-async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Register the actions and the picture proxy once per Home Assistant run."""
+    async_setup_services(hass)
+    async_setup_endpoint_for_image_proxy(hass)
+    return True
+
+
+async def async_setup_entry(hass: HomeAssistant, config_entry: GrocyConfigEntry):
     """Set up this integration using UI."""
     _LOGGER.info(STARTUP_MESSAGE)
 
@@ -75,25 +85,18 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             ) from error
         raise ConfigEntryNotReady(f"Grocy answered with an error: {error}") from error
 
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN] = coordinator
+    config_entry.runtime_data = coordinator
 
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
-    await async_setup_services(hass, config_entry)
-    await async_setup_endpoint_for_image_proxy(hass)
 
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+async def async_unload_entry(
+    hass: HomeAssistant, config_entry: GrocyConfigEntry
+) -> bool:
     """Unload a config entry."""
-    await async_unload_services(hass)
-    if unloaded := await hass.config_entries.async_unload_platforms(
-        config_entry, PLATFORMS
-    ):
-        del hass.data[DOMAIN]
-
-    return unloaded
+    return await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS)
 
 
 async def _async_get_available_entities(grocy_data: GrocyData) -> list[str]:

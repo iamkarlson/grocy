@@ -11,7 +11,6 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -23,9 +22,11 @@ from .const import (
     ATTR_OVERDUE_CHORES,
     ATTR_OVERDUE_PRODUCTS,
     ATTR_OVERDUE_TASKS,
-    DOMAIN,
 )
-from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
+from .coordinator import (
+    GrocyConfigEntry,
+    GrocyCoordinatorData,
+)
 from .entity import GrocyEntity
 from .helpers import model_to_dict
 
@@ -34,11 +35,11 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    config_entry: GrocyConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ):
     """Initialize binary sensor platform."""
-    coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
+    coordinator = config_entry.runtime_data
     entities = []
     for description in BINARY_SENSORS:
         if description.exists_fn(coordinator.available_entities):

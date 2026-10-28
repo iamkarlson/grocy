@@ -36,9 +36,12 @@ from .const import (
     ATTR_TASKS,
     CHORE_DONE_BY_ASSIGNED_USER,
     CONF_CHORE_DONE_BY,
-    DOMAIN,
 )
-from .coordinator import GrocyCoordinatorData, GrocyDataUpdateCoordinator
+from .coordinator import (
+    GrocyConfigEntry,
+    GrocyCoordinatorData,
+    GrocyDataUpdateCoordinator,
+)
 from .entity import GrocyEntity
 from .helpers import MealPlanItemWrapper
 from .services import (
@@ -69,11 +72,11 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    config_entry: GrocyConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ):
     """Do setup todo platform."""
-    coordinator: GrocyDataUpdateCoordinator = hass.data[DOMAIN]
+    coordinator = config_entry.runtime_data
     entities = []
     for description in TODOS:
         if description.exists_fn(coordinator.available_entities):
