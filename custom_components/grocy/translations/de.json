@@ -34,7 +34,7 @@
                 "data_description": {
                     "api_key": "Erstelle einen Schlüssel in Grocy: Einstellungen (Schraubenschlüssel-Symbol) → „API-Schlüssel verwalten“.",
                     "port": "Port von Grocy. Hat die Adresse oben einen Port, wird dieser verwendet.",
-                    "url": "Adresse deines Grocy-Servers, zum Beispiel http:\/\/192.168.1.10 oder https:\/\/grocy.example.com.",
+                    "url": "Adresse deines Grocy-Servers, zum Beispiel http:\/\/192.168.1.10.",
                     "verify_ssl": "Das HTTPS-Zertifikat von Grocy prüfen. Bei einem selbstsignierten Zertifikat ausschalten."
                 },
                 "description": "Aktualisiere deine Grocy-Verbindungseinstellungen.",
@@ -50,7 +50,7 @@
                 "data_description": {
                     "api_key": "Erstelle einen Schlüssel in Grocy: Einstellungen (Schraubenschlüssel-Symbol) → „API-Schlüssel verwalten“.",
                     "port": "Port von Grocy. Hat die Adresse oben einen Port, wird dieser verwendet.",
-                    "url": "Adresse deines Grocy-Servers, zum Beispiel http:\/\/192.168.1.10 oder https:\/\/grocy.example.com.",
+                    "url": "Adresse deines Grocy-Servers, zum Beispiel http:\/\/192.168.1.10.",
                     "verify_ssl": "Das HTTPS-Zertifikat von Grocy prüfen. Bei einem selbstsignierten Zertifikat ausschalten."
                 },
                 "description": "Wenn du Hilfe mit den Einstellungen brauchst, schau in die Dokumentation auf GitHub.",

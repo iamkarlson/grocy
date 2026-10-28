@@ -34,7 +34,7 @@
                 "data_description": {
                     "api_key": "Créez une clé dans Grocy : Paramètres (icône de clé à molette) → « Gérer les clefs API ».",
                     "port": "Port de Grocy. Si l'adresse ci-dessus contient un port, ce port est utilisé.",
-                    "url": "Adresse de votre serveur Grocy, par exemple http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
+                    "url": "Adresse de votre serveur Grocy, par exemple http:\/\/192.168.1.10.",
                     "verify_ssl": "Vérifier le certificat HTTPS de Grocy. Désactivez cette option pour un certificat auto-signé."
                 },
                 "description": "Mettre à jour votre configuration de connexion à Grocy.",
@@ -50,7 +50,7 @@
                 "data_description": {
                     "api_key": "Créez une clé dans Grocy : Paramètres (icône de clé à molette) → « Gérer les clefs API ».",
                     "port": "Port de Grocy. Si l'adresse ci-dessus contient un port, ce port est utilisé.",
-                    "url": "Adresse de votre serveur Grocy, par exemple http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
+                    "url": "Adresse de votre serveur Grocy, par exemple http:\/\/192.168.1.10.",
                     "verify_ssl": "Vérifier le certificat HTTPS de Grocy. Désactivez cette option pour un certificat auto-signé."
                 },
                 "description": "Si vous avez besoin d'aide pour la configuration, consultez la documentation sur GitHub.",

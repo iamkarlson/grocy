@@ -34,7 +34,7 @@
                 "data_description": {
                     "api_key": "Maak een sleutel in Grocy: Instellingen (moersleutelpictogram) → \"Beheer API sleutels\".",
                     "port": "Poort van Grocy. Als het adres hierboven een poort heeft, wordt die poort gebruikt.",
-                    "url": "Adres van je Grocy-server, bijvoorbeeld http:\/\/192.168.1.10 of https:\/\/grocy.example.com.",
+                    "url": "Adres van je Grocy-server, bijvoorbeeld http:\/\/192.168.1.10.",
                     "verify_ssl": "Controleer het HTTPS-certificaat van Grocy. Zet dit uit voor een zelfondertekend certificaat."
                 },
                 "description": "Werk je Grocy-verbindingsinstellingen bij.",
@@ -50,7 +50,7 @@
                 "data_description": {
                     "api_key": "Maak een sleutel in Grocy: Instellingen (moersleutelpictogram) → \"Beheer API sleutels\".",
                     "port": "Poort van Grocy. Als het adres hierboven een poort heeft, wordt die poort gebruikt.",
-                    "url": "Adres van je Grocy-server, bijvoorbeeld http:\/\/192.168.1.10 of https:\/\/grocy.example.com.",
+                    "url": "Adres van je Grocy-server, bijvoorbeeld http:\/\/192.168.1.10.",
                     "verify_ssl": "Controleer het HTTPS-certificaat van Grocy. Zet dit uit voor een zelfondertekend certificaat."
                 },
                 "description": "Als je hulp nodig hebt bij de configuratie, kijk dan in de documentatie op GitHub.",

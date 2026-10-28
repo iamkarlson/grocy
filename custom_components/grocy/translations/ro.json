@@ -34,7 +34,7 @@
                 "data_description": {
                     "api_key": "Creați o cheie în Grocy: Setări (pictograma cheie fixă) → „Gestionează cheile API”.",
                     "port": "Portul Grocy. Dacă adresa de mai sus are un port, se folosește acel port.",
-                    "url": "Adresa serverului Grocy, de exemplu http:\/\/192.168.1.10 sau https:\/\/grocy.example.com.",
+                    "url": "Adresa serverului Grocy, de exemplu http:\/\/192.168.1.10.",
                     "verify_ssl": "Verifică certificatul HTTPS al Grocy. Dezactivați pentru un certificat autosemnat."
                 },
                 "description": "Actualizați setările de conexiune Grocy.",
@@ -50,7 +50,7 @@
                 "data_description": {
                     "api_key": "Creați o cheie în Grocy: Setări (pictograma cheie fixă) → „Gestionează cheile API”.",
                     "port": "Portul Grocy. Dacă adresa de mai sus are un port, se folosește acel port.",
-                    "url": "Adresa serverului Grocy, de exemplu http:\/\/192.168.1.10 sau https:\/\/grocy.example.com.",
+                    "url": "Adresa serverului Grocy, de exemplu http:\/\/192.168.1.10.",
                     "verify_ssl": "Verifică certificatul HTTPS al Grocy. Dezactivați pentru un certificat autosemnat."
                 },
                 "description": "Dacă aveți nevoie de ajutor cu configurarea, consultați documentația de pe GitHub.",
