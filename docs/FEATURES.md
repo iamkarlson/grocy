@@ -122,8 +122,6 @@ Open a product in stock (e.g., open a package).
 | tests/test_todo.py | `test_todo_list_entity_stock_no_create` | Stock todo does not support CREATE |
 | tests/test_grocy_data.py | `test_async_update_stock_returns_products` | Stock data fetching returns products |
 | tests/test_grocy_data.py | `test_async_update_stock_empty` | Stock data fetching handles empty list |
-| tests/test_grocy_data.py | `test_async_update_stock_adds_picture_file_names` | Stock products are given their product picture file name |
-| tests/test_grocy_data.py | `test_async_update_stock_survives_a_failed_picture_lookup` | Stock is still returned when the picture lookup fails |
 | tests/test_helpers.py | `test_product_picture_url_points_at_the_product_pictures_group` | Product pictures are proxied from the product pictures group |
 | tests/test_helpers.py | `test_product_picture_url_without_a_picture` | Product without a picture has no URL |
 | tests/test_helpers.py | `test_product_to_dict_adds_the_picture_url` | Serialized product carries its picture URL |

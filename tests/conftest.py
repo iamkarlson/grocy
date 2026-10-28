@@ -118,7 +118,6 @@ def mock_grocy_fixture() -> MagicMock:
     mock_client.batteries = batteries_api
 
     generic_api = MagicMock()
-    generic_api.list.return_value = []
     mock_client.generic = generic_api
 
     return mock_client

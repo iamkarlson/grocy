@@ -19,7 +19,6 @@ from grocy import Grocy
 from grocy.data_models.battery import Battery
 from grocy.data_models.chore import Chore
 from grocy.data_models.generic import EntityType
-from grocy.data_models.product import Product
 
 from .const import (
     ATTR_BATTERIES,
@@ -96,36 +95,11 @@ class GrocyData:
         if entity_key in self.entity_update_method:
             return await self.entity_update_method[entity_key]()
 
-    def _add_picture_file_names(self, products: list[Product]) -> None:
-        """
-        Fill in the picture file name of each product, in place.
-
-        ``Product.from_stock_response`` leaves ``picture_file_name`` unset, so
-        stock products carry no picture. Reading the details of every product
-        would be one request each, while the product entities carry the same
-        file names in a single request.
-        """
-        try:
-            entities = self.api.generic.list(EntityType.PRODUCTS)
-        except Exception:  # pylint: disable=broad-except
-            _LOGGER.debug("Could not read the product pictures from Grocy")
-            return
-
-        file_names = {
-            str(entity.get("id")): entity.get("picture_file_name")
-            for entity in entities
-            if isinstance(entity, Mapping)
-        }
-        for product in products:
-            product.picture_file_name = file_names.get(str(product.id))
-
-    async def async_update_stock(self) -> list[Product]:
+    async def async_update_stock(self):
         """Update stock data."""
 
-        def wrapper() -> list[Product]:
-            products = self.api.stock.current()
-            self._add_picture_file_names(products)
-            return products
+        def wrapper():
+            return self.api.stock.current()
 
         return await self.hass.async_add_executor_job(wrapper)
 
