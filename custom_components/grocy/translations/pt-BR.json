@@ -18,6 +18,9 @@
                 "data": {
                     "api_key": "Chave de API do Grocy"
                 },
+                "data_description": {
+                    "api_key": "Crie uma chave no Grocy: Configurações (ícone de chave inglesa) → \"Organizar Chaves do API\"."
+                },
                 "description": "Por favor, insira novamente a chave de API para {host}.",
                 "title": "Reautenticar Grocy"
             },
@@ -31,6 +34,15 @@
                     "url": "URL da API do Grocy",
                     "verify_ssl": "Verificar certificado SSL"
                 },
+                "data_description": {
+                    "api_key": "Crie uma chave no Grocy: Configurações (ícone de chave inglesa) → \"Organizar Chaves do API\".",
+                    "calendar_fix_timezone": "Ative se os eventos da agenda aparecerem na hora errada. Então os horários do Grocy são lidos como hora local.",
+                    "calendar_sync_interval": "Com que frequência a agenda do Grocy é lida, em minutos.",
+                    "chore_done_by": "Usuário do Grocy para as tarefas domésticas que você conclui no Home Assistant. Uma tarefa doméstica sem usuário atribuído é feita pelo dono da chave de API.",
+                    "port": "Porta do Grocy. Se o endereço acima tiver uma porta, essa porta é usada.",
+                    "url": "Endereço do seu servidor Grocy, por exemplo http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
+                    "verify_ssl": "Verificar o certificado HTTPS do Grocy. Desative para um certificado autoassinado."
+                },
                 "description": "Atualize as configurações de conexão do Grocy.",
                 "title": "Reconfigurar Grocy"
             },
@@ -43,6 +55,15 @@
                     "port": "Número da porta (9192)",
                     "url": "URL da API do Grocy",
                     "verify_ssl": "Verificar certificado SSL"
+                },
+                "data_description": {
+                    "api_key": "Crie uma chave no Grocy: Configurações (ícone de chave inglesa) → \"Organizar Chaves do API\".",
+                    "calendar_fix_timezone": "Ative se os eventos da agenda aparecerem na hora errada. Então os horários do Grocy são lidos como hora local.",
+                    "calendar_sync_interval": "Com que frequência a agenda do Grocy é lida, em minutos.",
+                    "chore_done_by": "Usuário do Grocy para as tarefas domésticas que você conclui no Home Assistant. Uma tarefa doméstica sem usuário atribuído é feita pelo dono da chave de API.",
+                    "port": "Porta do Grocy. Se o endereço acima tiver uma porta, essa porta é usada.",
+                    "url": "Endereço do seu servidor Grocy, por exemplo http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
+                    "verify_ssl": "Verificar o certificado HTTPS do Grocy. Desative para um certificado autoassinado."
                 },
                 "description": "Se precisar de ajuda com a configuração, consulte a documentação no GitHub.",
                 "title": "Grocy"
@@ -141,6 +162,15 @@
                     "port": "Número da porta (9192)",
                     "url": "URL da API do Grocy",
                     "verify_ssl": "Verificar certificado SSL"
+                },
+                "data_description": {
+                    "api_key": "Crie uma chave no Grocy: Configurações (ícone de chave inglesa) → \"Organizar Chaves do API\".",
+                    "calendar_fix_timezone": "Ative se os eventos da agenda aparecerem na hora errada. Então os horários do Grocy são lidos como hora local.",
+                    "calendar_sync_interval": "Com que frequência a agenda do Grocy é lida, em minutos.",
+                    "chore_done_by": "Usuário do Grocy para as tarefas domésticas que você conclui no Home Assistant. Uma tarefa doméstica sem usuário atribuído é feita pelo dono da chave de API.",
+                    "port": "Porta do Grocy. Se o endereço acima tiver uma porta, essa porta é usada.",
+                    "url": "Endereço do seu servidor Grocy, por exemplo http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
+                    "verify_ssl": "Verificar o certificado HTTPS do Grocy. Desative para um certificado autoassinado."
                 },
                 "description": "Configurar opções de integração do Grocy.",
                 "title": "Opções do Grocy"

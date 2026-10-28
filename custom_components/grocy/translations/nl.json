@@ -18,6 +18,9 @@
                 "data": {
                     "api_key": "Grocy API-sleutel"
                 },
+                "data_description": {
+                    "api_key": "Maak een sleutel in Grocy: Instellingen (moersleutelpictogram) → \"Beheer API sleutels\"."
+                },
                 "description": "Voer de API-sleutel voor {host} opnieuw in.",
                 "title": "Grocy opnieuw authenticeren"
             },
@@ -31,6 +34,15 @@
                     "url": "Grocy API-URL",
                     "verify_ssl": "SSL-certificaat verifiëren"
                 },
+                "data_description": {
+                    "api_key": "Maak een sleutel in Grocy: Instellingen (moersleutelpictogram) → \"Beheer API sleutels\".",
+                    "calendar_fix_timezone": "Zet dit aan als agenda-items op het verkeerde uur staan. Dan worden de tijden van Grocy als lokale tijd gelezen.",
+                    "calendar_sync_interval": "Hoe vaak de Grocy-kalender wordt gelezen, in minuten.",
+                    "chore_done_by": "Grocy-gebruiker voor de klusjes die je in Home Assistant afrondt. Een klusje zonder toegewezen gebruiker wordt gedaan door de eigenaar van de API-sleutel.",
+                    "port": "Poort van Grocy. Als het adres hierboven een poort heeft, wordt die poort gebruikt.",
+                    "url": "Adres van je Grocy-server, bijvoorbeeld http:\/\/192.168.1.10 of https:\/\/grocy.example.com.",
+                    "verify_ssl": "Controleer het HTTPS-certificaat van Grocy. Zet dit uit voor een zelfondertekend certificaat."
+                },
                 "description": "Werk je Grocy-verbindingsinstellingen bij.",
                 "title": "Grocy herconfigureren"
             },
@@ -43,6 +55,15 @@
                     "port": "Poortnummer (9192)",
                     "url": "Grocy API-URL",
                     "verify_ssl": "SSL-certificaat verifiëren"
+                },
+                "data_description": {
+                    "api_key": "Maak een sleutel in Grocy: Instellingen (moersleutelpictogram) → \"Beheer API sleutels\".",
+                    "calendar_fix_timezone": "Zet dit aan als agenda-items op het verkeerde uur staan. Dan worden de tijden van Grocy als lokale tijd gelezen.",
+                    "calendar_sync_interval": "Hoe vaak de Grocy-kalender wordt gelezen, in minuten.",
+                    "chore_done_by": "Grocy-gebruiker voor de klusjes die je in Home Assistant afrondt. Een klusje zonder toegewezen gebruiker wordt gedaan door de eigenaar van de API-sleutel.",
+                    "port": "Poort van Grocy. Als het adres hierboven een poort heeft, wordt die poort gebruikt.",
+                    "url": "Adres van je Grocy-server, bijvoorbeeld http:\/\/192.168.1.10 of https:\/\/grocy.example.com.",
+                    "verify_ssl": "Controleer het HTTPS-certificaat van Grocy. Zet dit uit voor een zelfondertekend certificaat."
                 },
                 "description": "Als je hulp nodig hebt bij de configuratie, kijk dan in de documentatie op GitHub.",
                 "title": "Grocy"
@@ -141,6 +162,15 @@
                     "port": "Poortnummer (9192)",
                     "url": "Grocy API-URL",
                     "verify_ssl": "SSL-certificaat verifiëren"
+                },
+                "data_description": {
+                    "api_key": "Maak een sleutel in Grocy: Instellingen (moersleutelpictogram) → \"Beheer API sleutels\".",
+                    "calendar_fix_timezone": "Zet dit aan als agenda-items op het verkeerde uur staan. Dan worden de tijden van Grocy als lokale tijd gelezen.",
+                    "calendar_sync_interval": "Hoe vaak de Grocy-kalender wordt gelezen, in minuten.",
+                    "chore_done_by": "Grocy-gebruiker voor de klusjes die je in Home Assistant afrondt. Een klusje zonder toegewezen gebruiker wordt gedaan door de eigenaar van de API-sleutel.",
+                    "port": "Poort van Grocy. Als het adres hierboven een poort heeft, wordt die poort gebruikt.",
+                    "url": "Adres van je Grocy-server, bijvoorbeeld http:\/\/192.168.1.10 of https:\/\/grocy.example.com.",
+                    "verify_ssl": "Controleer het HTTPS-certificaat van Grocy. Zet dit uit voor een zelfondertekend certificaat."
                 },
                 "description": "Configureer Grocy-integratieopties.",
                 "title": "Grocy-opties"

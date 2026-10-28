@@ -18,6 +18,9 @@
                 "data": {
                     "api_key": "Grocy API ključ"
                 },
+                "data_description": {
+                    "api_key": "Izradite ključ u Grocyju: „Settings” (ikona francuskog ključa) → „Manage API keys”."
+                },
                 "description": "Molimo ponovno unesite API ključ za {host}.",
                 "title": "Ponovno autentificiraj Grocy"
             },
@@ -31,6 +34,15 @@
                     "url": "Grocy API URL",
                     "verify_ssl": "Provjerite SSL certifikat."
                 },
+                "data_description": {
+                    "api_key": "Izradite ključ u Grocyju: „Settings” (ikona francuskog ključa) → „Manage API keys”.",
+                    "calendar_fix_timezone": "Uključite ako se događaji u kalendaru prikazuju u krivi sat. Tada se vremena iz Grocyja čitaju kao lokalno vrijeme.",
+                    "calendar_sync_interval": "Koliko se često čita Grocy kalendar, u minutama.",
+                    "chore_done_by": "Grocy korisnik za kućanske poslove koje dovršite u Home Assistantu. Kućanski posao bez dodijeljenog korisnika obavlja vlasnik API ključa.",
+                    "port": "Port Grocyja. Ako adresa iznad sadrži port, koristi se taj port.",
+                    "url": "Adresa vašeg Grocy poslužitelja, na primjer http:\/\/192.168.1.10 ili https:\/\/grocy.example.com.",
+                    "verify_ssl": "Provjera HTTPS certifikata Grocyja. Isključite za samopotpisani certifikat."
+                },
                 "description": "Ažurirajte postavke veze s Grocy-jem.",
                 "title": "Ponovno konfiguriraj Grocy"
             },
@@ -43,6 +55,15 @@
                     "port": "Broj port-a (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Provjerite SSL certifikat."
+                },
+                "data_description": {
+                    "api_key": "Izradite ključ u Grocyju: „Settings” (ikona francuskog ključa) → „Manage API keys”.",
+                    "calendar_fix_timezone": "Uključite ako se događaji u kalendaru prikazuju u krivi sat. Tada se vremena iz Grocyja čitaju kao lokalno vrijeme.",
+                    "calendar_sync_interval": "Koliko se često čita Grocy kalendar, u minutama.",
+                    "chore_done_by": "Grocy korisnik za kućanske poslove koje dovršite u Home Assistantu. Kućanski posao bez dodijeljenog korisnika obavlja vlasnik API ključa.",
+                    "port": "Port Grocyja. Ako adresa iznad sadrži port, koristi se taj port.",
+                    "url": "Adresa vašeg Grocy poslužitelja, na primjer http:\/\/192.168.1.10 ili https:\/\/grocy.example.com.",
+                    "verify_ssl": "Provjera HTTPS certifikata Grocyja. Isključite za samopotpisani certifikat."
                 },
                 "description": "Ako vam je potrebna pomoć oko konfiguracije, pogledajte dokumentaciju na GitHubu.",
                 "title": "Grocy"
@@ -141,6 +162,15 @@
                     "port": "Broj port-a (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Provjerite SSL certifikat."
+                },
+                "data_description": {
+                    "api_key": "Izradite ključ u Grocyju: „Settings” (ikona francuskog ključa) → „Manage API keys”.",
+                    "calendar_fix_timezone": "Uključite ako se događaji u kalendaru prikazuju u krivi sat. Tada se vremena iz Grocyja čitaju kao lokalno vrijeme.",
+                    "calendar_sync_interval": "Koliko se često čita Grocy kalendar, u minutama.",
+                    "chore_done_by": "Grocy korisnik za kućanske poslove koje dovršite u Home Assistantu. Kućanski posao bez dodijeljenog korisnika obavlja vlasnik API ključa.",
+                    "port": "Port Grocyja. Ako adresa iznad sadrži port, koristi se taj port.",
+                    "url": "Adresa vašeg Grocy poslužitelja, na primjer http:\/\/192.168.1.10 ili https:\/\/grocy.example.com.",
+                    "verify_ssl": "Provjera HTTPS certifikata Grocyja. Isključite za samopotpisani certifikat."
                 },
                 "description": "Konfiguriraj opcije Grocy integracije.",
                 "title": "Grocy opcije"

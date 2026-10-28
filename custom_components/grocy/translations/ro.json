@@ -18,6 +18,9 @@
                 "data": {
                     "api_key": "Cheie API Grocy"
                 },
+                "data_description": {
+                    "api_key": "Creați o cheie în Grocy: Setări (pictograma cheie fixă) → „Gestionează cheile API”."
+                },
                 "description": "Vă rugăm să introduceți din nou cheia API pentru {host}.",
                 "title": "Re-autentificare Grocy"
             },
@@ -31,6 +34,15 @@
                     "url": "Adresa URL a API-ului Grocy",
                     "verify_ssl": "Verificați certificatul SSL"
                 },
+                "data_description": {
+                    "api_key": "Creați o cheie în Grocy: Setări (pictograma cheie fixă) → „Gestionează cheile API”.",
+                    "calendar_fix_timezone": "Activați dacă evenimentele din calendar apar la ora greșită. Atunci orele din Grocy sunt citite ca oră locală.",
+                    "calendar_sync_interval": "Cât de des se citește calendarul Grocy, în minute.",
+                    "chore_done_by": "Utilizatorul Grocy pentru treburile casnice pe care le finalizați în Home Assistant. O treabă casnică fără utilizator atribuit este făcută de proprietarul cheii API.",
+                    "port": "Portul Grocy. Dacă adresa de mai sus are un port, se folosește acel port.",
+                    "url": "Adresa serverului Grocy, de exemplu http:\/\/192.168.1.10 sau https:\/\/grocy.example.com.",
+                    "verify_ssl": "Verifică certificatul HTTPS al Grocy. Dezactivați pentru un certificat autosemnat."
+                },
                 "description": "Actualizați setările de conexiune Grocy.",
                 "title": "Reconfigurare Grocy"
             },
@@ -43,6 +55,15 @@
                     "port": "Număr port (9192)",
                     "url": "Adresa URL a API-ului Grocy",
                     "verify_ssl": "Verificați certificatul SSL"
+                },
+                "data_description": {
+                    "api_key": "Creați o cheie în Grocy: Setări (pictograma cheie fixă) → „Gestionează cheile API”.",
+                    "calendar_fix_timezone": "Activați dacă evenimentele din calendar apar la ora greșită. Atunci orele din Grocy sunt citite ca oră locală.",
+                    "calendar_sync_interval": "Cât de des se citește calendarul Grocy, în minute.",
+                    "chore_done_by": "Utilizatorul Grocy pentru treburile casnice pe care le finalizați în Home Assistant. O treabă casnică fără utilizator atribuit este făcută de proprietarul cheii API.",
+                    "port": "Portul Grocy. Dacă adresa de mai sus are un port, se folosește acel port.",
+                    "url": "Adresa serverului Grocy, de exemplu http:\/\/192.168.1.10 sau https:\/\/grocy.example.com.",
+                    "verify_ssl": "Verifică certificatul HTTPS al Grocy. Dezactivați pentru un certificat autosemnat."
                 },
                 "description": "Dacă aveți nevoie de ajutor cu configurarea, consultați documentația de pe GitHub.",
                 "title": "Grocy"
@@ -141,6 +162,15 @@
                     "port": "Număr port (9192)",
                     "url": "Adresa URL a API-ului Grocy",
                     "verify_ssl": "Verificați certificatul SSL"
+                },
+                "data_description": {
+                    "api_key": "Creați o cheie în Grocy: Setări (pictograma cheie fixă) → „Gestionează cheile API”.",
+                    "calendar_fix_timezone": "Activați dacă evenimentele din calendar apar la ora greșită. Atunci orele din Grocy sunt citite ca oră locală.",
+                    "calendar_sync_interval": "Cât de des se citește calendarul Grocy, în minute.",
+                    "chore_done_by": "Utilizatorul Grocy pentru treburile casnice pe care le finalizați în Home Assistant. O treabă casnică fără utilizator atribuit este făcută de proprietarul cheii API.",
+                    "port": "Portul Grocy. Dacă adresa de mai sus are un port, se folosește acel port.",
+                    "url": "Adresa serverului Grocy, de exemplu http:\/\/192.168.1.10 sau https:\/\/grocy.example.com.",
+                    "verify_ssl": "Verifică certificatul HTTPS al Grocy. Dezactivați pentru un certificat autosemnat."
                 },
                 "description": "Configurați opțiunile de integrare Grocy.",
                 "title": "Opțiuni Grocy"

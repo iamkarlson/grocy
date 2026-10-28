@@ -26,7 +26,16 @@
                     "chore_done_by": "Chores completed in Home Assistant are done by"
                 },
                 "description": "If you need help with the configuration have a look at the documentation on GitHub.",
-                "title": "Grocy"
+                "title": "Grocy",
+                "data_description": {
+                    "url": "Address of your Grocy server, for example http://192.168.1.10 or https://grocy.example.com.",
+                    "api_key": "Create a key in Grocy: Settings (wrench icon) → \"Manage API keys\".",
+                    "port": "Port of Grocy. If the address above has a port, that port is used.",
+                    "verify_ssl": "Check the HTTPS certificate of Grocy. Turn it off for a self-signed certificate.",
+                    "calendar_sync_interval": "How often to read the Grocy calendar, in minutes.",
+                    "calendar_fix_timezone": "Turn it on if calendar events show at the wrong hour. Then the times from Grocy are read as local time.",
+                    "chore_done_by": "Grocy user for the chores that you complete in Home Assistant. A chore without an assigned user is done by the owner of the API key."
+                }
             },
             "reconfigure": {
                 "data": {
@@ -39,14 +48,26 @@
                     "chore_done_by": "Chores completed in Home Assistant are done by"
                 },
                 "description": "Update your Grocy connection settings.",
-                "title": "Reconfigure Grocy"
+                "title": "Reconfigure Grocy",
+                "data_description": {
+                    "url": "Address of your Grocy server, for example http://192.168.1.10 or https://grocy.example.com.",
+                    "api_key": "Create a key in Grocy: Settings (wrench icon) → \"Manage API keys\".",
+                    "port": "Port of Grocy. If the address above has a port, that port is used.",
+                    "verify_ssl": "Check the HTTPS certificate of Grocy. Turn it off for a self-signed certificate.",
+                    "calendar_sync_interval": "How often to read the Grocy calendar, in minutes.",
+                    "calendar_fix_timezone": "Turn it on if calendar events show at the wrong hour. Then the times from Grocy are read as local time.",
+                    "chore_done_by": "Grocy user for the chores that you complete in Home Assistant. A chore without an assigned user is done by the owner of the API key."
+                }
             },
             "reauth_confirm": {
                 "data": {
                     "api_key": "Grocy API Key"
                 },
                 "description": "Please re-enter the API key for {host}.",
-                "title": "Re-authenticate Grocy"
+                "title": "Re-authenticate Grocy",
+                "data_description": {
+                    "api_key": "Create a key in Grocy: Settings (wrench icon) → \"Manage API keys\"."
+                }
             }
         }
     },
@@ -63,7 +84,16 @@
                     "chore_done_by": "Chores completed in Home Assistant are done by"
                 },
                 "description": "Configure Grocy integration options.",
-                "title": "Grocy Options"
+                "title": "Grocy Options",
+                "data_description": {
+                    "url": "Address of your Grocy server, for example http://192.168.1.10 or https://grocy.example.com.",
+                    "api_key": "Create a key in Grocy: Settings (wrench icon) → \"Manage API keys\".",
+                    "port": "Port of Grocy. If the address above has a port, that port is used.",
+                    "verify_ssl": "Check the HTTPS certificate of Grocy. Turn it off for a self-signed certificate.",
+                    "calendar_sync_interval": "How often to read the Grocy calendar, in minutes.",
+                    "calendar_fix_timezone": "Turn it on if calendar events show at the wrong hour. Then the times from Grocy are read as local time.",
+                    "chore_done_by": "Grocy user for the chores that you complete in Home Assistant. A chore without an assigned user is done by the owner of the API key."
+                }
             }
         },
         "error": {

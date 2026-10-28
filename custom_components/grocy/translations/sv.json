@@ -18,6 +18,9 @@
                 "data": {
                     "api_key": "Grocy API nyckel"
                 },
+                "data_description": {
+                    "api_key": "Skapa en nyckel i Grocy: Inställningar (skiftnyckelikonen) → \"Hantera API-nycklar\"."
+                },
                 "description": "Vänligen ange API-nyckeln för {host} igen.",
                 "title": "Omautentisera Grocy"
             },
@@ -31,6 +34,15 @@
                     "url": "Grocy API URL",
                     "verify_ssl": "Verifiera SSL certifikat"
                 },
+                "data_description": {
+                    "api_key": "Skapa en nyckel i Grocy: Inställningar (skiftnyckelikonen) → \"Hantera API-nycklar\".",
+                    "calendar_fix_timezone": "Slå på om kalenderhändelser visas vid fel timme. Då läses tiderna från Grocy som lokal tid.",
+                    "calendar_sync_interval": "Hur ofta Grocy-kalendern läses, i minuter.",
+                    "chore_done_by": "Grocy-användare för sysslor som du slutför i Home Assistant. En syssla utan tilldelad användare utförs av ägaren till API-nyckeln.",
+                    "port": "Grocys port. Om adressen ovan har en port används den porten.",
+                    "url": "Adress till din Grocy-server, till exempel http:\/\/192.168.1.10 eller https:\/\/grocy.example.com.",
+                    "verify_ssl": "Kontrollera Grocys HTTPS-certifikat. Stäng av för ett självsignerat certifikat."
+                },
                 "description": "Uppdatera dina Grocy-anslutningsinställningar.",
                 "title": "Omkonfigurera Grocy"
             },
@@ -43,6 +55,15 @@
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Verifiera SSL certifikat"
+                },
+                "data_description": {
+                    "api_key": "Skapa en nyckel i Grocy: Inställningar (skiftnyckelikonen) → \"Hantera API-nycklar\".",
+                    "calendar_fix_timezone": "Slå på om kalenderhändelser visas vid fel timme. Då läses tiderna från Grocy som lokal tid.",
+                    "calendar_sync_interval": "Hur ofta Grocy-kalendern läses, i minuter.",
+                    "chore_done_by": "Grocy-användare för sysslor som du slutför i Home Assistant. En syssla utan tilldelad användare utförs av ägaren till API-nyckeln.",
+                    "port": "Grocys port. Om adressen ovan har en port används den porten.",
+                    "url": "Adress till din Grocy-server, till exempel http:\/\/192.168.1.10 eller https:\/\/grocy.example.com.",
+                    "verify_ssl": "Kontrollera Grocys HTTPS-certifikat. Stäng av för ett självsignerat certifikat."
                 },
                 "description": "Om du behöver hjälp med konfigurationen, kolla dokumentationen på GitHub.",
                 "title": "Grocy"
@@ -141,6 +162,15 @@
                     "port": "Portnummer (9192)",
                     "url": "Grocy API URL",
                     "verify_ssl": "Verifiera SSL certifikat"
+                },
+                "data_description": {
+                    "api_key": "Skapa en nyckel i Grocy: Inställningar (skiftnyckelikonen) → \"Hantera API-nycklar\".",
+                    "calendar_fix_timezone": "Slå på om kalenderhändelser visas vid fel timme. Då läses tiderna från Grocy som lokal tid.",
+                    "calendar_sync_interval": "Hur ofta Grocy-kalendern läses, i minuter.",
+                    "chore_done_by": "Grocy-användare för sysslor som du slutför i Home Assistant. En syssla utan tilldelad användare utförs av ägaren till API-nyckeln.",
+                    "port": "Grocys port. Om adressen ovan har en port används den porten.",
+                    "url": "Adress till din Grocy-server, till exempel http:\/\/192.168.1.10 eller https:\/\/grocy.example.com.",
+                    "verify_ssl": "Kontrollera Grocys HTTPS-certifikat. Stäng av för ett självsignerat certifikat."
                 },
                 "description": "Konfigurera Grocy-integrationsalternativ.",
                 "title": "Grocy-alternativ"

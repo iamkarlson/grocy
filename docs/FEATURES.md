@@ -619,7 +619,9 @@ All entities (except calendar) are updated every 30 seconds via the data coordin
 | tests/test_config_flow.py | `test_url_with_password_is_logged_only_at_debug` | A URL with a password goes to the log only at DEBUG |
 | tests/test_config_flow.py | `test_calendar_sync_interval_must_be_at_least_one_minute` | The form accepts a calendar sync interval of 1 minute or more |
 | tests/test_config_flow.py | `test_chore_done_by_defaults_to_the_api_key_owner` | New entries log chores for the API key owner |
-| tests/test_init.py | `test_async_setup_entry_initializes_integration` | Full setup flow: coordinator, services, proxy, platforms |
+| tests/test_config_flow.py | `test_user_flow_recovers_from_an_error` | Through the flow manager: form, an error, then the entry is created |
+| tests/test_config_flow.py | `test_options_flow_starts_from_the_entry` | HA creates the options flow from the config flow handler |
+| tests/test_init.py | `test_async_setup_entry_initializes_integration` | Setup: first refresh, coordinator in `runtime_data`, platforms |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready` | Connection failure raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready_on_timeout` | Timeout raises ConfigEntryNotReady |
 | tests/test_init.py | `test_async_setup_entry_raises_not_ready_on_os_error` | OS error raises ConfigEntryNotReady |

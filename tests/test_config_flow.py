@@ -15,6 +15,7 @@ import pytest
 import requests
 import voluptuous as vol
 from grocy.errors import GrocyError
+from homeassistant.config_entries import SOURCE_USER
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -683,3 +684,52 @@ async def test_options_step_saves_and_reloads(
     assert mock_config_entry.data[CONF_CALENDAR_FIX_TIMEZONE] is False
     assert mock_config_entry.data[CONF_CHORE_DONE_BY] == CHORE_DONE_BY_ASSIGNED_USER
     reload.assert_awaited_once_with(mock_config_entry.entry_id)
+
+
+async def test_user_flow_recovers_from_an_error(
+    hass, enable_custom_integrations, config_entry_data
+) -> None:
+    """Through the flow manager: form, an error, then the entry is created."""
+    hass.config.components.add("http")
+    hass.http = MagicMock()
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "user"
+    assert result["errors"] == {}
+
+    with (
+        patch(
+            "custom_components.grocy.config_flow._async_test_credentials",
+            new_callable=AsyncMock,
+            side_effect=["cannot_connect", None],
+        ),
+        patch("custom_components.grocy.async_setup_entry", return_value=True),
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], config_entry_data
+        )
+        assert result["type"] is FlowResultType.FORM
+        assert result["errors"] == {"base": "cannot_connect"}
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], config_entry_data
+        )
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_URL] == config_entry_data[CONF_URL]
+    assert result["data"][CONF_API_KEY] == config_entry_data[CONF_API_KEY]
+
+
+async def test_options_flow_starts_from_the_entry(
+    hass, enable_custom_integrations, mock_config_entry
+) -> None:
+    """HA creates the options flow from the config flow handler."""
+    mock_config_entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "init"
