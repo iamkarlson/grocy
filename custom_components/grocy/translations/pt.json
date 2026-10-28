@@ -34,7 +34,7 @@
                 "data_description": {
                     "api_key": "Crie uma chave no Grocy: Definições (ícone de chave inglesa) → \"Gerir chaves da API\".",
                     "port": "Porta do Grocy. Se o endereço acima tiver uma porta, é usada essa porta.",
-                    "url": "Endereço do seu servidor Grocy, por exemplo http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
+                    "url": "Endereço do seu servidor Grocy, por exemplo http:\/\/192.168.1.10.",
                     "verify_ssl": "Verificar o certificado HTTPS do Grocy. Desative para um certificado autoassinado."
                 },
                 "description": "Atualiza as definições de ligação do Grocy.",
@@ -50,7 +50,7 @@
                 "data_description": {
                     "api_key": "Crie uma chave no Grocy: Definições (ícone de chave inglesa) → \"Gerir chaves da API\".",
                     "port": "Porta do Grocy. Se o endereço acima tiver uma porta, é usada essa porta.",
-                    "url": "Endereço do seu servidor Grocy, por exemplo http:\/\/192.168.1.10 ou https:\/\/grocy.example.com.",
+                    "url": "Endereço do seu servidor Grocy, por exemplo http:\/\/192.168.1.10.",
                     "verify_ssl": "Verificar o certificado HTTPS do Grocy. Desative para um certificado autoassinado."
                 },
                 "description": "Se precisar de ajuda com a configuração, consulte a documentação no GitHub.",

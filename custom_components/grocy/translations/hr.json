@@ -34,7 +34,7 @@
                 "data_description": {
                     "api_key": "Izradite ključ u Grocyju: „Settings” (ikona francuskog ključa) → „Manage API keys”.",
                     "port": "Port Grocyja. Ako adresa iznad sadrži port, koristi se taj port.",
-                    "url": "Adresa vašeg Grocy poslužitelja, na primjer http:\/\/192.168.1.10 ili https:\/\/grocy.example.com.",
+                    "url": "Adresa vašeg Grocy poslužitelja, na primjer http:\/\/192.168.1.10.",
                     "verify_ssl": "Provjera HTTPS certifikata Grocyja. Isključite za samopotpisani certifikat."
                 },
                 "description": "Ažurirajte postavke veze s Grocy-jem.",
@@ -50,7 +50,7 @@
                 "data_description": {
                     "api_key": "Izradite ključ u Grocyju: „Settings” (ikona francuskog ključa) → „Manage API keys”.",
                     "port": "Port Grocyja. Ako adresa iznad sadrži port, koristi se taj port.",
-                    "url": "Adresa vašeg Grocy poslužitelja, na primjer http:\/\/192.168.1.10 ili https:\/\/grocy.example.com.",
+                    "url": "Adresa vašeg Grocy poslužitelja, na primjer http:\/\/192.168.1.10.",
                     "verify_ssl": "Provjera HTTPS certifikata Grocyja. Isključite za samopotpisani certifikat."
                 },
                 "description": "Ako vam je potrebna pomoć oko konfiguracije, pogledajte dokumentaciju na GitHubu.",

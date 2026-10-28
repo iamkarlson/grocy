@@ -34,7 +34,7 @@
                 "data_description": {
                     "api_key": "Skapa en nyckel i Grocy: Inställningar (skiftnyckelikonen) → \"Hantera API-nycklar\".",
                     "port": "Grocys port. Om adressen ovan har en port används den porten.",
-                    "url": "Adress till din Grocy-server, till exempel http:\/\/192.168.1.10 eller https:\/\/grocy.example.com.",
+                    "url": "Adress till din Grocy-server, till exempel http:\/\/192.168.1.10.",
                     "verify_ssl": "Kontrollera Grocys HTTPS-certifikat. Stäng av för ett självsignerat certifikat."
                 },
                 "description": "Uppdatera dina Grocy-anslutningsinställningar.",
@@ -50,7 +50,7 @@
                 "data_description": {
                     "api_key": "Skapa en nyckel i Grocy: Inställningar (skiftnyckelikonen) → \"Hantera API-nycklar\".",
                     "port": "Grocys port. Om adressen ovan har en port används den porten.",
-                    "url": "Adress till din Grocy-server, till exempel http:\/\/192.168.1.10 eller https:\/\/grocy.example.com.",
+                    "url": "Adress till din Grocy-server, till exempel http:\/\/192.168.1.10.",
                     "verify_ssl": "Kontrollera Grocys HTTPS-certifikat. Stäng av för ett självsignerat certifikat."
                 },
                 "description": "Om du behöver hjälp med konfigurationen, kolla dokumentationen på GitHub.",

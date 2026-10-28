@@ -25,7 +25,7 @@
                 "description": "If you need help with the configuration have a look at the documentation on GitHub.",
                 "title": "Grocy",
                 "data_description": {
-                    "url": "Address of your Grocy server, for example http://192.168.1.10 or https://grocy.example.com.",
+                    "url": "Address of your Grocy server, for example http://192.168.1.10.",
                     "api_key": "Create a key in Grocy: Settings (wrench icon) → \"Manage API keys\".",
                     "port": "Port of Grocy. If the address above has a port, that port is used.",
                     "verify_ssl": "Check the HTTPS certificate of Grocy. Turn it off for a self-signed certificate."
@@ -41,7 +41,7 @@
                 "description": "Update your Grocy connection settings.",
                 "title": "Reconfigure Grocy",
                 "data_description": {
-                    "url": "Address of your Grocy server, for example http://192.168.1.10 or https://grocy.example.com.",
+                    "url": "Address of your Grocy server, for example http://192.168.1.10.",
                     "api_key": "Create a key in Grocy: Settings (wrench icon) → \"Manage API keys\".",
                     "port": "Port of Grocy. If the address above has a port, that port is used.",
                     "verify_ssl": "Check the HTTPS certificate of Grocy. Turn it off for a self-signed certificate."
