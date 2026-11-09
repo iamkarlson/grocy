@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.grocy.const import (
     CONF_API_KEY,
@@ -13,8 +13,6 @@ from custom_components.grocy.const import (
     CONF_VERIFY_SSL,
     DOMAIN,
 )
-
-pytest_plugins = "pytest_homeassistant_custom_component"
 
 
 def pytest_addoption(parser):

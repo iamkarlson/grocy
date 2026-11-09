@@ -17,7 +17,7 @@ import voluptuous as vol
 from grocy.errors import GrocyError
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.data_entry_flow import FlowResultType
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.grocy.config_flow import (
     GrocyFlowHandler,
