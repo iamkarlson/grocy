@@ -17,7 +17,7 @@ from grocy.data_models.battery import Battery
 from grocy.data_models.chore import Chore
 from grocy.data_models.generic import EntityType
 from grocy.data_models.meal_items import MealPlanItem, MealPlanItemType, RecipeItem
-from grocy.data_models.product import Product, ShoppingListProduct
+from grocy.data_models.product import Product, QuantityUnit, ShoppingListProduct
 from grocy.data_models.task import Task
 from homeassistant.components.todo import TodoItemStatus, TodoListEntityFeature
 from homeassistant.components.todo.services import _async_remove_completed_items
@@ -184,7 +184,7 @@ def test_todo_item_from_shopping_list_product() -> None:
     item = GrocyTodoItem(slp, ATTR_SHOPPING_LIST)
 
     assert item.uid == "40"
-    assert "1.00x Bread" in item.summary
+    assert item.summary == "1x Bread"
     assert item.status == TodoItemStatus.NEEDS_ACTION
     assert item.description == "Sourdough"
 
@@ -207,7 +207,55 @@ def test_todo_item_from_shopping_list_product_no_product() -> None:
     slp = ShoppingListProduct(id=42, amount=1.0, note=None, product=None, done=False)
     item = GrocyTodoItem(slp, ATTR_SHOPPING_LIST)
 
-    assert "Unknown product" in item.summary
+    assert item.summary == "1x Unknown product"
+
+
+def _product_with_stock_unit(name: str, unit: str, unit_plural: str | None) -> Product:
+    return Product(
+        id=1,
+        name=name,
+        quantity_unit_stock=QuantityUnit(id=5, name=unit, name_plural=unit_plural),
+        # The purchase unit is different, and must not be shown: the amount is
+        # in the stock unit.
+        default_quantity_unit_purchase=QuantityUnit(
+            id=6, name="Pack", name_plural="Packs"
+        ),
+    )
+
+
+@pytest.mark.feature("shopping_list")
+@pytest.mark.parametrize(
+    ("amount", "unit", "unit_plural", "expected"),
+    [
+        (1.0, "Piece", "Pieces", "1 Piece Milk"),
+        (6.0, "Piece", "Pieces", "6 Pieces Milk"),
+        (200.0, "ml", None, "200 ml Milk"),
+        (0.5, "Liter", "Liters", "0.5 Liters Milk"),
+    ],
+)
+def test_todo_item_from_shopping_list_product_with_stock_unit(
+    amount, unit, unit_plural, expected
+) -> None:
+    """Verify the summary shows the amount with the stock unit of the product."""
+    slp = ShoppingListProduct(
+        id=44,
+        amount=amount,
+        note=None,
+        product=_product_with_stock_unit("Milk", unit, unit_plural),
+    )
+    item = GrocyTodoItem(slp, ATTR_SHOPPING_LIST)
+
+    assert item.summary == expected
+
+
+@pytest.mark.feature("shopping_list")
+def test_todo_item_from_shopping_list_product_empty_note() -> None:
+    """Verify an empty note gives no description."""
+    slp = ShoppingListProduct(id=45, amount=2.0, note="", product=_make_product())
+    item = GrocyTodoItem(slp, ATTR_SHOPPING_LIST)
+
+    assert item.summary == "2x Bread"
+    assert item.description is None
 
 
 @pytest.mark.feature("shopping_list")

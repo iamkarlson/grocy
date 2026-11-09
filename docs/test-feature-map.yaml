@@ -95,6 +95,8 @@ features:
           - test_todo_item_from_shopping_list_product_done
           - test_todo_item_from_shopping_list_product_no_product
           - test_todo_item_from_shopping_list_product_string_done_flag
+          - test_todo_item_from_shopping_list_product_with_stock_unit
+          - test_todo_item_from_shopping_list_product_empty_note
           - test_remove_completed_items_removes_done_shopping_list_items
           - test_async_update_todo_item_complete_shopping_list
           - test_async_update_todo_item_uncomplete_shopping_list

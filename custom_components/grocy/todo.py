@@ -141,6 +141,25 @@ TODOS: tuple[GrocyTodoListEntityDescription, ...] = (
 )
 
 
+def _shopping_list_summary(item: ShoppingListProduct) -> str:
+    """
+    Return the shopping list text, for example "200 ml Cream" or "2x Milk".
+
+    Grocy keeps the amount of a shopping list item in the stock unit of the
+    product, so the stock unit is the correct unit to show with it.
+    """
+    amount = item.amount or 0
+    amount_text = f"{amount:.2f}".rstrip("0").rstrip(".")
+    product = item.product
+    if product is None:
+        return f"{amount_text}x Unknown product"
+    unit = product.quantity_unit_stock
+    if unit is None:
+        return f"{amount_text}x {product.name}"
+    unit_name = unit.name if amount == 1 else unit.name_plural or unit.name
+    return f"{amount_text} {unit_name} {product.name}"
+
+
 class GrocyTodoItem(TodoItem):
     def __init__(
         self,
@@ -231,11 +250,9 @@ class GrocyTodoItem(TodoItem):
                 description=None,
             )
         elif isinstance(item, ShoppingListProduct):
-            amount = item.amount or 0
-            product_name = item.product.name if item.product else "Unknown product"
             super().__init__(
                 uid=item.id.__str__(),
-                summary=f"{amount:.2f}x {product_name}",
+                summary=_shopping_list_summary(item),
                 due=None,
                 status=TodoItemStatus.COMPLETED
                 if item.done

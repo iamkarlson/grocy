@@ -153,6 +153,8 @@ Requires Grocy feature flag: `FEATURE_FLAG_SHOPPINGLIST`
 |-----------|----------|----------------|-----------------|
 | `todo.grocy_shopping_list` | UPDATE, DELETE | Marking complete marks item **done** in Grocy; marking needs_action marks it **undone** | Deletes shopping list item |
 
+Each item shows the amount with the stock unit of the product, for example `200 ml Cream` or `6 Pieces Eggs`. Grocy keeps the amount in the stock unit. The Grocy page can show the same item in another unit of the product. An item without a unit shows `2x Milk`.
+
 **Note:** Shopping list is the only todo that supports toggling back to "needs action" (undone). All other entity types raise NotImplementedError when trying to uncomplete.
 
 ### Services
@@ -193,6 +195,8 @@ Remove a product from a shopping list.
 | tests/test_todo.py | `test_todo_item_from_shopping_list_product_done` | Done item shows COMPLETED status |
 | tests/test_todo.py | `test_todo_item_from_shopping_list_product_no_product` | Missing product shows "Unknown product" |
 | tests/test_todo.py | `test_todo_item_from_shopping_list_product_string_done_flag` | Pydantic coerces string done flag |
+| tests/test_todo.py | `test_todo_item_from_shopping_list_product_with_stock_unit` | Summary shows the amount with the stock unit, singular or plural |
+| tests/test_todo.py | `test_todo_item_from_shopping_list_product_empty_note` | Empty note gives no description |
 | tests/test_todo.py | `test_remove_completed_items_removes_done_shopping_list_items` | Clear completed removes done shopping list items |
 | tests/test_todo.py | `test_async_update_todo_item_complete_shopping_list` | Completing marks item done |
 | tests/test_todo.py | `test_async_update_todo_item_uncomplete_shopping_list` | Uncompleting marks item undone |
