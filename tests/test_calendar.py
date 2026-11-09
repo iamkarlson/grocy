@@ -16,7 +16,7 @@ import pytest
 from homeassistant.components.calendar import CalendarEvent
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.util import dt as dt_util
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.grocy.calendar import GrocyCalendarEntity
 from custom_components.grocy.const import (
