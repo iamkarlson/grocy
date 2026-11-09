@@ -35,7 +35,7 @@ Requires Grocy feature flag: `FEATURE_FLAG_STOCK`
 
 | Entity ID | State | Attributes | Icon |
 |-----------|-------|------------|------|
-| `sensor.grocy_stock` | Number of products in stock | `count`, `products` (list) | mdi:fridge-outline |
+| `sensor.grocy_stock` | Number of products in stock | `count`, `products` (list, each with `picture_url`) | mdi:fridge-outline |
 
 #### Binary Sensors
 
@@ -95,6 +95,8 @@ Open a product in stock (e.g., open a package).
 |-----------|---------------|-------------------|
 | tests/test_entities.py | `test_sensor_native_value_counts_entities` | Stock sensor counts products correctly |
 | tests/test_entities.py | `test_sensor_extra_state_attributes_are_json_safe` | Stock sensor attributes are JSON-serializable |
+| tests/test_entities.py | `test_sensor_stock_attributes_include_picture_url` | Stock sensor products carry a picture URL |
+| tests/test_entities.py | `test_sensor_stock_attributes_picture_url_none_without_picture` | Stock product without a picture reports no URL |
 | tests/test_entities.py | `test_sensor_native_value_defaults_to_zero` | Stock sensor returns 0 when data is None |
 | tests/test_entities.py | `test_sensor_extra_state_attributes_none_data` | Sensor attributes return None when data is None |
 | tests/test_entities.py | `test_binary_sensor_reports_on_state` | Binary sensor reports ON when overdue products exist |
@@ -120,6 +122,10 @@ Open a product in stock (e.g., open a package).
 | tests/test_todo.py | `test_todo_list_entity_stock_no_create` | Stock todo does not support CREATE |
 | tests/test_grocy_data.py | `test_async_update_stock_returns_products` | Stock data fetching returns products |
 | tests/test_grocy_data.py | `test_async_update_stock_empty` | Stock data fetching handles empty list |
+| tests/test_helpers.py | `test_product_picture_url_points_at_the_product_pictures_group` | Product pictures are proxied from the product pictures group |
+| tests/test_helpers.py | `test_product_picture_url_without_a_picture` | Product without a picture has no URL |
+| tests/test_helpers.py | `test_product_to_dict_adds_the_picture_url` | Serialized product carries its picture URL |
+| tests/test_helpers.py | `test_product_to_dict_without_a_picture` | Serialized product without a picture has a None URL |
 | tests/test_grocy_data.py | `test_async_update_expiring_products` | Expiring products data fetching works |
 | tests/test_grocy_data.py | `test_async_update_expired_products` | Expired products data fetching works |
 | tests/test_grocy_data.py | `test_async_update_overdue_products` | Overdue products data fetching works |

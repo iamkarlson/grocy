@@ -36,6 +36,7 @@ from custom_components.grocy.const import (
     ATTR_TASKS,
 )
 from custom_components.grocy.coordinator import GrocyCoordinatorData
+from custom_components.grocy.helpers import product_picture_url
 from custom_components.grocy.sensor import SENSORS, GrocySensorEntity
 from custom_components.grocy.todo import TODOS, GrocyTodoListEntity
 from tests.factories import (
@@ -98,6 +99,21 @@ def test_sensor_extra_state_attributes_are_json_safe() -> None:
     attributes = entity.extra_state_attributes
     assert attributes["count"] == 1
     assert attributes["products"][0]["id"] == 99
+
+
+@pytest.mark.feature("stock_management")
+def test_sensor_stock_attributes_include_picture_url() -> None:
+    """Verify stock sensor products carry the proxy URL of their picture."""
+    entity = _build_sensor(ATTR_STOCK, [DummyProduct(picture_file_name="apple.jpg")])
+    product = entity.extra_state_attributes["products"][0]
+    assert product["picture_url"] == product_picture_url("apple.jpg")
+
+
+@pytest.mark.feature("stock_management")
+def test_sensor_stock_attributes_picture_url_none_without_picture() -> None:
+    """Verify a stock product without a picture reports no URL."""
+    entity = _build_sensor(ATTR_STOCK, [DummyProduct()])
+    assert entity.extra_state_attributes["products"][0]["picture_url"] is None
 
 
 @pytest.mark.feature("stock_management")

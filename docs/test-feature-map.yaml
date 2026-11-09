@@ -14,6 +14,8 @@ features:
         functions:
           - test_sensor_native_value_counts_entities
           - test_sensor_extra_state_attributes_are_json_safe
+          - test_sensor_stock_attributes_include_picture_url
+          - test_sensor_stock_attributes_picture_url_none_without_picture
           - test_sensor_native_value_defaults_to_zero
           - test_sensor_extra_state_attributes_none_data
           - test_binary_sensor_reports_on_state
@@ -62,6 +64,12 @@ features:
           - test_async_get_config_stores_due_soon_days_from_dict_payload
           - test_async_get_config_due_soon_days_defaults_to_none
           - test_async_get_config_due_soon_days_handles_invalid_value
+      - file: tests/test_helpers.py
+        functions:
+          - test_product_picture_url_points_at_the_product_pictures_group
+          - test_product_picture_url_without_a_picture
+          - test_product_to_dict_adds_the_picture_url
+          - test_product_to_dict_without_a_picture
 
   shopping_list:
     name: Shopping List
