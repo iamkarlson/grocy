@@ -99,7 +99,7 @@ class GrocyData:
         """Update stock data."""
 
         def wrapper():
-            return self.api.stock.current()
+            return self.api.stock.current(include_units=True)
 
         return await self.hass.async_add_executor_job(wrapper)
 

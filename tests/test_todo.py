@@ -931,3 +931,23 @@ async def test_async_update_todo_item_task_needs_action_raises() -> None:
 
     with pytest.raises(NotImplementedError):
         await GrocyTodoListEntity.async_update_todo_item(entity, todo_item)
+
+
+# ─── Meal plan product entries (#258) ───────────────────────────────────────
+
+
+@pytest.mark.feature("meal_planning")
+@pytest.mark.parametrize("wrap", [False, True])
+def test_todo_item_from_meal_plan_product_entry(wrap: bool) -> None:
+    """Verify a product entry shows the amount, unit and product name."""
+    mpi = MealPlanItem(
+        id=52,
+        day=dt.date.today() + dt.timedelta(days=1),
+        type=MealPlanItemType.PRODUCT,
+        product_id=1,
+        product_amount=2,
+        product=_product_with_stock_unit("Milk", "Bottle", "Bottles"),
+    )
+    item = GrocyTodoItem(MealPlanItemWrapper(mpi) if wrap else mpi, ATTR_MEAL_PLAN)
+
+    assert item.summary == "2 Bottles Milk"

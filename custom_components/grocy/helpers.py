@@ -127,9 +127,12 @@ class MealPlanItemWrapper:
 
     @property
     def picture_url(self) -> str | None:
-        """Proxy URL to the picture."""
+        """Proxy URL to the picture of the recipe, or of the product."""
         recipe = self.meal_plan.recipe
-        return recipe_picture_url(recipe.picture_file_name if recipe else None)
+        if recipe is not None:
+            return recipe_picture_url(recipe.picture_file_name)
+        product = self.meal_plan.product
+        return product_picture_url(product.picture_file_name if product else None)
 
     def as_dict(self) -> dict[str, Any]:
         """Return serialized attributes including the proxy picture URL."""

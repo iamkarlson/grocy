@@ -921,3 +921,107 @@ async def test_dispatcher_routes_sync_calendar(
     )
 
     mock_calendar_entity._async_update_calendar.assert_awaited_once()
+
+
+# ─── inventory_product ──────────────────────────────────────────────────────
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_inventory_product_service(hass, coordinator) -> None:
+    """Verify inventory sets the counted amount with the optional fields."""
+    data = services.SERVICE_INVENTORY_PRODUCT_SCHEMA(
+        {
+            services.SERVICE_PRODUCT_ID: "5",
+            services.SERVICE_NEW_AMOUNT: "4",
+            services.SERVICE_BEST_BEFORE_DATE: "2026-12-31",
+            services.SERVICE_LOCATION_ID: "2",
+            services.SERVICE_PRICE: "1.50",
+        }
+    )
+
+    await services.async_inventory_product_service(hass, coordinator, data)
+
+    coordinator.grocy_api.stock.inventory.assert_called_once_with(
+        5,
+        4.0,
+        best_before_date=dt.date(2026, 12, 31),
+        location_id=2,
+        price=1.5,
+        get_details=False,
+    )
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_inventory_product_service_only_amount(hass, coordinator) -> None:
+    """Verify inventory without optional fields sends no values for them."""
+    data = services.SERVICE_INVENTORY_PRODUCT_SCHEMA(
+        {services.SERVICE_PRODUCT_ID: 5, services.SERVICE_NEW_AMOUNT: 0}
+    )
+
+    await services.async_inventory_product_service(hass, coordinator, data)
+
+    coordinator.grocy_api.stock.inventory.assert_called_once_with(
+        5, 0.0, best_before_date=None, location_id=None, price=None, get_details=False
+    )
+
+
+@pytest.mark.feature("stock_management")
+def test_inventory_product_schema_rejects_a_negative_amount() -> None:
+    """Verify a negative counted amount is not accepted."""
+    with pytest.raises(vol.Invalid):
+        services.SERVICE_INVENTORY_PRODUCT_SCHEMA(
+            {services.SERVICE_PRODUCT_ID: 5, services.SERVICE_NEW_AMOUNT: -1}
+        )
+
+
+# ─── reschedule_chore ───────────────────────────────────────────────────────
+
+
+@pytest.mark.feature("chore_management")
+@pytest.mark.asyncio
+async def test_reschedule_chore_service_uses_home_assistant_time(
+    hass, coordinator
+) -> None:
+    """Verify a time without a zone is Home Assistant local time."""
+    await hass.config.async_set_time_zone("Europe/Amsterdam")
+    data = services.SERVICE_RESCHEDULE_CHORE_SCHEMA(
+        {
+            services.SERVICE_CHORE_ID: "3",
+            services.SERVICE_RESCHEDULED_DATE: "2026-11-20 10:00:00",
+            services.SERVICE_ASSIGNED_TO: "1",
+        }
+    )
+
+    with patch(
+        "custom_components.grocy.services._async_force_update_entity",
+        new_callable=AsyncMock,
+    ) as mock_refresh:
+        await services.async_reschedule_chore_service(hass, coordinator, data)
+
+    chore_id, rescheduled_date, assigned_to = (
+        coordinator.grocy_api.chores.reschedule.call_args.args
+    )
+    assert (chore_id, assigned_to) == (3, 1)
+    # 10:00 in Amsterdam (UTC+1 in November) is 09:00 UTC.
+    assert rescheduled_date.utcoffset() == dt.timedelta(hours=1)
+    assert rescheduled_date == dt.datetime(2026, 11, 20, 9, 0, tzinfo=dt.UTC)
+    mock_refresh.assert_awaited_once_with(coordinator, services.ATTR_CHORES)
+
+
+@pytest.mark.feature("chore_management")
+@pytest.mark.asyncio
+async def test_reschedule_chore_service_without_time_removes_it(
+    hass, coordinator
+) -> None:
+    """Verify no time removes the rescheduling."""
+    data = services.SERVICE_RESCHEDULE_CHORE_SCHEMA({services.SERVICE_CHORE_ID: 3})
+
+    with patch(
+        "custom_components.grocy.services._async_force_update_entity",
+        new_callable=AsyncMock,
+    ):
+        await services.async_reschedule_chore_service(hass, coordinator, data)
+
+    coordinator.grocy_api.chores.reschedule.assert_called_once_with(3, None, None)
