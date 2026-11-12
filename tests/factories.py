@@ -27,6 +27,7 @@ class DummyMealPlanItem:
     id: int = 1
     day: dt.date = field(default_factory=lambda: dt.date.today() + dt.timedelta(days=1))
     recipe: DummyRecipe = field(default_factory=DummyRecipe)
+    product: Any = None
 
     def as_dict(self) -> dict[str, Any]:
         return {

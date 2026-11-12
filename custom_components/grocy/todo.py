@@ -141,16 +141,15 @@ TODOS: tuple[GrocyTodoListEntityDescription, ...] = (
 )
 
 
-def _shopping_list_summary(item: ShoppingListProduct) -> str:
+def _amount_text(amount: float | None, product: Product | None) -> str:
     """
-    Return the shopping list text, for example "200 ml Cream" or "2x Milk".
+    Return an amount of a product, for example "200 ml Cream" or "2x Milk".
 
-    Grocy keeps the amount of a shopping list item in the stock unit of the
-    product, so the stock unit is the correct unit to show with it.
+    Grocy keeps shopping list and meal plan amounts in the stock unit of the
+    product, so the stock unit is the correct unit to show with them.
     """
-    amount = item.amount or 0
+    amount = amount or 0
     amount_text = f"{amount:.2f}".rstrip("0").rstrip(".")
-    product = item.product
     if product is None:
         return f"{amount_text}x Unknown product"
     unit = product.quantity_unit_stock
@@ -158,6 +157,16 @@ def _shopping_list_summary(item: ShoppingListProduct) -> str:
         return f"{amount_text}x {product.name}"
     unit_name = unit.name if amount == 1 else unit.name_plural or unit.name
     return f"{amount_text} {unit_name} {product.name}"
+
+
+def _meal_plan_summary(meal_plan: MealPlanItem) -> str:
+    """Return the text of a meal plan entry: the recipe, product or note."""
+    recipe = meal_plan.recipe
+    if recipe and recipe.name:
+        return recipe.name
+    if meal_plan.product is not None:
+        return _amount_text(meal_plan.product_amount, meal_plan.product)
+    return meal_plan.note or "Unknown recipe"
 
 
 class GrocyTodoItem(TodoItem):
@@ -194,11 +203,7 @@ class GrocyTodoItem(TodoItem):
         elif isinstance(item, MealPlanItem):
             due = item.day
             recipe = getattr(item, "recipe", None)
-            summary = (
-                recipe.name
-                if (recipe and getattr(recipe, "name", None))
-                else getattr(item, "note", None) or "Unknown recipe"
-            )
+            summary = _meal_plan_summary(item)
             description = (
                 recipe.description
                 if (recipe and getattr(recipe, "description", None))
@@ -219,11 +224,7 @@ class GrocyTodoItem(TodoItem):
             due = item.meal_plan.day
             mp = item.meal_plan
             recipe = getattr(mp, "recipe", None)
-            summary = (
-                recipe.name
-                if (recipe and getattr(recipe, "name", None))
-                else getattr(mp, "note", None) or "Unknown recipe"
-            )
+            summary = _meal_plan_summary(mp)
             description = (
                 recipe.description
                 if (recipe and getattr(recipe, "description", None))
@@ -252,7 +253,7 @@ class GrocyTodoItem(TodoItem):
         elif isinstance(item, ShoppingListProduct):
             super().__init__(
                 uid=item.id.__str__(),
-                summary=_shopping_list_summary(item),
+                summary=_amount_text(item.amount, item.product),
                 due=None,
                 status=TodoItemStatus.COMPLETED
                 if item.done

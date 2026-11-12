@@ -33,6 +33,10 @@ SERVICE_RECIPE_ID = "recipe_id"
 SERVICE_BATTERY_ID = "battery_id"
 SERVICE_OBJECT_ID = "object_id"
 SERVICE_LIST_ID = "list_id"
+SERVICE_NEW_AMOUNT = "new_amount"
+SERVICE_LOCATION_ID = "location_id"
+SERVICE_RESCHEDULED_DATE = "rescheduled_date"
+SERVICE_ASSIGNED_TO = "assigned_to"
 
 SERVICE_ADD_PRODUCT = "add_product_to_stock"
 SERVICE_OPEN_PRODUCT = "open_product"
@@ -47,6 +51,8 @@ SERVICE_TRACK_BATTERY = "track_battery"
 SERVICE_ADD_MISSING_PRODUCTS_TO_SHOPPING_LIST = "add_missing_products_to_shopping_list"
 SERVICE_REMOVE_PRODUCT_IN_SHOPPING_LIST = "remove_product_in_shopping_list"
 SERVICE_SYNC_CALENDAR = "sync_calendar"
+SERVICE_INVENTORY_PRODUCT = "inventory_product"
+SERVICE_RESCHEDULE_CHORE = "reschedule_chore"
 
 SERVICE_ADD_PRODUCT_SCHEMA = vol.All(
     vol.Schema(
@@ -164,6 +170,25 @@ SERVICE_REMOVE_PRODUCT_IN_SHOPPING_LIST_SCHEMA = vol.All(
 
 SERVICE_SYNC_CALENDAR_SCHEMA = vol.Schema({})
 
+SERVICE_INVENTORY_PRODUCT_SCHEMA = vol.Schema(
+    {
+        vol.Required(SERVICE_PRODUCT_ID): vol.Coerce(int),
+        vol.Required(SERVICE_NEW_AMOUNT): vol.All(vol.Coerce(float), vol.Range(min=0)),
+        vol.Optional(SERVICE_BEST_BEFORE_DATE): cv.date,
+        vol.Optional(SERVICE_LOCATION_ID): vol.Coerce(int),
+        vol.Optional(SERVICE_PRICE): str,
+    }
+)
+
+SERVICE_RESCHEDULE_CHORE_SCHEMA = vol.Schema(
+    {
+        vol.Required(SERVICE_CHORE_ID): vol.Coerce(int),
+        # Without a time, the rescheduling is removed.
+        vol.Optional(SERVICE_RESCHEDULED_DATE): cv.datetime,
+        vol.Optional(SERVICE_ASSIGNED_TO): vol.Coerce(int),
+    }
+)
+
 SERVICES_WITH_ACCOMPANYING_SCHEMA: list[tuple[str, vol.Schema]] = [
     (SERVICE_ADD_PRODUCT, SERVICE_ADD_PRODUCT_SCHEMA),
     (SERVICE_OPEN_PRODUCT, SERVICE_OPEN_PRODUCT_SCHEMA),
@@ -184,6 +209,8 @@ SERVICES_WITH_ACCOMPANYING_SCHEMA: list[tuple[str, vol.Schema]] = [
         SERVICE_REMOVE_PRODUCT_IN_SHOPPING_LIST_SCHEMA,
     ),
     (SERVICE_SYNC_CALENDAR, SERVICE_SYNC_CALENDAR_SCHEMA),
+    (SERVICE_INVENTORY_PRODUCT, SERVICE_INVENTORY_PRODUCT_SCHEMA),
+    (SERVICE_RESCHEDULE_CHORE, SERVICE_RESCHEDULE_CHORE_SCHEMA),
 ]
 
 
@@ -248,6 +275,12 @@ def async_setup_services(hass: HomeAssistant) -> None:
 
         elif service == SERVICE_SYNC_CALENDAR:
             await async_sync_calendar_service(coordinator)
+
+        elif service == SERVICE_INVENTORY_PRODUCT:
+            await async_inventory_product_service(hass, coordinator, service_data)
+
+        elif service == SERVICE_RESCHEDULE_CHORE:
+            await async_reschedule_chore_service(hass, coordinator, service_data)
 
     for service, schema in SERVICES_WITH_ACCOMPANYING_SCHEMA:
         hass.services.async_register(DOMAIN, service, async_call_grocy_service, schema)
@@ -316,6 +349,49 @@ async def async_consume_product_service(
         )
 
     await hass.async_add_executor_job(wrapper)
+
+
+async def async_inventory_product_service(
+    hass: HomeAssistant, coordinator: GrocyDataUpdateCoordinator, data
+):
+    """Set the stock amount of a product in Grocy (an inventory correction)."""
+    product_id = data[SERVICE_PRODUCT_ID]
+    new_amount = data[SERVICE_NEW_AMOUNT]
+    price_raw = data.get(SERVICE_PRICE)
+    price = float(price_raw) if price_raw not in (None, "") else None
+
+    def wrapper():
+        coordinator.grocy_api.stock.inventory(
+            product_id,
+            new_amount,
+            best_before_date=data.get(SERVICE_BEST_BEFORE_DATE),
+            location_id=data.get(SERVICE_LOCATION_ID),
+            price=price,
+            get_details=False,
+        )
+
+    await hass.async_add_executor_job(wrapper)
+
+
+async def async_reschedule_chore_service(
+    hass: HomeAssistant, coordinator: GrocyDataUpdateCoordinator, data
+):
+    """Move the next execution of a chore, or remove the rescheduling."""
+    chore_id = data[SERVICE_CHORE_ID]
+    rescheduled_date = data.get(SERVICE_RESCHEDULED_DATE)
+    if rescheduled_date is not None and rescheduled_date.tzinfo is None:
+        # The user means Home Assistant local time. grocy-py converts an aware
+        # time to the time zone of the Grocy server.
+        rescheduled_date = rescheduled_date.replace(
+            tzinfo=dt_util.get_default_time_zone()
+        )
+    assigned_to = data.get(SERVICE_ASSIGNED_TO)
+
+    def wrapper():
+        coordinator.grocy_api.chores.reschedule(chore_id, rescheduled_date, assigned_to)
+
+    await hass.async_add_executor_job(wrapper)
+    await _async_force_update_entity(coordinator, ATTR_CHORES)
 
 
 async def async_execute_chore_service(

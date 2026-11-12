@@ -35,7 +35,7 @@ Requires Grocy feature flag: `FEATURE_FLAG_STOCK`
 
 | Entity ID | State | Attributes | Icon |
 |-----------|-------|------------|------|
-| `sensor.grocy_stock` | Number of products in stock | `count`, `products` (list, each with `picture_url`) | mdi:fridge-outline |
+| `sensor.grocy_stock` | Number of products in stock | `count`, `products` (list, each with `picture_url` and `quantity_unit_stock`) | mdi:fridge-outline |
 
 #### Binary Sensors
 
@@ -89,6 +89,18 @@ Open a product in stock (e.g., open a package).
 | `amount` | float | Yes | Quantity to open |
 | `allow_subproduct_substitution` | bool | No | Allow substitution (default: false) |
 
+#### `grocy.inventory_product`
+
+Set the stock amount of a product to the amount that you counted. Grocy adds or removes stock to get this amount.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `product_id` | int | Yes | Grocy product ID |
+| `new_amount` | float | Yes | Total amount after the inventory, in the stock unit (0 or more) |
+| `best_before_date` | date | No | Best before date of the stock that is added |
+| `location_id` | int | No | Location of the stock that is added |
+| `price` | string | No | Price per stock unit of the stock that is added |
+
 ### Test Coverage
 
 | Test File | Test Function | What It Validates |
@@ -106,6 +118,9 @@ Open a product in stock (e.g., open a package).
 | tests/test_entities.py | `test_binary_sensor_missing_products` | Missing products binary sensor detects low stock |
 | tests/test_entities.py | `test_binary_sensor_none_data` | Binary sensor handles None data gracefully |
 | tests/test_services.py | `test_add_product_service_converts_price` | Price string is converted to float |
+| tests/test_services.py | `test_inventory_product_service` | Inventory sends the counted amount and the optional fields |
+| tests/test_services.py | `test_inventory_product_service_only_amount` | Inventory without optional fields sends no values for them |
+| tests/test_services.py | `test_inventory_product_schema_rejects_a_negative_amount` | A negative counted amount is rejected |
 | tests/test_services.py | `test_add_product_service_defaults_price_zero` | Empty price defaults to 0.0 |
 | tests/test_services.py | `test_add_product_service_no_price_key` | Missing price key defaults to 0.0 |
 | tests/test_services.py | `test_open_product_service_uses_defaults` | Open product uses default parameter values |
@@ -145,7 +160,7 @@ Requires Grocy feature flag: `FEATURE_FLAG_SHOPPINGLIST`
 
 | Entity ID | State | Attributes | Icon |
 |-----------|-------|------------|------|
-| `sensor.grocy_shopping_list` | Number of shopping list items | `count`, `products` (list) | mdi:cart-outline |
+| `sensor.grocy_shopping_list` | Number of shopping list items | `count`, `products` (list, each with `shopping_list_id`) | mdi:cart-outline |
 
 #### Todo Lists
 
@@ -245,6 +260,18 @@ Execute (complete) a chore.
 
 After execution, the chores sensor is force-refreshed.
 
+#### `grocy.reschedule_chore`
+
+Move the next execution of a chore to another time, as "Reschedule next execution" on the Grocy page does.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `chore_id` | int | Yes | Grocy chore ID |
+| `rescheduled_date` | datetime | No | New time of the next execution, in Home Assistant local time. Omit it to remove the rescheduling |
+| `assigned_to` | int | No | Grocy user ID for the rescheduled execution |
+
+After the change, the chores sensor is force-refreshed.
+
 ### Test Coverage
 
 | Test File | Test Function | What It Validates |
@@ -252,6 +279,8 @@ After execution, the chores sensor is force-refreshed.
 | tests/test_entities.py | `test_sensor_chores_counts` | Chores sensor counts correctly |
 | tests/test_entities.py | `test_binary_sensor_overdue_chores` | Overdue chores binary sensor detects overdue |
 | tests/test_services.py | `test_execute_chore_service_triggers_refresh` | Execute chore calls API and refreshes entity |
+| tests/test_services.py | `test_reschedule_chore_service_uses_home_assistant_time` | A time without a zone is Home Assistant local time, and the chores refresh |
+| tests/test_services.py | `test_reschedule_chore_service_without_time_removes_it` | No time removes the rescheduling |
 | tests/test_services.py | `test_execute_chore_empty_done_by` | Empty done_by is converted to None |
 | tests/test_services.py | `test_dispatcher_routes_execute_chore` | Dispatcher routes execute_chore correctly |
 | tests/test_todo.py | `test_todo_item_from_chore` | Chore converts to todo item |
@@ -424,6 +453,8 @@ Consume a recipe (deduct all ingredients from stock).
 | tests/test_services.py | `test_dispatcher_routes_consume_recipe` | Dispatcher routes consume_recipe |
 | tests/test_todo.py | `test_todo_item_from_meal_plan_item` | Meal plan item converts to todo |
 | tests/test_todo.py | `test_todo_item_from_meal_plan_item_wrapper` | MealPlanItemWrapper converts to todo |
+| tests/test_todo.py | `test_todo_item_from_meal_plan_product_entry` | A product entry shows the amount, unit and product name |
+| tests/test_helpers.py | `test_meal_plan_item_wrapper_uses_the_product_picture` | A product entry without a recipe gets the product picture |
 | tests/test_todo.py | `test_complete_meal_plan_recipe_consumes_the_meal_plan_recipe` | Completing a recipe entry consumes its meal plan recipe and marks it done |
 | tests/test_todo.py | `test_complete_meal_plan_product_consumes_its_amount` | Completing a product entry consumes its amount and marks it done |
 | tests/test_todo.py | `test_complete_meal_plan_note_only_marks_it_done` | Completing a note only marks it done |

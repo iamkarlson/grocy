@@ -29,6 +29,9 @@ features:
       - file: tests/test_services.py
         functions:
           - test_add_product_service_converts_price
+          - test_inventory_product_service
+          - test_inventory_product_service_only_amount
+          - test_inventory_product_schema_rejects_a_negative_amount
           - test_add_product_service_defaults_price_zero
           - test_add_product_service_no_price_key
           - test_add_product_service_passes_best_before_date
@@ -115,6 +118,8 @@ features:
       - file: tests/test_services.py
         functions:
           - test_execute_chore_service_triggers_refresh
+          - test_reschedule_chore_service_uses_home_assistant_time
+          - test_reschedule_chore_service_without_time_removes_it
           - test_execute_chore_empty_done_by
           - test_dispatcher_routes_execute_chore
       - file: tests/test_todo.py
@@ -200,6 +205,7 @@ features:
       - file: tests/test_todo.py
         functions:
           - test_todo_item_from_meal_plan_item
+          - test_todo_item_from_meal_plan_product_entry
           - test_todo_item_from_meal_plan_item_wrapper
           - test_todo_item_from_meal_plan_item_missing_recipe
           - test_todo_item_from_meal_plan_item_any_type
@@ -217,6 +223,7 @@ features:
       - file: tests/test_helpers.py
         functions:
           - test_meal_plan_item_wrapper_generates_picture_url
+          - test_meal_plan_item_wrapper_uses_the_product_picture
           - test_meal_plan_item_wrapper_handles_missing_picture
           - test_meal_plan_item_wrapper_serializes_every_type
 

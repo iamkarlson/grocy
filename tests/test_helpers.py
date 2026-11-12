@@ -89,6 +89,16 @@ def test_meal_plan_item_wrapper_handles_missing_picture() -> None:
 
 
 @pytest.mark.feature("meal_planning")
+def test_meal_plan_item_wrapper_uses_the_product_picture() -> None:
+    """Verify a product entry without a recipe gets the product picture (#258)."""
+    product = DummyProduct(picture_file_name="milk.jpg")
+    wrapper = MealPlanItemWrapper(DummyMealPlanItem(recipe=None, product=product))
+
+    assert wrapper.picture_url == product_picture_url("milk.jpg")
+    assert wrapper.picture_url.startswith("/api/grocy/productpictures/")
+
+
+@pytest.mark.feature("meal_planning")
 @pytest.mark.parametrize(
     "type_value", [*(member.value for member in MealPlanItemType), "dessert"]
 )

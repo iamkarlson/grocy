@@ -104,7 +104,8 @@ async def test_async_update_stock_returns_products(grocy_data) -> None:
     grocy_data.api.stock.current.return_value = [product]
     result = await grocy_data.async_update_stock()
     assert len(result) == 1
-    grocy_data.api.stock.current.assert_called_once()
+    # The stock unit of each product is in the sensor attributes (#291).
+    grocy_data.api.stock.current.assert_called_once_with(include_units=True)
 
 
 @pytest.mark.feature("stock_management")

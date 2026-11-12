@@ -364,3 +364,67 @@ remove_product_in_shopping_list:
 sync_calendar:
   name: Sync Calendar
   description: Triggers an immediate sync of the Grocy calendar from the iCal feed. Useful when you've made changes in Grocy and want them reflected in Home Assistant without waiting for the automatic sync interval.
+
+inventory_product:
+  name: Inventory Product
+  description: Sets the stock amount of a product to the amount that you counted. Grocy adds or removes stock to get this amount.
+  fields:
+    product_id:
+      name: Product Id
+      example: '3'
+      required: true
+      description: The id of the product
+      selector:
+        text:
+    new_amount:
+      name: New Amount
+      example: 4
+      required: true
+      description: The total amount in stock after the inventory, in the stock unit of the product
+      selector:
+        number:
+          min: 0
+          max: 100000
+          mode: box
+    best_before_date:
+      name: Best Before Date
+      example: '2026-12-31'
+      description: The best before date of the stock that is added
+      selector:
+        date:
+    location_id:
+      name: Location Id
+      example: '1'
+      description: The id of the location of the stock that is added
+      selector:
+        text:
+    price:
+      name: Price
+      example: 1.99
+      description: The price per stock unit of the stock that is added
+      selector:
+        text:
+
+reschedule_chore:
+  name: Reschedule Chore
+  description: Moves the next execution of a chore to another time. Without a time, the rescheduling is removed and Grocy calculates the next execution again.
+  fields:
+    chore_id:
+      name: Chore Id
+      example: '3'
+      required: true
+      description: The id of the chore
+      selector:
+        text:
+    rescheduled_date:
+      name: Next Execution
+      example: '2026-11-20 10:00:00'
+      description: The new time of the next execution, in Home Assistant local time. Leave empty to remove the rescheduling.
+      selector:
+        datetime:
+    assigned_to:
+      name: Assigned To User Id
+      example: '1'
+      description: The id of the Grocy user who does the rescheduled execution
+      selector:
+        text:
