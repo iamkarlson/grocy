@@ -9,9 +9,9 @@ from urllib.parse import urlparse, urlunparse
 from grocy.data_models.meal_items import MealPlanItem
 
 
-def recipe_picture_url(picture_file_name: str | None) -> str | None:
+def _picture_url(picture_group: str, picture_file_name: str | None) -> str | None:
     """
-    Return the proxy URL of a recipe picture, or None.
+    Return the proxy URL of a picture in the given group, or None.
 
     Grocy expects the file name as base64 of its UTF-8 bytes (#74). When the
     base64 form contains "/", neither Home Assistant nor Grocy can route it.
@@ -21,7 +21,17 @@ def recipe_picture_url(picture_file_name: str | None) -> str | None:
     encoded = base64.b64encode(picture_file_name.encode("utf-8")).decode("ascii")
     if "/" in encoded:
         return None
-    return f"/api/grocy/recipepictures/{encoded}"
+    return f"/api/grocy/{picture_group}/{encoded}"
+
+
+def recipe_picture_url(picture_file_name: str | None) -> str | None:
+    """Return the proxy URL of a recipe picture, or None."""
+    return _picture_url("recipepictures", picture_file_name)
+
+
+def product_picture_url(picture_file_name: str | None) -> str | None:
+    """Return the proxy URL of a product picture, or None."""
+    return _picture_url("productpictures", picture_file_name)
 
 
 def extract_base_url_and_path(url: str) -> tuple[str, str]:
@@ -141,3 +151,12 @@ def model_to_dict(model: Any) -> dict[str, Any]:
             if not key.startswith("_")
         }
     return {}
+
+
+def product_to_dict(product: Any) -> dict[str, Any]:
+    """Convert a Grocy product into a dictionary including its picture URL."""
+    props = model_to_dict(product)
+    props["picture_url"] = product_picture_url(
+        getattr(product, "picture_file_name", None)
+    )
+    return props

@@ -35,7 +35,7 @@ from .coordinator import (
     GrocyCoordinatorData,
 )
 from .entity import GrocyEntity
-from .helpers import model_to_dict
+from .helpers import model_to_dict, product_to_dict
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -116,7 +116,7 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
         icon="mdi:fridge-outline",
         exists_fn=lambda entities: ATTR_STOCK in entities,
         attributes_fn=lambda data: {
-            "products": [model_to_dict(x) for x in data],
+            "products": [product_to_dict(x) for x in data],
             "count": len(data),
         },
     ),

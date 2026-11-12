@@ -35,7 +35,7 @@ Requires Grocy feature flag: `FEATURE_FLAG_STOCK`
 
 | Entity ID | State | Attributes | Icon |
 |-----------|-------|------------|------|
-| `sensor.grocy_stock` | Number of products in stock | `count`, `products` (list) | mdi:fridge-outline |
+| `sensor.grocy_stock` | Number of products in stock | `count`, `products` (list, each with `picture_url`) | mdi:fridge-outline |
 
 #### Binary Sensors
 
@@ -95,6 +95,8 @@ Open a product in stock (e.g., open a package).
 |-----------|---------------|-------------------|
 | tests/test_entities.py | `test_sensor_native_value_counts_entities` | Stock sensor counts products correctly |
 | tests/test_entities.py | `test_sensor_extra_state_attributes_are_json_safe` | Stock sensor attributes are JSON-serializable |
+| tests/test_entities.py | `test_sensor_stock_attributes_include_picture_url` | Stock sensor products carry a picture URL |
+| tests/test_entities.py | `test_sensor_stock_attributes_picture_url_none_without_picture` | Stock product without a picture reports no URL |
 | tests/test_entities.py | `test_sensor_native_value_defaults_to_zero` | Stock sensor returns 0 when data is None |
 | tests/test_entities.py | `test_sensor_extra_state_attributes_none_data` | Sensor attributes return None when data is None |
 | tests/test_entities.py | `test_binary_sensor_reports_on_state` | Binary sensor reports ON when overdue products exist |
@@ -120,6 +122,10 @@ Open a product in stock (e.g., open a package).
 | tests/test_todo.py | `test_todo_list_entity_stock_no_create` | Stock todo does not support CREATE |
 | tests/test_grocy_data.py | `test_async_update_stock_returns_products` | Stock data fetching returns products |
 | tests/test_grocy_data.py | `test_async_update_stock_empty` | Stock data fetching handles empty list |
+| tests/test_helpers.py | `test_product_picture_url_points_at_the_product_pictures_group` | Product pictures are proxied from the product pictures group |
+| tests/test_helpers.py | `test_product_picture_url_without_a_picture` | Product without a picture has no URL |
+| tests/test_helpers.py | `test_product_to_dict_adds_the_picture_url` | Serialized product carries its picture URL |
+| tests/test_helpers.py | `test_product_to_dict_without_a_picture` | Serialized product without a picture has a None URL |
 | tests/test_grocy_data.py | `test_async_update_expiring_products` | Expiring products data fetching works |
 | tests/test_grocy_data.py | `test_async_update_expired_products` | Expired products data fetching works |
 | tests/test_grocy_data.py | `test_async_update_overdue_products` | Overdue products data fetching works |
@@ -146,6 +152,8 @@ Requires Grocy feature flag: `FEATURE_FLAG_SHOPPINGLIST`
 | Entity ID | Supports | Update behavior | Delete behavior |
 |-----------|----------|----------------|-----------------|
 | `todo.grocy_shopping_list` | UPDATE, DELETE | Marking complete marks item **done** in Grocy; marking needs_action marks it **undone** | Deletes shopping list item |
+
+Each item shows the amount with the stock unit of the product, for example `200 ml Cream` or `6 Pieces Eggs`. Grocy keeps the amount in the stock unit. The Grocy page can show the same item in another unit of the product. An item without a unit shows `2x Milk`.
 
 **Note:** Shopping list is the only todo that supports toggling back to "needs action" (undone). All other entity types raise NotImplementedError when trying to uncomplete.
 
@@ -187,6 +195,8 @@ Remove a product from a shopping list.
 | tests/test_todo.py | `test_todo_item_from_shopping_list_product_done` | Done item shows COMPLETED status |
 | tests/test_todo.py | `test_todo_item_from_shopping_list_product_no_product` | Missing product shows "Unknown product" |
 | tests/test_todo.py | `test_todo_item_from_shopping_list_product_string_done_flag` | Pydantic coerces string done flag |
+| tests/test_todo.py | `test_todo_item_from_shopping_list_product_with_stock_unit` | Summary shows the amount with the stock unit, singular or plural |
+| tests/test_todo.py | `test_todo_item_from_shopping_list_product_empty_note` | Empty note gives no description |
 | tests/test_todo.py | `test_remove_completed_items_removes_done_shopping_list_items` | Clear completed removes done shopping list items |
 | tests/test_todo.py | `test_async_update_todo_item_complete_shopping_list` | Completing marks item done |
 | tests/test_todo.py | `test_async_update_todo_item_uncomplete_shopping_list` | Uncompleting marks item undone |
