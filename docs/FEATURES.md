@@ -101,6 +101,31 @@ Set the stock amount of a product to the amount that you counted. Grocy adds or 
 | `location_id` | int | No | Location of the stock that is added |
 | `price` | string | No | Price per stock unit of the stock that is added |
 
+#### `grocy.scan_barcode`
+
+Add, consume or open the product with a barcode, or only look it up. For barcode scanners: an automation gets the barcode from the scanner and calls this action. The barcode can also be a Grocy label code such as `grcy:p:12`.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `barcode` | string | Yes | Product barcode or Grocy label code |
+| `mode` | string | Yes | `add`, `consume`, `open` or `lookup` (lookup changes nothing) |
+| `amount` | float | No | Amount in the stock unit (default: 1, more than 0) |
+| `price` | float | No | Only for `add`. Price per stock unit. Omitted means Grocy stores no price |
+| `best_before_date` | date | No | Only for `add`. Omitted means Grocy applies the product's default best before days |
+| `spoiled` | bool | No | Only for `consume` (default: false) |
+
+The action returns response data (optional): `mode`, `barcode`, `product_id`, `name`, `amount`, `amount_opened`, `unit`, `unit_plural`, `best_before_date`. The amounts are the stock after the change, in the stock unit. An unknown barcode gives an error and changes nothing. If Grocy refuses the change (for example, not enough stock to consume), the error has the message of Grocy.
+
+Example with a mode helper:
+
+```yaml
+action: grocy.scan_barcode
+data:
+  barcode: "{{ trigger.event.data.barcode }}"
+  mode: "{{ states('input_select.grocy_scan_mode') }}"
+response_variable: scanned
+```
+
 ### Test Coverage
 
 | Test File | Test Function | What It Validates |
@@ -121,6 +146,14 @@ Set the stock amount of a product to the amount that you counted. Grocy adds or 
 | tests/test_services.py | `test_inventory_product_service` | Inventory sends the counted amount and the optional fields |
 | tests/test_services.py | `test_inventory_product_service_only_amount` | Inventory without optional fields sends no values for them |
 | tests/test_services.py | `test_inventory_product_schema_rejects_a_negative_amount` | A negative counted amount is rejected |
+| tests/test_services.py | `test_scan_barcode_lookup_changes_no_stock` | Scan lookup returns the product and changes no stock |
+| tests/test_services.py | `test_scan_barcode_add_returns_the_new_amount` | Scan add sends no price when none is given, and returns the new stock |
+| tests/test_services.py | `test_scan_barcode_add_with_price_and_date` | Scan add passes the price and the best before date |
+| tests/test_services.py | `test_scan_barcode_consume_and_open` | Scan consume (with spoiled) and open use the barcode calls |
+| tests/test_services.py | `test_scan_barcode_unknown_barcode` | An unknown barcode gives a clear error and changes no stock |
+| tests/test_services.py | `test_scan_barcode_grocy_refuses_the_change` | A refused change gives the message of Grocy |
+| tests/test_services.py | `test_scan_barcode_schema_rejects_bad_data` | Unknown mode, zero amount and empty barcode are rejected |
+| tests/test_services.py | `test_scan_barcode_action_returns_the_product` | The registered action returns the product as response data |
 | tests/test_services.py | `test_add_product_service_defaults_price_zero` | Empty price defaults to 0.0 |
 | tests/test_services.py | `test_add_product_service_no_price_key` | Missing price key defaults to 0.0 |
 | tests/test_services.py | `test_open_product_service_uses_defaults` | Open product uses default parameter values |
@@ -704,7 +737,7 @@ These tests validate infrastructure shared across all features.
 | tests/test_todo.py | `test_todo_items_none_data` | None data returns empty list |
 | tests/test_todo.py | `test_todo_exists_fn_checks_available_entities` | Todo exists_fn validation |
 | tests/test_todo.py | `test_async_create_todo_item_unsupported_raises` | Unsupported create raises error |
-| tests/test_services.py | `test_async_setup_services_registers_all_services` | All 13 services registered |
+| tests/test_services.py | `test_async_setup_services_registers_all_services` | All actions registered; `scan_barcode` can return a response |
 | tests/test_services.py | `test_action_without_loaded_entry_raises` | An action with no loaded entry raises `ServiceValidationError` |
 | tests/test_services.py | `test_action_uses_the_current_coordinator` | After a reload, actions use the new coordinator |
 | tests/test_services.py | `test_async_force_update_entity_updates_matching_entity` | Force update targets correct entity |

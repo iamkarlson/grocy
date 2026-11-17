@@ -32,6 +32,14 @@ features:
           - test_inventory_product_service
           - test_inventory_product_service_only_amount
           - test_inventory_product_schema_rejects_a_negative_amount
+          - test_scan_barcode_lookup_changes_no_stock
+          - test_scan_barcode_add_returns_the_new_amount
+          - test_scan_barcode_add_with_price_and_date
+          - test_scan_barcode_consume_and_open
+          - test_scan_barcode_unknown_barcode
+          - test_scan_barcode_grocy_refuses_the_change
+          - test_scan_barcode_schema_rejects_bad_data
+          - test_scan_barcode_action_returns_the_product
           - test_add_product_service_defaults_price_zero
           - test_add_product_service_no_price_key
           - test_add_product_service_passes_best_before_date
