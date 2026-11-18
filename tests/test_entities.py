@@ -356,3 +356,25 @@ def test_coordinator_data_defaults_to_none() -> None:
     assert data.stock is None
     assert data.tasks is None
     assert data.batteries is None
+
+
+# ─── Recorder ────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.feature("cross_cutting")
+@pytest.mark.parametrize(
+    ("entity_class", "description"),
+    [(GrocySensorEntity, d) for d in SENSORS]
+    + [(GrocyBinarySensorEntity, d) for d in BINARY_SENSORS],
+    ids=lambda value: getattr(value, "key", getattr(value, "__name__", "")),
+)
+def test_list_attributes_are_not_recorded(entity_class, description) -> None:
+    """Verify the recorder skips the list attributes and keeps the count."""
+    attributes = description.attributes_fn([])
+    lists = {key for key, value in attributes.items() if isinstance(value, list)}
+    unrecorded = entity_class._Entity__combined_unrecorded_attributes
+
+    assert lists
+    assert lists <= unrecorded
+    assert "count" not in unrecorded
+    assert "due_soon_days" not in unrecorded
