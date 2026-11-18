@@ -60,8 +60,10 @@ async def test_add_product_service_converts_price(hass, coordinator) -> None:
 
 @pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
-async def test_add_product_service_defaults_price_zero(hass, coordinator) -> None:
-    """Verify empty price defaults to 0.0."""
+async def test_add_product_service_empty_price_sends_no_price(
+    hass, coordinator
+) -> None:
+    """Verify an empty price sends no price."""
     data = {
         services.SERVICE_PRODUCT_ID: 8,
         services.SERVICE_AMOUNT: 1.0,
@@ -71,7 +73,7 @@ async def test_add_product_service_defaults_price_zero(hass, coordinator) -> Non
     await services.async_add_product_service(hass, coordinator, data)
 
     coordinator.grocy_api.stock.add.assert_called_once_with(
-        8, 1.0, 0.0, best_before_date=None
+        8, 1.0, None, best_before_date=None
     )
 
 
@@ -469,7 +471,7 @@ async def test_consume_product_defaults_transaction_type(hass, coordinator) -> N
 @pytest.mark.feature("stock_management")
 @pytest.mark.asyncio
 async def test_add_product_service_no_price_key(hass, coordinator) -> None:
-    """Verify missing price key defaults to 0.0."""
+    """Verify a missing price key sends no price."""
     data = {
         services.SERVICE_PRODUCT_ID: 10,
         services.SERVICE_AMOUNT: 5.0,
@@ -478,7 +480,7 @@ async def test_add_product_service_no_price_key(hass, coordinator) -> None:
     await services.async_add_product_service(hass, coordinator, data)
 
     coordinator.grocy_api.stock.add.assert_called_once_with(
-        10, 5.0, 0.0, best_before_date=None
+        10, 5.0, None, best_before_date=None
     )
 
 
@@ -543,7 +545,7 @@ async def test_add_product_service_no_best_before_date(hass, coordinator) -> Non
     await services.async_add_product_service(hass, coordinator, data)
 
     coordinator.grocy_api.stock.add.assert_called_once_with(
-        7, 1.0, 0.0, best_before_date=None
+        7, 1.0, None, best_before_date=None
     )
 
 

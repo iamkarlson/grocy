@@ -339,7 +339,7 @@ async def async_add_product_service(
     product_id = data[SERVICE_PRODUCT_ID]
     amount = data[SERVICE_AMOUNT]
     price_raw = data.get(SERVICE_PRICE)
-    price = float(price_raw) if price_raw not in (None, "") else 0.0
+    price = float(price_raw) if price_raw not in (None, "") else None
     best_before_date = data.get(SERVICE_BEST_BEFORE_DATE)
 
     def wrapper():

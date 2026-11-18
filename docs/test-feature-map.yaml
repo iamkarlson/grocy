@@ -40,7 +40,7 @@ features:
           - test_scan_barcode_grocy_refuses_the_change
           - test_scan_barcode_schema_rejects_bad_data
           - test_scan_barcode_action_returns_the_product
-          - test_add_product_service_defaults_price_zero
+          - test_add_product_service_empty_price_sends_no_price
           - test_add_product_service_no_price_key
           - test_add_product_service_passes_best_before_date
           - test_add_product_service_no_best_before_date
@@ -378,6 +378,7 @@ cross_cutting:
         - test_binary_sensor_exists_fn
         - test_coordinator_data_setitem_getitem
         - test_coordinator_data_defaults_to_none
+        - test_list_attributes_are_not_recorded
     - file: tests/test_todo.py
       functions:
         - test_todo_item_raises_for_unknown_type

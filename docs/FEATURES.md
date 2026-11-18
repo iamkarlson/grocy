@@ -64,7 +64,7 @@ Add a quantity of a product to stock.
 |-----------|------|----------|-------------|
 | `product_id` | int | Yes | Grocy product ID |
 | `amount` | float | Yes | Quantity to add |
-| `price` | string | No | Price per unit (empty or omitted defaults to 0.0) |
+| `price` | string | No | Price per unit (empty or omitted: Grocy stores no price) |
 | `best_before_date` | string | No | Best before date as `YYYY-MM-DD`. Omitted means Grocy applies the product's default best before days |
 
 #### `grocy.consume_product_from_stock`
@@ -154,8 +154,8 @@ response_variable: scanned
 | tests/test_services.py | `test_scan_barcode_grocy_refuses_the_change` | A refused change gives the message of Grocy |
 | tests/test_services.py | `test_scan_barcode_schema_rejects_bad_data` | Unknown mode, zero amount and empty barcode are rejected |
 | tests/test_services.py | `test_scan_barcode_action_returns_the_product` | The registered action returns the product as response data |
-| tests/test_services.py | `test_add_product_service_defaults_price_zero` | Empty price defaults to 0.0 |
-| tests/test_services.py | `test_add_product_service_no_price_key` | Missing price key defaults to 0.0 |
+| tests/test_services.py | `test_add_product_service_empty_price_sends_no_price` | An empty price sends no price |
+| tests/test_services.py | `test_add_product_service_no_price_key` | A missing price key sends no price |
 | tests/test_services.py | `test_open_product_service_uses_defaults` | Open product uses default parameter values |
 | tests/test_services.py | `test_open_product_with_substitution` | Open product handles substitution flag |
 | tests/test_services.py | `test_consume_product_service_handles_transaction_type` | Consume product converts transaction type |
@@ -730,6 +730,7 @@ These tests validate infrastructure shared across all features.
 | tests/test_entities.py | `test_binary_sensor_exists_fn` | All binary sensor descriptions have correct exists_fn |
 | tests/test_entities.py | `test_coordinator_data_setitem_getitem` | CoordinatorData dict-like access |
 | tests/test_entities.py | `test_coordinator_data_defaults_to_none` | CoordinatorData defaults to None |
+| tests/test_entities.py | `test_list_attributes_are_not_recorded` | The recorder skips the list attributes and keeps the count |
 | tests/test_todo.py | `test_todo_item_raises_for_unknown_type` | Unknown type raises NotImplementedError |
 | tests/test_todo.py | `test_get_grocy_item_finds_by_id` | Item lookup by ID |
 | tests/test_todo.py | `test_get_grocy_item_finds_meal_plan_wrapper` | MealPlanItemWrapper lookup |
