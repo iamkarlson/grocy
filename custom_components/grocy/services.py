@@ -2,13 +2,23 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import voluptuous as vol
-from homeassistant.core import HomeAssistant, ServiceCall, callback
-from homeassistant.exceptions import ServiceValidationError
+from homeassistant.core import (
+    HomeAssistant,
+    ServiceCall,
+    ServiceResponse,
+    SupportsResponse,
+    callback,
+)
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.util import dt as dt_util
 
 from grocy.data_models.generic import EntityType
+from grocy.data_models.product import Product
+from grocy.errors import GrocyError
 from grocy.grocy_api_client import TransactionType
 
 from .const import ATTR_CHORES, ATTR_TASKS, DOMAIN
@@ -37,6 +47,14 @@ SERVICE_NEW_AMOUNT = "new_amount"
 SERVICE_LOCATION_ID = "location_id"
 SERVICE_RESCHEDULED_DATE = "rescheduled_date"
 SERVICE_ASSIGNED_TO = "assigned_to"
+SERVICE_BARCODE = "barcode"
+SERVICE_MODE = "mode"
+
+SCAN_MODE_ADD = "add"
+SCAN_MODE_CONSUME = "consume"
+SCAN_MODE_OPEN = "open"
+SCAN_MODE_LOOKUP = "lookup"
+SCAN_MODES = [SCAN_MODE_ADD, SCAN_MODE_CONSUME, SCAN_MODE_OPEN, SCAN_MODE_LOOKUP]
 
 SERVICE_ADD_PRODUCT = "add_product_to_stock"
 SERVICE_OPEN_PRODUCT = "open_product"
@@ -53,6 +71,7 @@ SERVICE_REMOVE_PRODUCT_IN_SHOPPING_LIST = "remove_product_in_shopping_list"
 SERVICE_SYNC_CALENDAR = "sync_calendar"
 SERVICE_INVENTORY_PRODUCT = "inventory_product"
 SERVICE_RESCHEDULE_CHORE = "reschedule_chore"
+SERVICE_SCAN_BARCODE = "scan_barcode"
 
 SERVICE_ADD_PRODUCT_SCHEMA = vol.All(
     vol.Schema(
@@ -189,6 +208,20 @@ SERVICE_RESCHEDULE_CHORE_SCHEMA = vol.Schema(
     }
 )
 
+SERVICE_SCAN_BARCODE_SCHEMA = vol.Schema(
+    {
+        # A product barcode, or a Grocy label code such as "grcy:p:12".
+        vol.Required(SERVICE_BARCODE): vol.All(cv.string, vol.Strip, vol.Length(min=1)),
+        vol.Required(SERVICE_MODE): vol.In(SCAN_MODES),
+        vol.Optional(SERVICE_AMOUNT, default=1): vol.All(
+            vol.Coerce(float), vol.Range(min=0, min_included=False)
+        ),
+        vol.Optional(SERVICE_PRICE): vol.Coerce(float),
+        vol.Optional(SERVICE_BEST_BEFORE_DATE): cv.date,
+        vol.Optional(SERVICE_SPOILED, default=False): cv.boolean,
+    }
+)
+
 SERVICES_WITH_ACCOMPANYING_SCHEMA: list[tuple[str, vol.Schema]] = [
     (SERVICE_ADD_PRODUCT, SERVICE_ADD_PRODUCT_SCHEMA),
     (SERVICE_OPEN_PRODUCT, SERVICE_OPEN_PRODUCT_SCHEMA),
@@ -285,6 +318,19 @@ def async_setup_services(hass: HomeAssistant) -> None:
     for service, schema in SERVICES_WITH_ACCOMPANYING_SCHEMA:
         hass.services.async_register(DOMAIN, service, async_call_grocy_service, schema)
 
+    async def async_call_scan_barcode(service_call: ServiceCall) -> ServiceResponse:
+        """Change the stock of the product with this barcode, and return it."""
+        coordinator = _async_get_coordinator(hass)
+        return await async_scan_barcode_service(hass, coordinator, service_call.data)
+
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_SCAN_BARCODE,
+        async_call_scan_barcode,
+        SERVICE_SCAN_BARCODE_SCHEMA,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+
 
 async def async_add_product_service(
     hass: HomeAssistant, coordinator: GrocyDataUpdateCoordinator, data
@@ -371,6 +417,82 @@ async def async_inventory_product_service(
         )
 
     await hass.async_add_executor_job(wrapper)
+
+
+def _scan_response(product: Product, mode: str, barcode: str) -> dict[str, Any]:
+    """Return the product data for the response of the scan action."""
+    unit = product.quantity_unit_stock
+    best_before = product.best_before_date
+    return {
+        "mode": mode,
+        "barcode": barcode,
+        "product_id": product.id,
+        "name": product.name,
+        # The stock amounts are in the stock unit of the product.
+        "amount": product.available_amount,
+        "amount_opened": product.amount_opened,
+        "unit": unit.name if unit else None,
+        "unit_plural": (unit.name_plural or unit.name) if unit else None,
+        "best_before_date": best_before.date().isoformat() if best_before else None,
+    }
+
+
+async def async_scan_barcode_service(
+    hass: HomeAssistant, coordinator: GrocyDataUpdateCoordinator, data
+) -> dict[str, Any]:
+    """Add, consume, open or look up the product with this barcode."""
+    barcode = data[SERVICE_BARCODE]
+    mode = data[SERVICE_MODE]
+    amount = data.get(SERVICE_AMOUNT, 1)
+    stock = coordinator.grocy_api.stock
+
+    def lookup() -> Product:
+        try:
+            product = stock.product_by_barcode(barcode)
+        except GrocyError as error:
+            if error.is_client_error:
+                msg = f"Grocy has no product with the barcode {barcode}"
+                raise ServiceValidationError(msg) from error
+            raise HomeAssistantError(f"Grocy error: {error}") from error
+        if product is None:
+            msg = f"Grocy has no product with the barcode {barcode}"
+            raise ServiceValidationError(msg)
+        return product
+
+    def change_stock() -> None:
+        try:
+            if mode == SCAN_MODE_ADD:
+                stock.add_by_barcode(
+                    barcode,
+                    amount,
+                    data.get(SERVICE_PRICE),
+                    data.get(SERVICE_BEST_BEFORE_DATE),
+                    get_details=False,
+                )
+            elif mode == SCAN_MODE_CONSUME:
+                stock.consume_by_barcode(
+                    barcode,
+                    amount,
+                    spoiled=data.get(SERVICE_SPOILED, False),
+                    get_details=False,
+                )
+            elif mode == SCAN_MODE_OPEN:
+                stock.open_by_barcode(barcode, amount)
+        except GrocyError as error:
+            # For example: not enough stock to consume or to open.
+            msg = f"Grocy did not {mode} {amount:g} of {barcode}: {error.message}"
+            raise HomeAssistantError(msg) from error
+
+    def wrapper() -> Product:
+        # Look up first, so an unknown barcode gives a clear error.
+        product = lookup()
+        if mode == SCAN_MODE_LOOKUP:
+            return product
+        change_stock()
+        return lookup()
+
+    product = await hass.async_add_executor_job(wrapper)
+    return _scan_response(product, mode, barcode)
 
 
 async def async_reschedule_chore_service(

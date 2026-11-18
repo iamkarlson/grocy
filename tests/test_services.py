@@ -9,15 +9,20 @@ See: docs/FEATURES.md
 from __future__ import annotations
 
 import datetime as dt
+import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+import requests
 import voluptuous as vol
 from grocy.data_models.generic import EntityType
+from grocy.data_models.product import Product, QuantityUnit
+from grocy.errors import GrocyError
 from grocy.grocy_api_client import TransactionType
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.exceptions import ServiceValidationError
+from homeassistant.core import SupportsResponse
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 
 from custom_components.grocy import services
 from custom_components.grocy.const import DOMAIN
@@ -397,12 +402,16 @@ def _setup_services(hass, entry, grocy_api, entities=()) -> None:
 @pytest.mark.feature("cross_cutting")
 @pytest.mark.asyncio
 async def test_async_setup_services_registers_all_services(hass) -> None:
-    """Verify all 13 services are registered, also with no entry loaded."""
+    """Verify all actions are registered, also with no entry loaded."""
     services.async_setup_services(hass)
 
     registered = hass.services.async_services().get(DOMAIN, {})
     for service_name, _schema in services.SERVICES_WITH_ACCOMPANYING_SCHEMA:
         assert service_name in registered, f"Service {service_name} not registered"
+    assert (
+        hass.services.supports_response(DOMAIN, services.SERVICE_SCAN_BARCODE)
+        == SupportsResponse.OPTIONAL
+    )
 
 
 @pytest.mark.feature("cross_cutting")
@@ -974,6 +983,202 @@ def test_inventory_product_schema_rejects_a_negative_amount() -> None:
         services.SERVICE_INVENTORY_PRODUCT_SCHEMA(
             {services.SERVICE_PRODUCT_ID: 5, services.SERVICE_NEW_AMOUNT: -1}
         )
+
+
+# ─── scan_barcode ───────────────────────────────────────────────────────────
+
+
+def _grocy_error(status: int, message: str) -> GrocyError:
+    response = requests.Response()
+    response.status_code = status
+    response._content = json.dumps({"error_message": message}).encode()
+    return GrocyError(response)
+
+
+def _scanned_product(amount: float) -> Product:
+    return Product(
+        id=8,
+        name="Milk",
+        available_amount=amount,
+        amount_opened=1,
+        best_before_date=dt.datetime(2026, 12, 1, tzinfo=dt.UTC),
+        quantity_unit_stock=QuantityUnit(id=3, name="Bottle", name_plural="Bottles"),
+    )
+
+
+def _scan(data: dict) -> dict:
+    return services.SERVICE_SCAN_BARCODE_SCHEMA(data)
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_scan_barcode_lookup_changes_no_stock(hass, coordinator) -> None:
+    """Verify lookup only returns the product."""
+    stock = coordinator.grocy_api.stock
+    stock.product_by_barcode.return_value = _scanned_product(4)
+
+    response = await services.async_scan_barcode_service(
+        hass, coordinator, _scan({"barcode": " 4105250022331 ", "mode": "lookup"})
+    )
+
+    stock.product_by_barcode.assert_called_once_with("4105250022331")
+    stock.add_by_barcode.assert_not_called()
+    stock.consume_by_barcode.assert_not_called()
+    stock.open_by_barcode.assert_not_called()
+    assert response == {
+        "mode": "lookup",
+        "barcode": "4105250022331",
+        "product_id": 8,
+        "name": "Milk",
+        "amount": 4,
+        "amount_opened": 1,
+        "unit": "Bottle",
+        "unit_plural": "Bottles",
+        "best_before_date": "2026-12-01",
+    }
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_scan_barcode_add_returns_the_new_amount(hass, coordinator) -> None:
+    """Verify add sends no price when none is given, and returns the new stock."""
+    stock = coordinator.grocy_api.stock
+    stock.product_by_barcode.side_effect = [_scanned_product(4), _scanned_product(6)]
+
+    response = await services.async_scan_barcode_service(
+        hass,
+        coordinator,
+        _scan({"barcode": "grcy:p:8", "mode": "add", "amount": "2"}),
+    )
+
+    stock.add_by_barcode.assert_called_once_with(
+        "grcy:p:8", 2.0, None, None, get_details=False
+    )
+    assert response["amount"] == 6
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_scan_barcode_add_with_price_and_date(hass, coordinator) -> None:
+    """Verify add passes the price and the best before date."""
+    stock = coordinator.grocy_api.stock
+    stock.product_by_barcode.return_value = _scanned_product(1)
+
+    await services.async_scan_barcode_service(
+        hass,
+        coordinator,
+        _scan(
+            {
+                "barcode": "123",
+                "mode": "add",
+                "price": "1.99",
+                "best_before_date": "2026-12-31",
+            }
+        ),
+    )
+
+    stock.add_by_barcode.assert_called_once_with(
+        "123", 1.0, 1.99, dt.date(2026, 12, 31), get_details=False
+    )
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_scan_barcode_consume_and_open(hass, coordinator) -> None:
+    """Verify consume (with spoiled) and open use the barcode calls."""
+    stock = coordinator.grocy_api.stock
+    stock.product_by_barcode.return_value = _scanned_product(3)
+
+    await services.async_scan_barcode_service(
+        hass, coordinator, _scan({"barcode": "123", "mode": "consume", "spoiled": True})
+    )
+    await services.async_scan_barcode_service(
+        hass, coordinator, _scan({"barcode": "123", "mode": "open", "amount": 0.5})
+    )
+
+    stock.consume_by_barcode.assert_called_once_with(
+        "123", 1.0, spoiled=True, get_details=False
+    )
+    stock.open_by_barcode.assert_called_once_with("123", 0.5)
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_scan_barcode_unknown_barcode(hass, coordinator) -> None:
+    """Verify an unknown barcode gives a clear error and changes no stock."""
+    stock = coordinator.grocy_api.stock
+    stock.product_by_barcode.side_effect = _grocy_error(
+        400, "No product with barcode nope found"
+    )
+
+    with pytest.raises(ServiceValidationError, match="no product with the barcode"):
+        await services.async_scan_barcode_service(
+            hass, coordinator, _scan({"barcode": "nope", "mode": "consume"})
+        )
+
+    stock.consume_by_barcode.assert_not_called()
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_scan_barcode_grocy_refuses_the_change(hass, coordinator) -> None:
+    """Verify a refused change (for example not enough stock) gives Grocy's message."""
+    stock = coordinator.grocy_api.stock
+    stock.product_by_barcode.return_value = _scanned_product(0)
+    stock.consume_by_barcode.side_effect = _grocy_error(
+        400, "Amount to be consumed cannot be > current stock amount"
+    )
+
+    with pytest.raises(HomeAssistantError, match="cannot be > current stock"):
+        await services.async_scan_barcode_service(
+            hass, coordinator, _scan({"barcode": "123", "mode": "consume"})
+        )
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.parametrize(
+    "data",
+    [
+        {"barcode": "123", "mode": "transfer"},
+        {"barcode": "123", "mode": "add", "amount": 0},
+        {"barcode": " ", "mode": "lookup"},
+        {"mode": "lookup"},
+    ],
+)
+def test_scan_barcode_schema_rejects_bad_data(data) -> None:
+    """Verify an unknown mode, a zero amount and an empty barcode are rejected."""
+    with pytest.raises(vol.Invalid):
+        _scan(data)
+
+
+@pytest.mark.feature("stock_management")
+@pytest.mark.asyncio
+async def test_scan_barcode_action_returns_the_product(
+    hass, mock_config_entry, mock_grocy
+) -> None:
+    """Verify the registered action returns the product as response data."""
+    _setup_services(hass, mock_config_entry, mock_grocy)
+    mock_grocy.stock.product_by_barcode.return_value = _scanned_product(2)
+
+    response = await hass.services.async_call(
+        DOMAIN,
+        services.SERVICE_SCAN_BARCODE,
+        {"barcode": "123", "mode": "lookup"},
+        blocking=True,
+        return_response=True,
+    )
+
+    assert response["name"] == "Milk"
+    assert response["amount"] == 2
+
+    # Without return_response the action still works.
+    await hass.services.async_call(
+        DOMAIN,
+        services.SERVICE_SCAN_BARCODE,
+        {"barcode": "123", "mode": "open"},
+        blocking=True,
+    )
+    mock_grocy.stock.open_by_barcode.assert_called_once_with("123", 1.0)
 
 
 # ─── reschedule_chore ───────────────────────────────────────────────────────

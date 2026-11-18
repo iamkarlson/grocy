@@ -428,3 +428,60 @@ reschedule_chore:
       description: The id of the Grocy user who does the rescheduled execution
       selector:
         text:
+
+scan_barcode:
+  name: Scan Barcode
+  description: Adds, consumes or opens the product with this barcode, or only looks it up. Returns the product with its stock amount after the change, for example to show it on a display.
+  fields:
+    barcode:
+      name: Barcode
+      example: '4105250022331'
+      required: true
+      description: The barcode of the product, or a Grocy label code such as grcy:p:12
+      selector:
+        text:
+    mode:
+      name: Mode
+      example: consume
+      required: true
+      description: What to do with the product. Lookup changes nothing.
+      selector:
+        select:
+          options:
+            - add
+            - consume
+            - open
+            - lookup
+    amount:
+      name: Amount
+      example: 1
+      default: 1
+      description: The amount to add, consume or open, in the stock unit of the product
+      selector:
+        number:
+          min: 0
+          max: 100000
+          step: any
+          mode: box
+    price:
+      name: Price
+      example: 1.99
+      description: Only for add. The price per stock unit. Without a price, Grocy stores no price.
+      selector:
+        number:
+          min: 0
+          max: 100000
+          step: any
+          mode: box
+    best_before_date:
+      name: Best Before Date
+      example: '2026-12-31'
+      description: Only for add. Without a date, Grocy uses the default of the product.
+      selector:
+        date:
+    spoiled:
+      name: Spoiled
+      default: false
+      description: Only for consume. The product was spoiled, not used.
+      selector:
+        boolean:
